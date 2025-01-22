@@ -212,11 +212,11 @@ export default function InvestmentDashboard() {
               </ResponsiveContainer>
             </div>
             <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-              <h4 className="text-lg font-semibold mb-2">Composition Insights</h4>
+              <h4 className="text-lg font-semibold mb-2 text-cyan-400">Composition Insights</h4>
               <div className="grid grid-cols-1 gap-2">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Total Deposits</span>
-                  <span className="font-bold">${selectedPerson.totalDeposits.toLocaleString()}</span>
+                  <span className="font-bold text-blue-400">${selectedPerson.totalDeposits.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Investment Returns</span>
