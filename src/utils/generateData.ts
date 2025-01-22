@@ -5,7 +5,7 @@ export const generatePeopleData = (): Person[] => {
   const professions = ['Engineer', 'Doctor', 'Lawyer', 'Teacher', 'Manager', 'Accountant'];
   const ageRanges = ['25-35', '36-45', '46-55', '56-65'];
   
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 1000; i++) {
     const monthlyExpenses = Math.floor(Math.random() * (20000 - 5000) + 5000);
     const monthlyIncome = monthlyExpenses * (Math.random() * (3 - 1.5) + 1.5);
     const investmentPercent = +(Math.random() * (0.20 - 0.03) + 0.03).toFixed(2);
@@ -15,6 +15,7 @@ export const generatePeopleData = (): Person[] => {
     const ageRange = ageRanges[Math.floor(Math.random() * ageRanges.length)];
     
     let portfolio = 0;
+    let totalManagementFee = 0;
     const monthlyDeposit = monthlyExpenses * investmentPercent;
     const monthlyData: MonthlyData[] = [];
     let totalExpenses = 0;
@@ -23,13 +24,17 @@ export const generatePeopleData = (): Person[] => {
     for (let month = 1; month <= 60; month++) {
       totalExpenses += monthlyExpenses;
       totalDeposits += monthlyDeposit;
-      portfolio = (portfolio * (1 + monthlyReturn)) + monthlyDeposit;
+      const monthlyManagementFee = portfolio * 0.005 / 12; // 0.5% annual fee
+      totalManagementFee += monthlyManagementFee;
+      portfolio = (portfolio * (1 + monthlyReturn - 0.005/12)) + monthlyDeposit; // Subtract management fee from returns
       
       monthlyData.push({
         month,
         totalExpenses,
         totalDeposits,
-        portfolioValue: +portfolio.toFixed(2)
+        portfolioValue: +portfolio.toFixed(2),
+        managementFee: +monthlyManagementFee.toFixed(2),
+        returns: +(portfolio - totalDeposits).toFixed(2)
       });
     }
     
@@ -47,7 +52,8 @@ export const generatePeopleData = (): Person[] => {
       roi: +((portfolio - totalDeposits) / totalDeposits * 100).toFixed(2),
       profession,
       ageRange,
-      savingsRate: +((monthlyIncome - monthlyExpenses) / monthlyIncome * 100).toFixed(2)
+      savingsRate: +((monthlyIncome - monthlyExpenses) / monthlyIncome * 100).toFixed(2),
+      totalManagementFee: +totalManagementFee.toFixed(2)
     });
   }
   return people;

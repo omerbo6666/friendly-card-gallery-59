@@ -3,6 +3,8 @@ export interface MonthlyData {
   totalExpenses: number;
   totalDeposits: number;
   portfolioValue: number;
+  managementFee: number;
+  returns: number;
 }
 
 export interface Person {
@@ -20,6 +22,7 @@ export interface Person {
   profession: string;
   ageRange: string;
   savingsRate: number;
+  totalManagementFee: number;
 }
 
 export interface AggregateStats {
@@ -27,4 +30,7 @@ export interface AggregateStats {
   totalDeposits: number;
   totalProfit: number;
   avgRoi: number;
+  totalManagementFee: number;
+  professionBreakdown: Record<string, number>;
+  ageBreakdown: Record<string, number>;
 }

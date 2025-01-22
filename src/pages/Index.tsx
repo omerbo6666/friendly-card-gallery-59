@@ -18,13 +18,22 @@ export default function InvestmentDashboard() {
     [people, selectedPersonId]
   );
 
-  const aggregateStats = useMemo<AggregateStats>(() => {
+  const aggregateStats = useMemo(() => {
     const data = viewMode === 'all' ? people : [selectedPerson];
     return {
       totalPortfolio: data.reduce((sum, p) => sum + p.finalPortfolioValue, 0),
       totalDeposits: data.reduce((sum, p) => sum + p.totalDeposits, 0),
       totalProfit: data.reduce((sum, p) => sum + p.profit, 0),
-      avgRoi: data.reduce((sum, p) => sum + p.roi, 0) / data.length
+      avgRoi: data.reduce((sum, p) => sum + p.roi, 0) / data.length,
+      totalManagementFee: data.reduce((sum, p) => sum + p.totalManagementFee, 0),
+      professionBreakdown: data.reduce((acc, p) => {
+        acc[p.profession] = (acc[p.profession] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      ageBreakdown: data.reduce((acc, p) => {
+        acc[p.ageRange] = (acc[p.ageRange] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
     };
   }, [people, selectedPerson, viewMode]);
 
@@ -59,7 +68,6 @@ export default function InvestmentDashboard() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {/* Stats Cards */}
         <Card className="bg-gradient-to-br from-blue-600 to-blue-800">
           <div className="p-4">
             <p className="text-gray-200 text-sm">Total Portfolio</p>
@@ -84,10 +92,15 @@ export default function InvestmentDashboard() {
             <p className="text-2xl font-bold mt-2">{viewMode === 'all' ? people.length : 1}</p>
           </div>
         </Card>
+        <Card className="bg-gradient-to-br from-purple-600 to-purple-800">
+          <div className="p-4">
+            <p className="text-gray-200 text-sm">Total Management Fees</p>
+            <p className="text-2xl font-bold mt-2">${aggregateStats.totalManagementFee.toLocaleString()}</p>
+          </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Charts */}
         <Card>
           <div className="p-6">
             <h3 className="text-xl font-semibold mb-4">Portfolio Growth</h3>
@@ -118,8 +131,53 @@ export default function InvestmentDashboard() {
                     fillOpacity={0.1}
                     name="Total Deposits"
                   />
+                  <Area 
+                    type="monotone" 
+                    dataKey="returns" 
+                    stroke={COLORS.warning.main}
+                    fill={COLORS.warning.main}
+                    fillOpacity={0.1}
+                    name="Returns"
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="managementFee" 
+                    stroke={COLORS.info.main}
+                    fill={COLORS.info.main}
+                    fillOpacity={0.1}
+                    name="Management Fees"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
+            </div>
+            <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+              <h4 className="text-lg font-semibold mb-2">Portfolio Insights</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-400">Total Returns</p>
+                  <p className="text-xl font-bold text-green-400">
+                    ${selectedPerson.profit.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Management Fees Paid</p>
+                  <p className="text-xl font-bold text-purple-400">
+                    ${selectedPerson.totalManagementFee.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Net Return Rate</p>
+                  <p className="text-xl font-bold text-blue-400">
+                    {((selectedPerson.profit - selectedPerson.totalManagementFee) / selectedPerson.totalDeposits * 100).toFixed(2)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Monthly Average Investment</p>
+                  <p className="text-xl font-bold text-yellow-400">
+                    ${(selectedPerson.totalDeposits / 60).toFixed(2)}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </Card>
@@ -133,7 +191,8 @@ export default function InvestmentDashboard() {
                   <Pie
                     data={[
                       { name: 'Deposits', value: selectedPerson.totalDeposits },
-                      { name: 'Profit', value: selectedPerson.profit }
+                      { name: 'Returns', value: selectedPerson.profit },
+                      { name: 'Management Fees', value: -selectedPerson.totalManagementFee }
                     ]}
                     cx="50%"
                     cy="50%"
@@ -145,18 +204,38 @@ export default function InvestmentDashboard() {
                   >
                     <Cell fill={COLORS.primary.main} />
                     <Cell fill={COLORS.success.main} />
+                    <Cell fill={COLORS.warning.main} />
                   </Pie>
                   <Tooltip />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>
+            <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+              <h4 className="text-lg font-semibold mb-2">Composition Insights</h4>
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total Deposits</span>
+                  <span className="font-bold">${selectedPerson.totalDeposits.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Investment Returns</span>
+                  <span className="font-bold text-green-400">${selectedPerson.profit.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Management Fees</span>
+                  <span className="font-bold text-purple-400">${selectedPerson.totalManagementFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Net Portfolio Value</span>
+                  <span className="font-bold text-blue-400">
+                    ${(selectedPerson.finalPortfolioValue - selectedPerson.totalManagementFee).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
-
-        {viewMode === 'individual' && (
-          <ClientProfile person={selectedPerson} />
-        )}
       </div>
     </div>
   );
