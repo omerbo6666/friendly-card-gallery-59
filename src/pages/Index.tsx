@@ -4,9 +4,8 @@ import { Card } from '@/components/ui/card';
 import { CustomTooltip } from '@/components/CustomTooltip';
 import { ClientProfile } from '@/components/ClientProfile';
 import { generatePeopleData } from '@/utils/generateData';
+import { COLORS } from '@/constants/colors';
 import { Person, AggregateStats } from '@/types/investment';
-
-// ... keep existing code (imports and type definitions)
 
 export default function InvestmentDashboard() {
   const initialPeople = useMemo(() => generatePeopleData(), []);
@@ -42,7 +41,7 @@ export default function InvestmentDashboard() {
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
       <header className="mb-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             Investment Analytics Dashboard
           </h1>
           <select 
@@ -69,28 +68,34 @@ export default function InvestmentDashboard() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-gradient-to-br from-purple-600 to-indigo-800">
+        <Card className="bg-gradient-to-br from-blue-600 to-blue-800">
           <div className="p-4">
             <p className="text-gray-200 text-sm">Total Portfolio</p>
             <p className="text-2xl font-bold mt-2">${aggregateStats.totalPortfolio.toLocaleString()}</p>
           </div>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-600 to-indigo-800">
+        <Card className="bg-gradient-to-br from-emerald-600 to-emerald-800">
           <div className="p-4">
             <p className="text-gray-200 text-sm">Total Profit</p>
             <p className="text-2xl font-bold mt-2">${aggregateStats.totalProfit.toLocaleString()}</p>
           </div>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-600 to-indigo-800">
+        <Card className="bg-gradient-to-br from-amber-600 to-amber-800">
           <div className="p-4">
             <p className="text-gray-200 text-sm">ROI</p>
             <p className="text-2xl font-bold mt-2">{aggregateStats.avgRoi.toFixed(1)}%</p>
           </div>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-600 to-indigo-800">
+        <Card className="bg-gradient-to-br from-cyan-600 to-cyan-800">
           <div className="p-4">
             <p className="text-gray-200 text-sm">Active Clients</p>
             <p className="text-2xl font-bold mt-2">{viewMode === 'all' ? people.length : 1}</p>
+          </div>
+        </Card>
+        <Card className="bg-gradient-to-br from-purple-600 to-purple-800">
+          <div className="p-4">
+            <p className="text-gray-200 text-sm">Total Management Fees</p>
+            <p className="text-2xl font-bold mt-2">${aggregateStats.totalManagementFee.toLocaleString()}</p>
           </div>
         </Card>
       </div>
@@ -98,7 +103,7 @@ export default function InvestmentDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card>
           <div className="p-6">
-            <h3 className="text-xl font-semibold mb-4 text-purple-400">Portfolio Growth</h3>
+            <h3 className="text-xl font-semibold mb-4">Portfolio Growth</h3>
             <div className="h-80">
               <ResponsiveContainer>
                 <AreaChart data={selectedPerson.monthlyData}>
@@ -113,35 +118,63 @@ export default function InvestmentDashboard() {
                   <Area 
                     type="monotone" 
                     dataKey="portfolioValue" 
-                    stroke="#8B5CF6"
-                    fill="#8B5CF6"
+                    stroke={COLORS.primary.main}
+                    fill={COLORS.primary.main}
                     fillOpacity={0.1}
                     name="Portfolio Value"
                   />
                   <Area 
                     type="monotone" 
                     dataKey="totalDeposits" 
-                    stroke="#6366F1"
-                    fill="#6366F1"
+                    stroke={COLORS.success.main}
+                    fill={COLORS.success.main}
                     fillOpacity={0.1}
                     name="Total Deposits"
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="returns" 
+                    stroke={COLORS.warning.main}
+                    fill={COLORS.warning.main}
+                    fillOpacity={0.1}
+                    name="Returns"
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="managementFee" 
+                    stroke={COLORS.info.main}
+                    fill={COLORS.info.main}
+                    fillOpacity={0.1}
+                    name="Management Fees"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-              <h4 className="text-lg font-semibold mb-2 text-purple-400">Growth Insights</h4>
+              <h4 className="text-lg font-semibold mb-2">Portfolio Insights</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-gray-400">Total Returns</p>
-                  <p className="text-xl font-bold text-indigo-400">
+                  <p className="text-xl font-bold text-green-400">
                     ${selectedPerson.profit.toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-400">Management Fees</p>
-                  <p className="text-xl font-bold text-indigo-400">
+                  <p className="text-gray-400">Management Fees Paid</p>
+                  <p className="text-xl font-bold text-purple-400">
                     ${selectedPerson.totalManagementFee.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Net Return Rate</p>
+                  <p className="text-xl font-bold text-blue-400">
+                    {((selectedPerson.profit - selectedPerson.totalManagementFee) / selectedPerson.totalDeposits * 100).toFixed(2)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Monthly Average Investment</p>
+                  <p className="text-xl font-bold text-yellow-400">
+                    ${(selectedPerson.totalDeposits / 60).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -151,14 +184,15 @@ export default function InvestmentDashboard() {
 
         <Card>
           <div className="p-6">
-            <h3 className="text-xl font-semibold mb-4 text-purple-400">Portfolio Composition</h3>
+            <h3 className="text-xl font-semibold mb-4">Portfolio Composition</h3>
             <div className="h-80">
               <ResponsiveContainer>
                 <PieChart>
                   <Pie
                     data={[
                       { name: 'Deposits', value: selectedPerson.totalDeposits },
-                      { name: 'Profit', value: selectedPerson.profit }
+                      { name: 'Returns', value: selectedPerson.profit },
+                      { name: 'Management Fees', value: -selectedPerson.totalManagementFee }
                     ]}
                     cx="50%"
                     cy="50%"
@@ -168,8 +202,9 @@ export default function InvestmentDashboard() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    <Cell fill="#8B5CF6" />
-                    <Cell fill="#6366F1" />
+                    <Cell fill={COLORS.primary.main} />
+                    <Cell fill={COLORS.success.main} />
+                    <Cell fill={COLORS.warning.main} />
                   </Pie>
                   <Tooltip />
                   <Legend />
@@ -177,23 +212,23 @@ export default function InvestmentDashboard() {
               </ResponsiveContainer>
             </div>
             <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-              <h4 className="text-lg font-semibold mb-2 text-purple-400">Composition Insights</h4>
+              <h4 className="text-lg font-semibold mb-2 text-cyan-400">Composition Insights</h4>
               <div className="grid grid-cols-1 gap-2">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Total Deposits</span>
-                  <span className="font-bold text-indigo-400">${selectedPerson.totalDeposits.toLocaleString()}</span>
+                  <span className="font-bold text-blue-400">${selectedPerson.totalDeposits.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Investment Returns</span>
-                  <span className="font-bold text-indigo-400">${selectedPerson.profit.toLocaleString()}</span>
+                  <span className="font-bold text-green-400">${selectedPerson.profit.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Management Fees</span>
-                  <span className="font-bold text-indigo-400">${selectedPerson.totalManagementFee.toLocaleString()}</span>
+                  <span className="font-bold text-purple-400">${selectedPerson.totalManagementFee.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Net Portfolio Value</span>
-                  <span className="font-bold text-indigo-400">
+                  <span className="font-bold text-blue-400">
                     ${(selectedPerson.finalPortfolioValue - selectedPerson.totalManagementFee).toLocaleString()}
                   </span>
                 </div>
