@@ -50,6 +50,5 @@ export const generatePeopleData = (): Person[] => {
       savingsRate: +((monthlyIncome - monthlyExpenses) / monthlyIncome * 100).toFixed(2)
     });
   }
-  
   return people;
 };

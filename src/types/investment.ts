@@ -22,16 +22,9 @@ export interface Person {
   savingsRate: number;
 }
 
-export type SortConfig = {
-  key: keyof Person;
-  direction: 'ascending' | 'descending';
-};
-
 export interface AggregateStats {
   totalPortfolio: number;
   totalDeposits: number;
-  totalExpenses: number;
   totalProfit: number;
   avgRoi: number;
-  professionStats: Record<string, number>;
 }

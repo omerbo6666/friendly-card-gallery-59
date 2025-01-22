@@ -10,10 +10,10 @@ interface CustomTooltipProps extends TooltipProps<number, string> {
 export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card p-4 border rounded-lg shadow-lg">
-        <p className="font-bold text-foreground">Month {label}</p>
+      <div className="bg-gray-800 p-4 border border-gray-700 rounded shadow">
+        <p className="text-gray-200 font-bold">Month {label}</p>
         {payload.map((entry, index) => (
-          <p key={index} style={{ color: entry.color }} className="text-sm">
+          <p key={index} style={{ color: entry.color }}>
             {entry.name}: ${entry.value.toLocaleString()}
           </p>
         ))}
