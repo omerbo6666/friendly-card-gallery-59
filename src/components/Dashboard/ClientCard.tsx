@@ -137,18 +137,6 @@ export const ClientCard = ({ client, metrics, onSelect }: ClientCardProps) => {
             useMesh={true}
             theme={chartTheme}
             colors={['#8B5CF6', '#0EA5E9', '#F97316']}
-            tooltip={({ point }) => (
-              <div className="bg-card p-2 shadow rounded border border-border">
-                <strong>{point.serieId}</strong>: {
-                  new Intl.NumberFormat('he-IL', {
-                    style: 'currency',
-                    currency: 'ILS',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                  }).format(Number(point.data.y))
-                }
-              </div>
-            )}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
