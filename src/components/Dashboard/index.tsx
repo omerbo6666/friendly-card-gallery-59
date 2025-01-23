@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
-import { Search, ArrowUpRight } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -12,12 +12,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
 const RISK_PROFILES: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
 
-// NASDAQ 100 monthly returns from 2020-2025
 const NASDAQ_RETURNS = [
   0.0362, 0.0048, 0.0621, -0.0052, 0.0268, 0.0065, -0.0075, 0.0596, 0.0688, -0.0441,
   0.0179, 0.0612, 0.0102, 0.0552, 0.1070, -0.0278, -0.0581, -0.0217, 0.0405, 0.0659,
@@ -26,20 +34,27 @@ const NASDAQ_RETURNS = [
   -0.0531, 0.0400, 0.0116, 0.0549, -0.0153, 0.0540, 0.0041, 0.0093, 0.0142, 0.0565,
   0.1180, -0.0229, -0.0516, 0.0959, 0.0682, 0.0599, 0.0675, 0.1545, -0.1012, -0.0638,
   0.0199
-].reverse(); // Reverse to start from oldest to newest
+].reverse();
 
 export const Dashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [comparisonClient, setComparisonClient] = useState<Client | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllClients, setShowAllClients] = useState(false);
+  const [visibleSeries, setVisibleSeries] = useState({
+    portfolioValue: true,
+    investment: true,
+    profit: true
+  });
+  const [investmentPercentage, setInvestmentPercentage] = useState(10);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     generateClients();
   }, []);
 
-  const generateMonthlyData = (): MonthlyData[] => {
+  const generateMonthlyData = (investmentPercentageOverride?: number): MonthlyData[] => {
     const data: MonthlyData[] = [];
     let portfolioValue = 0;
     let cumulativeProfit = 0;
@@ -47,11 +62,10 @@ export const Dashboard = () => {
     
     for (let month = 0; month < NASDAQ_RETURNS.length; month++) {
       const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
-      const investmentPercentage = (Math.random() * 17 + 3);
+      const investmentPercentage = investmentPercentageOverride || (Math.random() * 17 + 3);
       const investment = monthlyExpense * (investmentPercentage / 100);
       
       totalInvestment += investment;
-      // Use actual NASDAQ returns for this month
       const monthlyReturn = NASDAQ_RETURNS[month];
       portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
       cumulativeProfit = portfolioValue - totalInvestment;
@@ -132,14 +146,15 @@ export const Dashboard = () => {
   const formatChartData = (data: MonthlyData[] | undefined) => {
     if (!data) return [];
     
-    return [
+    const series = [
       {
         id: "Portfolio Value",
         color: "#4F46E5",
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.portfolioValue.toFixed(2))
-        }))
+        })),
+        visible: visibleSeries.portfolioValue
       },
       {
         id: "Monthly Investment",
@@ -147,7 +162,8 @@ export const Dashboard = () => {
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.investment.toFixed(2))
-        }))
+        })),
+        visible: visibleSeries.investment
       },
       {
         id: "Cumulative Profit",
@@ -155,17 +171,41 @@ export const Dashboard = () => {
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.profit.toFixed(2))
-        }))
+        })),
+        visible: visibleSeries.profit
       }
     ];
+
+    return series.filter(s => s.visible);
+  };
+
+  const handleInvestmentPercentageChange = (value: number[]) => {
+    setInvestmentPercentage(value[0]);
+    const updatedClients = clients.map(client => ({
+      ...client,
+      investmentPercentage: value[0].toString(),
+      monthlyData: generateMonthlyData(value[0])
+    }));
+    setClients(updatedClients);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      {/* Header with Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Portfolio Value</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm text-gray-500">Total Portfolio Value</h3>
+            <TooltipProvider>
+              <UITooltip>
+                <TooltipTrigger>
+                  <HelpCircle className="w-4 h-4 text-gray-400" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>The total value of all client portfolios combined</p>
+                </TooltipContent>
+              </UITooltip>
+            </TooltipProvider>
+          </div>
           <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalValue)}</div>
           <div className="flex items-center text-green-500">
             <ArrowUpRight className="w-4 h-4" />
@@ -198,15 +238,62 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      <div className="bg-white rounded-xl p-4 mb-8">
+        <h3 className="text-sm font-medium mb-4">Chart Controls</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Label>Investment Percentage ({investmentPercentage}%)</Label>
+            <Slider
+              value={[investmentPercentage]}
+              onValueChange={handleInvestmentPercentageChange}
+              min={3}
+              max={20}
+              step={0.5}
+              className="mt-2"
+            />
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={visibleSeries.portfolioValue}
+                onCheckedChange={(checked) => 
+                  setVisibleSeries(prev => ({ ...prev, portfolioValue: checked }))
+                }
+              />
+              <Label>Show Portfolio Value</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={visibleSeries.investment}
+                onCheckedChange={(checked) => 
+                  setVisibleSeries(prev => ({ ...prev, investment: checked }))
+                }
+              />
+              <Label>Show Monthly Investment</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={visibleSeries.profit}
+                onCheckedChange={(checked) => 
+                  setVisibleSeries(prev => ({ ...prev, profit: checked }))
+                }
+              />
+              <Label>Show Cumulative Profit</Label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Performance Chart */}
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
           <div className="h-[300px] md:h-[400px]">
             {clients.length > 0 && (
               <ResponsiveLine
-                data={formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData) || []}
+                data={[
+                  ...formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData),
+                  ...(comparisonClient ? formatChartData(comparisonClient.monthlyData) : [])
+                ]}
                 margin={{ top: 30, right: 110, bottom: 50, left: 80 }}
                 xScale={{
                   type: 'point'
@@ -360,7 +447,6 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Client Distribution Chart */}
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Client Distribution</h2>
           <div className="h-[300px] md:h-[400px]">
@@ -440,11 +526,26 @@ export const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredClients.slice(0, showAllClients ? undefined : 6).map(client => {
             const metrics = calculateMetrics(client);
+            const isSelected = selectedClient?.id === client.id;
+            const isComparison = comparisonClient?.id === client.id;
+
             return (
               <div
                 key={client.id}
-                className="bg-white p-4 md:p-6 rounded-xl shadow cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setSelectedClient(client)}
+                className={`bg-white p-4 md:p-6 rounded-xl shadow cursor-pointer hover:shadow-md transition-shadow ${
+                  isSelected ? 'ring-2 ring-blue-500' : ''
+                } ${isComparison ? 'ring-2 ring-green-500' : ''}`}
+                onClick={() => {
+                  if (isSelected) {
+                    setSelectedClient(null);
+                  } else if (isComparison) {
+                    setComparisonClient(null);
+                  } else if (!selectedClient) {
+                    setSelectedClient(client);
+                  } else {
+                    setComparisonClient(client);
+                  }
+                }}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -479,7 +580,6 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Client Details Modal */}
       {selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-4 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -615,7 +715,6 @@ export const Dashboard = () => {
               </div>
             </div>
 
-            {/* Monthly Data Table */}
             <div className="mt-8">
               <h3 className="font-semibold mb-4">Monthly Details</h3>
               <div className="rounded-md border">
