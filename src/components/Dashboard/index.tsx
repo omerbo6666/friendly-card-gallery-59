@@ -10,6 +10,7 @@ import { Client, MonthlyData, Metrics, AggregateMetrics } from '@/types/investme
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
+const RISK_PROFILES = ['Conservative', 'Moderate', 'Aggressive'] as const;
 
 export const Dashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -22,8 +23,8 @@ export const Dashboard = () => {
   }, []);
 
   const generateInitialData = () => {
-    const generateMonthlyData = () => {
-      const data = [];
+    const generateMonthlyData = (): MonthlyData[] => {
+      const data: MonthlyData[] = [];
       let portfolioValue = 0;
       const monthlyReturn = Math.pow(1 + 0.0711, 1/12) - 1;
 
@@ -43,7 +44,7 @@ export const Dashboard = () => {
       return data;
     };
 
-    const newClients = Array.from({ length: 100 }, (_, i) => ({
+    const newClients: Client[] = Array.from({ length: 100 }, (_, i) => ({
       id: i + 1,
       name: `Client ${i + 1}`,
       profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
@@ -51,7 +52,7 @@ export const Dashboard = () => {
       monthlyExpenses: Math.floor(Math.random() * 16000) + 4000,
       investmentPercentage: (Math.random() * 17 + 3).toFixed(1),
       monthlyData: generateMonthlyData(),
-      riskProfile: ['Conservative', 'Moderate', 'Aggressive'][Math.floor(Math.random() * 3)]
+      riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)]
     }));
 
     setClients(newClients);
