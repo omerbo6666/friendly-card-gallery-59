@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
-import { Search, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react';
-import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
+import { Search, ArrowUpRight, HelpCircle } from 'lucide-react';
+import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
@@ -28,7 +28,6 @@ import { getClients, saveClients, searchClients } from '@/lib/localStorage';
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
-const RISK_PROFILES: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
 
 const NASDAQ_RETURNS = [
   0.0362, 0.0048, 0.0621, -0.0052, 0.0268, 0.0065, -0.0075, 0.0596, 0.0688, -0.0441,
@@ -118,7 +117,7 @@ export const Dashboard = () => {
         id: i + 1,
         name: generateRandomName(),
         profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
-        riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)],
+        investmentTrack: INVESTMENT_TRACKS[Math.floor(Math.random() * INVESTMENT_TRACKS.length)].name,
         monthlyData: generateMonthlyData(),
         monthlyExpenses,
         investmentPercentage
@@ -543,11 +542,11 @@ export const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${
-                    client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
-                    client.riskProfile === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
+                    client.investmentTrack === 'Long Term Bonds' ? 'bg-blue-100 text-blue-800' :
+                    client.investmentTrack === 'Mixed Portfolio' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
                   }`}>
-                    {client.riskProfile}
+                    {client.investmentTrack}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -590,7 +589,7 @@ export const Dashboard = () => {
               <div>
                 <h3 className="font-semibold mb-4">Investment Profile</h3>
                 <div className="space-y-2">
-                  <p>Risk Profile: {selectedClient.riskProfile}</p>
+                  <p>Investment Track: {selectedClient.investmentTrack}</p>
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
                   <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>

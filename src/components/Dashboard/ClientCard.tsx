@@ -1,10 +1,13 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Client, Metrics } from '@/types/investment';
+import { Client } from '@/types/investment';
 
 interface ClientCardProps {
   client: Client;
-  metrics: Metrics;
+  metrics: {
+    latestMonthlyInvestment: number;
+    currentValue: number;
+  };
   onSelect: (client: Client) => void;
 }
 
@@ -17,11 +20,11 @@ export const ClientCard = ({ client, metrics, onSelect }: ClientCardProps) => (
           <p className="text-sm text-muted-foreground">{client.profession}</p>
         </div>
         <span className={`px-3 py-1 rounded-full text-sm ${
-          client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
-          client.riskProfile === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-red-100 text-red-800'
+          client.investmentTrack === 'Long Term Bonds' ? 'bg-blue-100 text-blue-800' :
+          client.investmentTrack === 'Mixed Portfolio' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-green-100 text-green-800'
         }`}>
-          {client.riskProfile}
+          {client.investmentTrack}
         </span>
       </div>
     </CardHeader>
