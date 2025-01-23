@@ -493,7 +493,7 @@ export const Dashboard = () => {
         </div>
 
         <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
-          <h2 className="text-xs md:text-base font-semibold mb-3 md:mb-4">Client Distribution</h2>
+          <h2 className="text-sm md:text-base font-semibold mb-3 md:mb-4">Client Distribution</h2>
           <div className="h-[300px] md:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -511,6 +511,7 @@ export const Dashboard = () => {
                   dataKey="value"
                   label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
                   labelLine={{ stroke: '#374151', strokeWidth: 1 }}
+                  style={{ fontSize: isMobile ? '10px' : '12px' }}
                 >
                   {PROFESSIONS.map((_, index) => (
                     <Cell 
