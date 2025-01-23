@@ -1,241 +1,54 @@
-import React, { useState, useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Card } from '@/components/ui/card';
-import { CustomTooltip } from '@/components/CustomTooltip';
-import { ClientProfile } from '@/components/ClientProfile';
-import { generatePeopleData } from '@/utils/generateData';
-import { COLORS } from '@/constants/colors';
-import { Person, AggregateStats } from '@/types/investment';
+import React, { useState, useEffect } from 'react';
+import { MetricsCards } from '@/components/dashboard/MetricsCards';
+import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
+import { Client, FundMetrics } from '@/types/dashboard';
+import { generateClients, calculateFundMetrics } from '@/utils/dashboard';
 
-export default function InvestmentDashboard() {
-  const initialPeople = useMemo(() => generatePeopleData(), []);
-  const [people] = useState<Person[]>(initialPeople);
-  const [selectedPersonId, setSelectedPersonId] = useState(1);
-  const [viewMode, setViewMode] = useState<'all' | 'individual'>('individual');
+export default function Dashboard() {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [fundMetrics, setFundMetrics] = useState<FundMetrics>({
+    totalPortfolio: 0,
+    totalProfit: 0,
+    totalFees: 0,
+    avgROI: 0,
+    professionStats: {},
+    monthlyPerformance: []
+  });
+  const [view, setView] = useState<'fund' | 'individual'>('fund');
 
-  const selectedPerson = useMemo(() => 
-    people.find(p => p.id === selectedPersonId) || people[0],
-    [people, selectedPersonId]
-  );
-
-  const aggregateStats = useMemo(() => {
-    const data = viewMode === 'all' ? people : [selectedPerson];
-    return {
-      totalPortfolio: data.reduce((sum, p) => sum + p.finalPortfolioValue, 0),
-      totalDeposits: data.reduce((sum, p) => sum + p.totalDeposits, 0),
-      totalProfit: data.reduce((sum, p) => sum + p.profit, 0),
-      avgRoi: data.reduce((sum, p) => sum + p.roi, 0) / data.length,
-      totalManagementFee: data.reduce((sum, p) => sum + p.totalManagementFee, 0),
-      professionBreakdown: data.reduce((acc, p) => {
-        acc[p.profession] = (acc[p.profession] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      ageBreakdown: data.reduce((acc, p) => {
-        acc[p.ageRange] = (acc[p.ageRange] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>)
-    };
-  }, [people, selectedPerson, viewMode]);
+  useEffect(() => {
+    const generatedClients = generateClients();
+    setClients(generatedClients);
+    const metrics = calculateFundMetrics(generatedClients);
+    setFundMetrics(metrics);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
-      <header className="mb-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Investment Analytics Dashboard
-          </h1>
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+              Investment Fund Dashboard
+            </h1>
+            <p className="text-gray-400">Managing {clients.length} clients</p>
+          </div>
           <select 
-            className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm"
-            value={viewMode === 'all' ? 'all' : selectedPersonId}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === 'all') {
-                setViewMode('all');
-              } else {
-                setViewMode('individual');
-                setSelectedPersonId(Number(value));
-              }
-            }}
+            className="bg-gray-800 border border-gray-700 rounded-md px-4 py-2 text-gray-200"
+            value={view}
+            onChange={(e) => setView(e.target.value as 'fund' | 'individual')}
           >
-            <option value="all">All Portfolios</option>
-            {people.map(p => (
-              <option key={p.id} value={p.id}>
-                Client {p.id} - {p.profession}
-              </option>
-            ))}
+            <option value="fund">Fund Overview</option>
+            <option value="individual">Individual Clients</option>
           </select>
+        </header>
+
+        <MetricsCards metrics={fundMetrics} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <PerformanceChart data={fundMetrics.monthlyPerformance} />
+          {/* Additional charts and components will be added here */}
         </div>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-gradient-to-br from-blue-600 to-blue-800">
-          <div className="p-4">
-            <p className="text-gray-200 text-sm">Total Portfolio</p>
-            <p className="text-2xl font-bold mt-2">${aggregateStats.totalPortfolio.toLocaleString()}</p>
-          </div>
-        </Card>
-        <Card className="bg-gradient-to-br from-emerald-600 to-emerald-800">
-          <div className="p-4">
-            <p className="text-gray-200 text-sm">Total Profit</p>
-            <p className="text-2xl font-bold mt-2">${aggregateStats.totalProfit.toLocaleString()}</p>
-          </div>
-        </Card>
-        <Card className="bg-gradient-to-br from-amber-600 to-amber-800">
-          <div className="p-4">
-            <p className="text-gray-200 text-sm">ROI</p>
-            <p className="text-2xl font-bold mt-2">{aggregateStats.avgRoi.toFixed(1)}%</p>
-          </div>
-        </Card>
-        <Card className="bg-gradient-to-br from-cyan-600 to-cyan-800">
-          <div className="p-4">
-            <p className="text-gray-200 text-sm">Active Clients</p>
-            <p className="text-2xl font-bold mt-2">{viewMode === 'all' ? people.length : 1}</p>
-          </div>
-        </Card>
-        <Card className="bg-gradient-to-br from-purple-600 to-purple-800">
-          <div className="p-4">
-            <p className="text-gray-200 text-sm">Total Management Fees</p>
-            <p className="text-2xl font-bold mt-2">${aggregateStats.totalManagementFee.toLocaleString()}</p>
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <Card>
-          <div className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Portfolio Growth</h3>
-            <div className="h-80">
-              <ResponsiveContainer>
-                <AreaChart data={selectedPerson.monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="month" stroke="#9CA3AF" />
-                  <YAxis 
-                    stroke="#9CA3AF"
-                    tickFormatter={(value) => `$${(value/1000).toFixed(0)}K`}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Area 
-                    type="monotone" 
-                    dataKey="portfolioValue" 
-                    stroke={COLORS.primary.main}
-                    fill={COLORS.primary.main}
-                    fillOpacity={0.1}
-                    name="Portfolio Value"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="totalDeposits" 
-                    stroke={COLORS.success.main}
-                    fill={COLORS.success.main}
-                    fillOpacity={0.1}
-                    name="Total Deposits"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="returns" 
-                    stroke={COLORS.warning.main}
-                    fill={COLORS.warning.main}
-                    fillOpacity={0.1}
-                    name="Returns"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="managementFee" 
-                    stroke={COLORS.info.main}
-                    fill={COLORS.info.main}
-                    fillOpacity={0.1}
-                    name="Management Fees"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-              <h4 className="text-lg font-semibold mb-2">Portfolio Insights</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-400">Total Returns</p>
-                  <p className="text-xl font-bold text-green-400">
-                    ${selectedPerson.profit.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Management Fees Paid</p>
-                  <p className="text-xl font-bold text-purple-400">
-                    ${selectedPerson.totalManagementFee.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Net Return Rate</p>
-                  <p className="text-xl font-bold text-blue-400">
-                    {((selectedPerson.profit - selectedPerson.totalManagementFee) / selectedPerson.totalDeposits * 100).toFixed(2)}%
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Monthly Average Investment</p>
-                  <p className="text-xl font-bold text-yellow-400">
-                    ${(selectedPerson.totalDeposits / 60).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Portfolio Composition</h3>
-            <div className="h-80">
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Deposits', value: selectedPerson.totalDeposits },
-                      { name: 'Returns', value: selectedPerson.profit },
-                      { name: 'Management Fees', value: -selectedPerson.totalManagementFee }
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    <Cell fill={COLORS.primary.main} />
-                    <Cell fill={COLORS.success.main} />
-                    <Cell fill={COLORS.warning.main} />
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-              <h4 className="text-lg font-semibold mb-2 text-cyan-400">Composition Insights</h4>
-              <div className="grid grid-cols-1 gap-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Total Deposits</span>
-                  <span className="font-bold text-blue-400">${selectedPerson.totalDeposits.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Investment Returns</span>
-                  <span className="font-bold text-green-400">${selectedPerson.profit.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Management Fees</span>
-                  <span className="font-bold text-purple-400">${selectedPerson.totalManagementFee.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Net Portfolio Value</span>
-                  <span className="font-bold text-blue-400">
-                    ${(selectedPerson.finalPortfolioValue - selectedPerson.totalManagementFee).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
       </div>
     </div>
   );
