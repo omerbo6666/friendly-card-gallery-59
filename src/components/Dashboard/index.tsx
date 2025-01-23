@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Search } from 'lucide-react';
 import Papa from 'papaparse';
-import { Client, MonthlyData, MarketData, ClientMetrics, AggregateMetrics } from '@/types/investment';
+import { Client, MonthlyData, MarketData, ClientMetrics, RiskProfile } from '@/types/investment';
 import { MetricCard } from './MetricCard';
 import { ClientCard } from './ClientCard';
 
 interface MarketDataState {
   nasdaq: MarketData[];
   sp500: MarketData[];
+}
+
+interface CSVRow {
+  Date: string;
+  'Change %': string;
+  [key: string]: string;
 }
 
 const COLORS: Record<string, string> = {
@@ -35,8 +41,8 @@ export const Dashboard = () => {
       const nasdaqFile = await window.fs.readFile('NASDAQ Composite Historical Data.csv', { encoding: 'utf8' });
       const spFile = await window.fs.readFile('SP 500 Historical Data.csv', { encoding: 'utf8' });
       
-      const parseMarketData = (csvData) => {
-        const parsed = Papa.parse(csvData, { header: true });
+      const parseMarketData = (csvData: string): MarketData[] => {
+        const parsed = Papa.parse<CSVRow>(csvData, { header: true });
         return parsed.data
           .map(row => ({
             date: row.Date,
@@ -55,11 +61,10 @@ export const Dashboard = () => {
     }
   };
 
-  const generateClients = (marketReturns) => {
-    const generateMonthlyData = () => {
-      const data = [];
+  const generateClients = (marketReturns: MarketData[]) => {
+    const generateMonthlyData = (): MonthlyData[] => {
+      const data: MonthlyData[] = [];
       let portfolioValue = 0;
-      let cumulativeProfit = 0;
       let totalInvestment = 0;
 
       for (let month = 0; month < 60; month++) {
@@ -86,9 +91,9 @@ export const Dashboard = () => {
     };
 
     const professions = ['Doctor', 'Software Engineer', 'Lawyer', 'Business Owner', 'Teacher'];
-    const riskProfiles = ['Conservative', 'Moderate', 'Aggressive'];
+    const riskProfiles: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
     
-    const newClients = Array.from({ length: 100 }, (_, i) => ({
+    const newClients: Client[] = Array.from({ length: 100 }, (_, i) => ({
       id: i + 1,
       name: `Client ${i + 1}`,
       profession: professions[Math.floor(Math.random() * professions.length)],
