@@ -164,7 +164,7 @@ const AddClient = () => {
               <SelectContent>
                 {INVESTMENT_TRACKS.map((track) => (
                   <SelectItem key={track.name} value={track.name}>
-                    {track.description}
+                    {track.name}
                   </SelectItem>
                 ))}
               </SelectContent>
