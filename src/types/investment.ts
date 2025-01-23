@@ -14,6 +14,8 @@ export interface Client {
   profession: string;
   riskProfile: RiskProfile;
   monthlyData: MonthlyData[];
+  monthlyExpenses: number;
+  investmentPercentage: string;
 }
 
 export interface ClientMetrics {
