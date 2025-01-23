@@ -418,7 +418,7 @@ export const Dashboard = () => {
                 sliceTooltip={({ slice }) => (
                   <div className="bg-white p-2 shadow-lg rounded-lg border border-gray-200">
                     <div className="text-sm font-medium text-gray-900 mb-2">
-                      {slice.points[0].data.x}
+                      {String(slice.points[0].data.x)}
                     </div>
                     {slice.points.map(point => (
                       <div
@@ -436,7 +436,7 @@ export const Dashboard = () => {
                             currency: 'ILS',
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0
-                          }).format(point.data.y as number)}
+                          }).format(Number(point.data.y))}
                         </span>
                       </div>
                     ))}
@@ -476,24 +476,7 @@ export const Dashboard = () => {
                     />
                   ))}
                 </Pie>
-                <Tooltip 
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-3 shadow-lg rounded-lg border border-gray-200">
-                          <p className="text-sm font-medium text-gray-900">{payload[0].name}</p>
-                          <p className="text-sm text-gray-600">
-                            Clients: {payload[0].value}
-                            <span className="ml-2">
-                              ({((payload[0].value / clients.length) * 100).toFixed(1)}%)
-                            </span>
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -732,7 +715,9 @@ export const Dashboard = () => {
                     {selectedClient.monthlyData.map((data, index) => (
                       <TableRow key={index}>
                         <TableCell>Month {data.month}</TableCell>
-                        <TableCell>{formatCurrency(data.expenses)}</TableCell>
+                        <TableCell>{formatCurrency(data.expenses)}</Table
+
+Cell>
                         <TableCell>{formatCurrency(data.investment)}</TableCell>
                         <TableCell>{formatCurrency(data.portfolioValue)}</TableCell>
                         <TableCell className={data.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
