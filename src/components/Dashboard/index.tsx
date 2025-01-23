@@ -137,24 +137,24 @@ export const Dashboard = () => {
         id: "Portfolio Value",
         color: "#4F46E5",
         data: data.map(d => ({
-          x: String(`Month ${d.month}`), // Convert to string explicitly
-          y: Number(d.portfolioValue) // Convert to number explicitly
+          x: `Month ${d.month}`,
+          y: Number(d.portfolioValue.toFixed(2))
         }))
       },
       {
         id: "Monthly Investment",
         color: "#10B981",
         data: data.map(d => ({
-          x: String(`Month ${d.month}`), // Convert to string explicitly
-          y: Number(d.investment) // Convert to number explicitly
+          x: `Month ${d.month}`,
+          y: Number(d.investment.toFixed(2))
         }))
       },
       {
         id: "Cumulative Profit",
         color: "#F59E0B",
         data: data.map(d => ({
-          x: String(`Month ${d.month}`), // Convert to string explicitly
-          y: Number(d.profit) // Convert to number explicitly
+          x: `Month ${d.month}`,
+          y: Number(d.profit.toFixed(2))
         }))
       }
     ];
@@ -228,7 +228,7 @@ export const Dashboard = () => {
                   legend: 'Timeline',
                   legendOffset: 40,
                   legendPosition: 'middle',
-                  format: (value) => String(value) // Convert to string explicitly
+                  format: (value) => `${value}`
                 }}
                 axisLeft={{
                   tickSize: 5,
@@ -243,7 +243,7 @@ export const Dashboard = () => {
                       currency: 'ILS',
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0
-                    }).format(Number(value)) // Convert to number explicitly
+                    }).format(typeof value === 'number' ? value : 0)
                 }}
                 enableGridX={false}
                 enableGridY={true}
