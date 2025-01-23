@@ -30,7 +30,7 @@ export const ClientCard = ({ client, metrics, onSelect }: ClientCardProps) => (
         <div>
           <p className="text-sm text-muted-foreground">Monthly Investment</p>
           <p className="font-medium">
-            {(client.monthlyExpenses * (parseFloat(client.investmentPercentage) / 100)).toLocaleString('en-IL', { 
+            {metrics.latestMonthlyInvestment.toLocaleString('en-IL', { 
               style: 'currency', 
               currency: 'ILS' 
             })}
