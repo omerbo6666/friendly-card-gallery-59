@@ -221,23 +221,44 @@ export const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <div className="w-full md:w-auto relative group">
-          <Button 
-            size="lg"
-            className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-8 rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden"
-            onClick={() => navigate('/add-client')}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-blue-400/10 animate-pulse"></div>
-            <div className="flex flex-col items-center gap-3 relative z-10">
-              <span className="text-xl md:text-2xl font-bold tracking-tight">
-                Try Our Investment Simulator
-              </span>
-              <span className="text-sm md:text-base font-normal text-white/90">
-                See how your money could grow over time
-              </span>
-              <ArrowUpRight className="w-6 h-6 mt-1 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            </div>
-          </Button>
+        <div className="w-full md:w-auto flex flex-col md:flex-row gap-4">
+          <div className="w-full md:w-auto relative group">
+            <Button 
+              size="lg"
+              className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-8 rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden"
+              onClick={() => navigate('/add-client')}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-blue-400/10 animate-pulse"></div>
+              <div className="flex flex-col items-center gap-3 relative z-10">
+                <span className="text-xl md:text-2xl font-bold tracking-tight">
+                  Add New Client
+                </span>
+                <span className="text-sm md:text-base font-normal text-white/90">
+                  Start managing a new portfolio
+                </span>
+                <ArrowUpRight className="w-6 h-6 mt-1 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </div>
+            </Button>
+          </div>
+          
+          <div className="w-full md:w-auto relative group">
+            <Button 
+              size="lg"
+              className="w-full md:w-auto bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-semibold px-8 py-8 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden"
+              onClick={() => navigate('/simulator')}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-cyan-400/10 animate-pulse"></div>
+              <div className="flex flex-col items-center gap-3 relative z-10">
+                <span className="text-xl md:text-2xl font-bold tracking-tight">
+                  Investment Simulator
+                </span>
+                <span className="text-sm md:text-base font-normal text-white/90">
+                  See how your money could grow
+                </span>
+                <ArrowUpRight className="w-6 h-6 mt-1 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </div>
+            </Button>
+          </div>
         </div>
         <ThemeToggle />
       </div>
