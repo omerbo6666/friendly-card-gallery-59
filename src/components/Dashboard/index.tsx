@@ -23,7 +23,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
 const RISK_PROFILES: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
 
@@ -150,7 +150,7 @@ export const Dashboard = () => {
     const series = [
       {
         id: "Portfolio Value",
-        color: "#4F46E5",
+        color: "#8B5CF6", // Vivid Purple
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.portfolioValue.toFixed(2))
@@ -159,7 +159,7 @@ export const Dashboard = () => {
       },
       {
         id: "Monthly Investment",
-        color: "#10B981",
+        color: "#0EA5E9", // Ocean Blue
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.investment.toFixed(2))
@@ -168,7 +168,7 @@ export const Dashboard = () => {
       },
       {
         id: "Cumulative Profit",
-        color: "#F59E0B",
+        color: "#F97316", // Bright Orange
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.profit.toFixed(2))
@@ -385,67 +385,41 @@ export const Dashboard = () => {
                     ticks: {
                       text: {
                         fontSize: isMobile ? 10 : 12,
-                        fill: '#6B7280'
+                        fill: 'hsl(var(--muted-foreground))'
                       }
                     },
                     legend: {
                       text: {
                         fontSize: 12,
-                        fill: '#374151'
+                        fill: 'hsl(var(--muted-foreground))'
                       }
                     }
                   },
                   grid: {
                     line: {
-                      stroke: '#E5E7EB',
+                      stroke: 'hsl(var(--border))',
                       strokeWidth: 1
                     }
                   },
                   crosshair: {
                     line: {
-                      stroke: '#6B7280',
+                      stroke: 'hsl(var(--muted-foreground))',
                       strokeWidth: 1,
                       strokeOpacity: 0.35
                     }
                   },
                   tooltip: {
                     container: {
-                      background: 'white',
-                      color: '#374151',
+                      background: 'hsl(var(--background))',
+                      color: 'hsl(var(--foreground))',
                       fontSize: 12,
                       borderRadius: '6px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      padding: '8px 12px'
+                      padding: '8px 12px',
+                      border: '1px solid hsl(var(--border))'
                     }
                   }
                 }}
-                sliceTooltip={({ slice }) => (
-                  <div className="bg-white p-2 shadow-lg rounded-lg border border-gray-200">
-                    <div className="text-sm font-medium text-gray-900 mb-2">
-                      {String(slice.points[0].data.x)}
-                    </div>
-                    {slice.points.map(point => (
-                      <div
-                        key={point.id}
-                        className="flex items-center py-1"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full mr-2"
-                          style={{ backgroundColor: point.serieColor }}
-                        />
-                        <span className="text-sm text-gray-600">{point.serieId}:</span>
-                        <span className="text-sm font-medium ml-2">
-                          {new Intl.NumberFormat('he-IL', {
-                            style: 'currency',
-                            currency: 'ILS',
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0
-                          }).format(Number(point.data.y))}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               />
             )}
           </div>
