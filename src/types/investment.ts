@@ -12,18 +12,15 @@ export interface Client {
   id: number;
   name: string;
   profession: string;
-  age: number;
-  monthlyExpenses: number;
-  investmentPercentage: string;
-  monthlyData: MonthlyData[];
   riskProfile: RiskProfile;
+  monthlyData: MonthlyData[];
 }
 
-export interface Metrics {
-  totalExpenses: number;
+export interface ClientMetrics {
   totalInvestment: number;
-  currentValue: number;
+  portfolioValue: number;
   totalProfit: number;
+  latestMonthlyInvestment: number;
   managementFee: number;
 }
 
@@ -31,5 +28,5 @@ export interface AggregateMetrics {
   totalValue: number;
   totalInvestment: number;
   totalProfit: number;
-  totalFees: number;
+  totalClients: number;
 }
