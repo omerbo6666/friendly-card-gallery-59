@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, Maximize2 } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -83,12 +84,14 @@ export const Dashboard = () => {
 
   const calculateMetrics = (client: Client): ClientMetrics => {
     const lastMonth = client.monthlyData[client.monthlyData.length - 1];
+    const totalInvestment = client.monthlyData.reduce((sum, data) => sum + data.investment, 0);
+    
     return {
-      totalInvestment: client.monthlyData.reduce((sum, data) => sum + data.investment, 0),
+      totalInvestment,
       portfolioValue: lastMonth.portfolioValue,
       totalProfit: lastMonth.profit,
       latestMonthlyInvestment: lastMonth.investment,
-      managementFee: client.monthlyData.reduce((sum, data) => sum + data.investment, 0) * 0.005
+      managementFee: totalInvestment * 0.005 // 0.5% management fee
     };
   };
 
@@ -132,7 +135,7 @@ export const Dashboard = () => {
         id: "Portfolio Value",
         color: "#4F46E5",
         data: data.map(d => ({
-          x: d.month.toString(),
+          x: d.month,
           y: Number(d.portfolioValue.toFixed(2))
         }))
       },
@@ -140,7 +143,7 @@ export const Dashboard = () => {
         id: "Monthly Investment",
         color: "#10B981",
         data: data.map(d => ({
-          x: d.month.toString(),
+          x: d.month,
           y: Number(d.investment.toFixed(2))
         }))
       },
@@ -148,7 +151,7 @@ export const Dashboard = () => {
         id: "Cumulative Profit",
         color: "#F59E0B",
         data: data.map(d => ({
-          x: d.month.toString(),
+          x: d.month,
           y: Number(d.profit.toFixed(2))
         }))
       }
@@ -231,7 +234,8 @@ export const Dashboard = () => {
                   tickRotation: -45,
                   legend: 'Timeline',
                   legendOffset: 40,
-                  legendPosition: 'middle'
+                  legendPosition: 'middle',
+                  format: (value) => `Month ${value}`
                 }}
                 axisLeft={{
                   tickSize: 5,
@@ -240,7 +244,7 @@ export const Dashboard = () => {
                   legend: 'Amount (ILS)',
                   legendOffset: -60,
                   legendPosition: 'middle',
-                  format: value => formatCurrency(value as number)
+                  format: value => formatCurrency(Number(value))
                 }}
                 enableGridX={false}
                 enableGridY={true}
