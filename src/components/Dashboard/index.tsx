@@ -137,7 +137,7 @@ export const Dashboard = () => {
         id: "Portfolio Value",
         color: "#4F46E5",
         data: data.map(d => ({
-          x: `Month ${d.month}`,
+          x: String(`Month ${d.month}`),
           y: Number(d.portfolioValue.toFixed(2))
         }))
       },
@@ -145,7 +145,7 @@ export const Dashboard = () => {
         id: "Monthly Investment",
         color: "#10B981",
         data: data.map(d => ({
-          x: `Month ${d.month}`,
+          x: String(`Month ${d.month}`),
           y: Number(d.investment.toFixed(2))
         }))
       },
@@ -153,7 +153,7 @@ export const Dashboard = () => {
         id: "Cumulative Profit",
         color: "#F59E0B",
         data: data.map(d => ({
-          x: `Month ${d.month}`,
+          x: String(`Month ${d.month}`),
           y: Number(d.profit.toFixed(2))
         }))
       }
@@ -228,7 +228,7 @@ export const Dashboard = () => {
                   legend: 'Timeline',
                   legendOffset: 40,
                   legendPosition: 'middle',
-                  format: (value) => `${value}`
+                  format: (value) => String(value)
                 }}
                 axisLeft={{
                   tickSize: 5,
@@ -237,13 +237,17 @@ export const Dashboard = () => {
                   legend: 'Amount (ILS)',
                   legendOffset: -60,
                   legendPosition: 'middle',
-                  format: (value) => 
-                    new Intl.NumberFormat('he-IL', {
-                      style: 'currency',
-                      currency: 'ILS',
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0
-                    }).format(typeof value === 'number' ? value : 0)
+                  format: (value) => {
+                    if (typeof value === 'number') {
+                      return new Intl.NumberFormat('he-IL', {
+                        style: 'currency',
+                        currency: 'ILS',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                      }).format(value);
+                    }
+                    return '';
+                  }
                 }}
                 enableGridX={false}
                 enableGridY={true}
