@@ -715,9 +715,7 @@ export const Dashboard = () => {
                     {selectedClient.monthlyData.map((data, index) => (
                       <TableRow key={index}>
                         <TableCell>Month {data.month}</TableCell>
-                        <TableCell>{formatCurrency(data.expenses)}</Table
-
-Cell>
+                        <TableCell>{formatCurrency(data.expenses)}</TableCell>
                         <TableCell>{formatCurrency(data.investment)}</TableCell>
                         <TableCell>{formatCurrency(data.portfolioValue)}</TableCell>
                         <TableCell className={data.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
