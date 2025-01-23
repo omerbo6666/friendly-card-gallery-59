@@ -6,13 +6,14 @@ export interface MonthlyData {
   profit: number;
 }
 
-export type RiskProfile = 'Conservative' | 'Moderate' | 'Aggressive';
+export type InvestmentTrack = 'VTSAX' | 'VTI' | 'SWTSX' | 'IWV' | 'WFIVX';
 
 export interface Client {
   id: number;
   name: string;
   profession: string;
-  riskProfile: RiskProfile;
+  customProfession?: string;
+  investmentTrack: InvestmentTrack;
   monthlyData: MonthlyData[];
   monthlyExpenses: number;
   investmentPercentage: string;

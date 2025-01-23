@@ -6,10 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
-import { PROFESSIONS, RISK_PROFILES } from '@/lib/constants';
-import { Client, RiskProfile } from '@/types/investment';
+import { PROFESSIONS, INVESTMENT_TRACKS } from '@/lib/constants';
+import { Client, InvestmentTrack } from '@/types/investment';
 import { generateMonthlyData } from '@/lib/utils';
 import { addClient } from '@/lib/localStorage';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { InfoIcon } from 'lucide-react';
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -18,10 +24,11 @@ const AddClient = () => {
   const [formData, setFormData] = useState({
     name: '',
     profession: '',
+    customProfession: '',
     monthlyIncome: '',
     monthlyExpenses: '',
     investmentPercentage: 10,
-    riskProfile: 'Moderate' as RiskProfile
+    investmentTrack: 'VTSAX' as InvestmentTrack
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,10 +47,11 @@ const AddClient = () => {
     const newClient: Client = {
       id: Date.now(),
       name: formData.name,
-      profession: formData.profession,
+      profession: formData.profession === 'Other' ? 'Other' : formData.profession,
+      customProfession: formData.profession === 'Other' ? formData.customProfession : undefined,
       monthlyExpenses: Number(formData.monthlyExpenses),
       investmentPercentage: formData.investmentPercentage.toString(),
-      riskProfile: formData.riskProfile,
+      investmentTrack: formData.investmentTrack,
       monthlyData: generateMonthlyData(formData.investmentPercentage)
     };
 
@@ -58,6 +66,8 @@ const AddClient = () => {
     // Navigate to the dashboard
     navigate('/');
   };
+
+  const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === formData.investmentTrack);
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -97,6 +107,18 @@ const AddClient = () => {
                 ))}
               </SelectContent>
             </Select>
+            
+            {formData.profession === 'Other' && (
+              <div className="mt-2">
+                <Label htmlFor="customProfession">Specify Profession</Label>
+                <Input
+                  id="customProfession"
+                  value={formData.customProfession}
+                  onChange={(e) => setFormData(prev => ({ ...prev, customProfession: e.target.value }))}
+                  placeholder="Enter your profession"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -133,18 +155,38 @@ const AddClient = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="riskProfile">Risk Profile</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="investmentTrack">Investment Track</Label>
+              <HoverCard>
+                <HoverCardTrigger>
+                  <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">{selectedTrack?.name}</h4>
+                    <p className="text-sm">{selectedTrack?.description}</p>
+                    <div className="text-sm">
+                      <p><strong>Benchmark:</strong> {selectedTrack?.benchmark}</p>
+                      <p><strong>Type:</strong> {selectedTrack?.type}</p>
+                      <p><strong>Expense Ratio:</strong> {selectedTrack?.expenseRatio}</p>
+                      <p><strong>Top Holdings:</strong> {selectedTrack?.topHoldings}</p>
+                      <p><strong>Sectors:</strong> {selectedTrack?.sectors}</p>
+                    </div>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            </div>
             <Select
-              value={formData.riskProfile}
-              onValueChange={(value: RiskProfile) => setFormData(prev => ({ ...prev, riskProfile: value }))}
+              value={formData.investmentTrack}
+              onValueChange={(value: InvestmentTrack) => setFormData(prev => ({ ...prev, investmentTrack: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select risk profile" />
+                <SelectValue placeholder="Select investment track" />
               </SelectTrigger>
               <SelectContent>
-                {RISK_PROFILES.map((profile) => (
-                  <SelectItem key={profile} value={profile}>
-                    {profile}
+                {INVESTMENT_TRACKS.map((track) => (
+                  <SelectItem key={track.id} value={track.id}>
+                    {track.name}
                   </SelectItem>
                 ))}
               </SelectContent>
