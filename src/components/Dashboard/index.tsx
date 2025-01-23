@@ -4,6 +4,14 @@ import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
@@ -412,6 +420,7 @@ export const Dashboard = () => {
                 ×
               </button>
             </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div>
                 <h3 className="font-semibold mb-4">Investment Profile</h3>
@@ -528,6 +537,37 @@ export const Dashboard = () => {
                     />
                   </ResponsiveContainer>
                 </div>
+              </div>
+            </div>
+
+            {/* Monthly Data Table */}
+            <div className="mt-8">
+              <h3 className="font-semibold mb-4">Monthly Details</h3>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Month</TableHead>
+                      <TableHead>Monthly Expenses</TableHead>
+                      <TableHead>Investment Amount</TableHead>
+                      <TableHead>Portfolio Value</TableHead>
+                      <TableHead>Profit/Loss</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedClient.monthlyData.map((data, index) => (
+                      <TableRow key={index}>
+                        <TableCell>Month {data.month}</TableCell>
+                        <TableCell>{formatCurrency(data.expenses)}</TableCell>
+                        <TableCell>{formatCurrency(data.investment)}</TableCell>
+                        <TableCell>{formatCurrency(data.portfolioValue)}</TableCell>
+                        <TableCell className={data.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          {formatCurrency(data.profit)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </div>
           </div>
