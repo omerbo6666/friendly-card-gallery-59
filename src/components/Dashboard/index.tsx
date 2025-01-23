@@ -536,7 +536,7 @@ export const Dashboard = () => {
             const metrics = calculateMetrics(client);
             const isSelected = selectedClient?.id === client.id;
             const isComparison = comparisonClient?.id === client.id;
-            const track = INVESTMENT_TRACKS.find(track => track.id === client.investmentTrack);
+            const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === client.investmentTrack);
 
             return (
               <div
@@ -562,35 +562,35 @@ export const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${
-                    track?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    track?.type === 'ETF' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                    selectedTrack?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                    selectedTrack?.type === 'ETF' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                     'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                   }`}>
-                    {track?.name}
+                    {selectedTrack?.name}
                   </span>
                 </div>
 
                 <div className="space-y-4">
                   <div className="border-b border-border pb-4">
-                    <h4 className="font-medium mb-3">Investment Profile</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
+                    <h4 className="font-medium mb-4">Investment Profile</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Investment Track:</span>
-                        <span className="text-sm font-medium">{track?.name}</span>
+                        <span className="text-sm font-medium">{selectedTrack?.name}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Portfolio Value:</span>
                         <span className="text-sm font-medium">{formatCurrency(metrics.portfolioValue)}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Total Expenses:</span>
                         <span className="text-sm font-medium">{formatCurrency(client.monthlyExpenses * 12)}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Total Investment:</span>
                         <span className="text-sm font-medium">{formatCurrency(metrics.totalInvestment)}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Total Profit:</span>
                         <span className={`text-sm font-medium ${
                           metrics.totalProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
@@ -598,7 +598,7 @@ export const Dashboard = () => {
                           {formatCurrency(metrics.totalProfit)}
                         </span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Latest Monthly Investment:</span>
                         <span className="text-sm font-medium">{formatCurrency(metrics.latestMonthlyInvestment)}</span>
                       </div>
@@ -638,6 +638,7 @@ export const Dashboard = () => {
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
                   <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
+                
                   <p>Total Profit: {formatCurrency(calculateMetrics(selectedClient).totalProfit)}</p>
                 </div>
               </div>

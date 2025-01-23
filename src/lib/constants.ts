@@ -18,54 +18,84 @@ export const PROFESSIONS = [
 
 export const INVESTMENT_TRACKS = [
   {
-    id: 'VTSAX',
-    name: 'Comprehensive U.S. Market Mutual Fund (VTSAX)',
-    description: 'Vanguard Total Stock Market Index Admiral Shares',
-    benchmark: 'CRSP U.S. Total Market Index',
-    type: 'Mutual Fund',
+    id: 'SPY500',
+    name: 'S&P 500 Index Fund',
+    description: 'Tracks the performance of 500 large companies listed on U.S. stock exchanges',
+    benchmark: 'S&P 500 Index',
+    type: 'ETF',
+    expenseRatio: 'Very Low',
+    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
+    sectors: 'Technology, Healthcare, Financial Services, Consumer Discretionary'
+  },
+  {
+    id: 'NASDAQ100',
+    name: 'NASDAQ 100 Index Fund',
+    description: 'Tracks 100 of the largest non-financial companies listed on the NASDAQ',
+    benchmark: 'NASDAQ 100 Index',
+    type: 'ETF',
+    expenseRatio: 'Very Low',
+    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Meta',
+    sectors: 'Technology, Consumer Services, Healthcare'
+  },
+  {
+    id: 'RUSSELL2000',
+    name: 'Russell 2000 Small Cap Index',
+    description: 'Tracks 2000 small-cap company stocks',
+    benchmark: 'Russell 2000 Index',
+    type: 'ETF',
     expenseRatio: 'Low',
-    topHoldings: 'Apple (6.14%), Microsoft (5.71%), NVIDIA (5.14%), Alphabet (3.22%), Amazon (3.08%)',
-    sectors: 'Broad market exposure across all sectors'
+    topHoldings: 'Diverse small-cap companies',
+    sectors: 'Financial Services, Healthcare, Technology, Real Estate'
+  },
+  {
+    id: 'VTSAX',
+    name: 'Vanguard Total Stock Market Index',
+    description: 'Comprehensive U.S. stock market exposure',
+    benchmark: 'CRSP US Total Market Index',
+    type: 'Mutual Fund',
+    expenseRatio: 'Very Low',
+    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
+    sectors: 'All U.S. market sectors'
   },
   {
     id: 'VTI',
-    name: 'Accessible U.S. Market ETF (VTI)',
-    description: 'Vanguard Total Stock Market ETF',
-    benchmark: 'CRSP U.S. Total Market Index',
+    name: 'Vanguard Total Stock Market ETF',
+    description: 'ETF version of VTSAX',
+    benchmark: 'CRSP US Total Market Index',
     type: 'ETF',
-    expenseRatio: 'Low',
-    topHoldings: 'Similar to VTSAX',
-    sectors: 'Broad market exposure across all sectors'
+    expenseRatio: 'Very Low',
+    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
+    sectors: 'All U.S. market sectors'
   },
   {
     id: 'SWTSX',
-    name: 'Low-Cost Schwab Broad Market Fund (SWTSX)',
-    description: 'Schwab Total Stock Market Index',
+    name: 'Schwab Total Stock Market Index',
+    description: 'Broad U.S. market exposure at a low cost',
     benchmark: 'Dow Jones U.S. Total Stock Market Index',
     type: 'Mutual Fund',
-    expenseRatio: 'Low',
-    topHoldings: 'Apple (6.3%), Microsoft (5.68%), NVIDIA (5.31%), Amazon (3.09%), Alphabet (3.16%)',
-    sectors: 'Technology (31.25%), Financial Services (12.91%), Healthcare (11.73%), Consumer Discretionary (10.41%), Industrials (8.71%)'
+    expenseRatio: 'Very Low',
+    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
+    sectors: 'All U.S. market sectors'
   },
   {
     id: 'IWV',
-    name: 'Russell 3000 Broad Market ETF (IWV)',
-    description: 'iShares Russell 3000 ETF',
+    name: 'iShares Russell 3000 ETF',
+    description: 'Tracks 3000 largest U.S. stocks',
     benchmark: 'Russell 3000 Index',
     type: 'ETF',
     expenseRatio: 'Low',
-    topHoldings: 'Apple (6.05%), Microsoft (5.55%), NVIDIA (5.48%), Alphabet (3.19%), Amazon (3.10%)',
-    sectors: 'Similar to VTSAX and SWTSX'
+    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
+    sectors: 'All U.S. market sectors'
   },
   {
     id: 'WFIVX',
-    name: 'Wilshire 5000 Comprehensive Market Fund (WFIVX)',
-    description: 'FT Wilshire 5000 Index Portfolio Investment Fund',
-    benchmark: 'Wilshire 5000 Index',
+    name: 'Wilshire 5000 Index Fund',
+    description: 'Tracks the entire U.S. stock market',
+    benchmark: 'Wilshire 5000 Total Market Index',
     type: 'Mutual Fund',
-    expenseRatio: 'Moderate',
-    topHoldings: 'Broad range of U.S.-traded stocks',
-    sectors: 'Comprehensive exposure to all actively traded U.S.-headquartered stocks'
+    expenseRatio: 'Low',
+    topHoldings: 'Comprehensive U.S. market holdings',
+    sectors: 'All U.S. market sectors'
   }
 ] as const;
 
