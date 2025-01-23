@@ -590,7 +590,11 @@ export const Dashboard = () => {
               <div>
                 <h3 className="font-semibold mb-4">Investment Profile</h3>
                 <div className="space-y-2">
-                  <p>Investment Track: {selectedClient.investmentTrack}</p>
+                  <p>Investment Track: <span className={`px-2 py-1 rounded-full text-sm ${
+                    selectedClient.investmentTrack === 'Long Term Bonds' ? 'bg-blue-100 text-blue-800' :
+                    selectedClient.investmentTrack === 'Mixed Portfolio' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>{selectedClient.investmentTrack}</span></p>
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
                   <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
@@ -667,78 +671,4 @@ export const Dashboard = () => {
                               on: 'hover',
                               style: {
                                 itemBackground: 'rgba(0, 0, 0, .03)',
-                                itemOpacity: 1
-                              }
-                            }
-                          ]
-                        }
-                      ]}
-                      theme={{
-                        axis: {
-                          ticks: {
-                            text: {
-                              fontSize: isMobile ? 10 : 12
-                            }
-                          }
-                        },
-                        legends: {
-                          text: {
-                            fontSize: isMobile ? 10 : 12
-                          }
-                        }
-                      }}
-                      tooltip={({ point }) => (
-                        <div className="bg-card p-2 shadow rounded border border-border">
-                          <strong>{point.serieId}</strong>: {
-                            new Intl.NumberFormat('he-IL', {
-                              style: 'currency',
-                              currency: 'ILS',
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0
-                            }).format(Number(point.data.y))
-                          }
-                        </div>
-                      )}
-                    />
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <h3 className="font-semibold mb-4">Monthly Details</h3>
-              <div className="rounded-md border border-border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Month</TableHead>
-                      <TableHead>Monthly Expenses</TableHead>
-                      <TableHead>Investment Amount</TableHead>
-                      <TableHead>Portfolio Value</TableHead>
-                      <TableHead>Profit/Loss</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedClient.monthlyData.map((data, index) => (
-                      <TableRow key={index}>
-                        <TableCell>Month {data.month}</TableCell>
-                        <TableCell>{formatCurrency(data.expenses)}</TableCell>
-                        <TableCell>{formatCurrency(data.investment)}</TableCell>
-                        <TableCell>{formatCurrency(data.portfolioValue)}</TableCell>
-                        <TableCell className={data.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(data.profit)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Dashboard;
+                                itemOp
