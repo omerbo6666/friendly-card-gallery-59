@@ -219,43 +219,39 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div className="flex flex-col md:flex-row justify-between items-start mb-12">
+    <div className="min-h-screen bg-background text-foreground p-2 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start mb-8 md:mb-12">
         <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4 mb-4 md:mb-0">
-          <div className="w-full sm:w-auto relative group">
+          <div className="w-full sm:w-auto">
             <Button 
               size="lg"
-              className="w-full h-auto bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold px-6 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden"
+              className="w-full h-auto bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => navigate('/add-client')}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent animate-pulse"></div>
-              <div className="flex flex-col items-center gap-2 relative z-10 py-2">
-                <span className="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-base md:text-lg font-bold tracking-tight">
                   Add New Client
                 </span>
-                <span className="text-sm font-normal text-white/90 whitespace-normal text-center">
+                <span className="text-xs md:text-sm font-normal text-white/90">
                   Start managing a new portfolio
                 </span>
-                <ArrowUpRight className="w-5 h-5 mt-1 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </div>
             </Button>
           </div>
           
-          <div className="w-full sm:w-auto relative group">
+          <div className="w-full sm:w-auto">
             <Button 
               size="lg"
-              className="w-full h-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold px-6 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden"
+              className="w-full h-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => navigate('/simulator')}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent animate-pulse"></div>
-              <div className="flex flex-col items-center gap-2 relative z-10 py-2">
-                <span className="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-base md:text-lg font-bold tracking-tight">
                   Investment Simulator
                 </span>
-                <span className="text-sm font-normal text-white/90 whitespace-normal text-center">
+                <span className="text-xs md:text-sm font-normal text-white/90">
                   See how your money could grow
                 </span>
-                <ArrowUpRight className="w-5 h-5 mt-1 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </div>
             </Button>
           </div>
@@ -263,7 +259,7 @@ export const Dashboard = () => {
         <ThemeToggle />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <h3 className="text-sm text-muted-foreground">Total Portfolio Value</h3>
@@ -310,7 +306,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-card text-card-foreground rounded-xl p-4 mb-8 border border-border">
+      <div className="bg-card text-card-foreground rounded-xl p-3 md:p-4 mb-6 md:mb-8 border border-border">
         <h3 className="text-sm font-medium mb-4">Chart Controls</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -356,9 +352,9 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border">
-          <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+        <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
+          <h2 className="text-base md:text-lg font-semibold mb-4">Portfolio Performance</h2>
           <div className="h-[400px] md:h-[500px] w-full">
             {clients.length > 0 && (
               <ResponsiveLine
@@ -366,7 +362,7 @@ export const Dashboard = () => {
                   ...formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData),
                   ...(comparisonClient ? formatChartData(comparisonClient.monthlyData) : [])
                 ]}
-                margin={{ top: 30, right: 80, bottom: 70, left: 80 }}
+                margin={{ top: 30, right: 40, bottom: 70, left: 60 }}
                 xScale={{
                   type: 'point'
                 }}
@@ -394,7 +390,7 @@ export const Dashboard = () => {
                   tickPadding: 5,
                   tickRotation: 0,
                   legend: 'Amount (ILS)',
-                  legendOffset: -60,
+                  legendOffset: -45,
                   legendPosition: 'middle',
                   format: (value) => {
                     if (value === null || value === undefined) return '';
@@ -411,7 +407,8 @@ export const Dashboard = () => {
                 }}
                 enableGridX={false}
                 enableGridY={true}
-                pointSize={isMobile ? 4 : 8}
+                lineWidth={3}
+                pointSize={isMobile ? 4 : 6}
                 pointColor={{ theme: 'background' }}
                 pointBorderWidth={2}
                 pointBorderColor={{ from: 'serieColor' }}
@@ -431,7 +428,7 @@ export const Dashboard = () => {
                     translateY: 60,
                     itemsSpacing: 10,
                     itemDirection: 'left-to-right',
-                    itemWidth: isMobile ? 80 : 140,
+                    itemWidth: isMobile ? 80 : 120,
                     itemHeight: 20,
                     itemOpacity: 0.75,
                     symbolSize: 12,
@@ -495,7 +492,7 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border">
+        <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
           <h2 className="text-lg font-semibold mb-4">Client Distribution</h2>
           <div className="h-[300px] md:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -531,30 +528,31 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-6 md:mt-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <h2 className="text-lg font-semibold">Client Overview</h2>
+          <h2 className="text-base md:text-lg font-semibold">Client Overview</h2>
           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
             <div className="relative flex-grow md:flex-grow-0">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search clients..."
-                className="w-full md:w-auto pl-10 pr-4 py-2 rounded-lg border"
+                className="w-full md:w-[200px] pl-10 pr-4 py-2 rounded-lg border border-input bg-background"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button
+            <Button
               onClick={() => setShowAllClients(!showAllClients)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg w-full md:w-auto"
+              className="w-full md:w-auto"
+              variant="outline"
             >
               {showAllClients ? 'Show Less' : 'Show All Clients'}
-            </button>
+            </Button>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {filteredClients.slice(0, showAllClients ? undefined : 6).map(client => {
             const metrics = calculateMetrics(client);
             const isSelected = selectedClient?.id === client.id;
@@ -661,7 +659,6 @@ export const Dashboard = () => {
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
                   <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
-                
                   <p>Total Profit: {formatCurrency(calculateMetrics(selectedClient).totalProfit)}</p>
                 </div>
               </div>
