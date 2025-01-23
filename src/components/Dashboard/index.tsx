@@ -4,6 +4,7 @@ import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Table,
   TableBody,
@@ -190,15 +191,18 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
+      <div className="flex justify-end mb-4">
+        <ThemeToggle />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow">
+        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm text-gray-500">Total Portfolio Value</h3>
+            <h3 className="text-sm text-muted-foreground">Total Portfolio Value</h3>
             <TooltipProvider>
               <UITooltip>
                 <TooltipTrigger>
-                  <HelpCircle className="w-4 h-4 text-gray-400" />
+                  <HelpCircle className="w-4 h-4 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>The total value of all client portfolios combined</p>
@@ -212,24 +216,24 @@ export const Dashboard = () => {
             <span>{formatPercentage(8.5)}</span>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Investment</h3>
+        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border">
+          <h3 className="text-sm text-muted-foreground">Total Investment</h3>
           <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalInvestment)}</div>
           <div className="flex items-center text-green-500">
             <ArrowUpRight className="w-4 h-4" />
             <span>{formatPercentage(12.3)}</span>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Profit</h3>
+        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border">
+          <h3 className="text-sm text-muted-foreground">Total Profit</h3>
           <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalProfit)}</div>
           <div className="flex items-center text-green-500">
             <ArrowUpRight className="w-4 h-4" />
             <span>{formatPercentage(15.7)}</span>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Clients</h3>
+        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border">
+          <h3 className="text-sm text-muted-foreground">Total Clients</h3>
           <div className="text-xl md:text-2xl font-bold">{aggregateMetrics.totalClients}</div>
           <div className="flex items-center text-green-500">
             <ArrowUpRight className="w-4 h-4" />
@@ -238,7 +242,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl p-4 mb-8">
+      <div className="bg-card text-card-foreground rounded-xl p-4 mb-8 border">
         <h3 className="text-sm font-medium mb-4">Chart Controls</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -285,7 +289,7 @@ export const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-xl p-4 md:p-6 shadow">
+        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border">
           <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
           <div className="h-[300px] md:h-[400px]">
             {clients.length > 0 && (
@@ -447,7 +451,7 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 md:p-6 shadow">
+        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border">
           <h2 className="text-lg font-semibold mb-4">Client Distribution</h2>
           <div className="h-[300px] md:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -515,7 +519,7 @@ export const Dashboard = () => {
             return (
               <div
                 key={client.id}
-                className={`bg-white p-4 md:p-6 rounded-xl shadow cursor-pointer hover:shadow-md transition-shadow ${
+                className={`bg-card text-card-foreground p-4 md:p-6 rounded-xl shadow-sm border cursor-pointer hover:shadow-md transition-shadow ${
                   isSelected ? 'ring-2 ring-blue-500' : ''
                 } ${isComparison ? 'ring-2 ring-green-500' : ''}`}
                 onClick={() => {
@@ -533,7 +537,7 @@ export const Dashboard = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-semibold">{client.name}</h3>
-                    <p className="text-sm text-gray-500">{client.profession}</p>
+                    <p className="text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${
                     client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
@@ -545,15 +549,15 @@ export const Dashboard = () => {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Monthly Investment:</span>
+                    <span className="text-sm text-muted-foreground">Monthly Investment:</span>
                     <span>{formatCurrency(metrics.latestMonthlyInvestment)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Portfolio Value:</span>
+                    <span className="text-sm text-muted-foreground">Portfolio Value:</span>
                     <span>{formatCurrency(metrics.portfolioValue)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Total Profit:</span>
+                    <span className="text-sm text-muted-foreground">Total Profit:</span>
                     <span>{formatCurrency(metrics.totalProfit)}</span>
                   </div>
                 </div>
@@ -564,16 +568,16 @@ export const Dashboard = () => {
       </div>
 
       {selectedClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-4 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-card text-card-foreground rounded-xl p-4 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl md:text-2xl font-bold">{selectedClient.name}</h2>
-                <p className="text-gray-500">{selectedClient.profession}</p>
+                <p className="text-muted-foreground">{selectedClient.profession}</p>
               </div>
               <button 
                 onClick={() => setSelectedClient(null)}
-                className="text-gray-500 text-xl p-2"
+                className="text-muted-foreground text-xl p-2"
               >
                 ×
               </button>
@@ -681,7 +685,7 @@ export const Dashboard = () => {
                         }
                       }}
                       tooltip={({ point }) => (
-                        <div className="bg-white p-2 shadow rounded border">
+                        <div className="bg-card p-2 shadow rounded border">
                           <strong>{point.serieId}</strong>: {
                             new Intl.NumberFormat('he-IL', {
                               style: 'currency',
@@ -704,6 +708,7 @@ export const Dashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      
                       <TableHead>Month</TableHead>
                       <TableHead>Monthly Expenses</TableHead>
                       <TableHead>Investment Amount</TableHead>
