@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import AddClient from "./components/AddClient";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/add-client" element={<AddClient />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
