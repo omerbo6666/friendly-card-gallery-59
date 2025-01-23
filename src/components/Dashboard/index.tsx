@@ -244,7 +244,7 @@ export const Dashboard = () => {
                   legend: 'Amount (ILS)',
                   legendOffset: -60,
                   legendPosition: 'middle',
-                  format: value => formatCurrency(Number(value))
+                  format: (value) => formatCurrency(Number(value))
                 }}
                 enableGridX={false}
                 enableGridY={true}
