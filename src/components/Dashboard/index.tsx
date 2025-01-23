@@ -354,7 +354,7 @@ export const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
-          <h2 className="text-base md:text-lg font-semibold mb-4">Portfolio Performance</h2>
+          <h2 className="text-sm md:text-base font-semibold mb-2 md:mb-4">Portfolio Performance</h2>
           <div className="h-[400px] md:h-[500px] w-full">
             {clients.length > 0 && (
               <ResponsiveLine
