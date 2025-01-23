@@ -520,7 +520,7 @@ export const Dashboard = () => {
             const metrics = calculateMetrics(client);
             const isSelected = selectedClient?.id === client.id;
             const isComparison = comparisonClient?.id === client.id;
-            const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === client.investmentTrack);
+            const track = INVESTMENT_TRACKS.find(track => track.id === client.investmentTrack);
 
             return (
               <div
@@ -546,11 +546,11 @@ export const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${
-                    selectedTrack?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800' :
-                    selectedTrack?.type === 'ETF' ? 'bg-green-100 text-green-800' :
+                    track?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800' :
+                    track?.type === 'ETF' ? 'bg-green-100 text-green-800' :
                     'bg-purple-100 text-purple-800'
                   }`}>
-                    {selectedTrack?.name}
+                    {track?.name}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -593,7 +593,10 @@ export const Dashboard = () => {
               <div>
                 <h3 className="font-semibold mb-4">Investment Profile</h3>
                 <div className="space-y-2">
-                  <p>Investment Track: {selectedTrack?.name}</p>
+                  {(() => {
+                    const selectedTrack = INVESTMENT_TRACKS.find(t => t.id === selectedClient.investmentTrack);
+                    return <p>Investment Track: {selectedTrack?.name}</p>;
+                  })()}
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
                   <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
