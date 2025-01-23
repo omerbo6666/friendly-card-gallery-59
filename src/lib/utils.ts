@@ -40,13 +40,16 @@ export const generateMonthlyData = (investmentPercentageOverride?: number): Mont
   let cumulativeProfit = 0;
   let totalInvestment = 0;
   
+  // Using S&P 500 as default return rate (7.7%)
+  const annualReturn = 0.077;
+  const monthlyReturn = Math.pow(1 + annualReturn, 1/12) - 1;
+  
   for (let month = 0; month < NASDAQ_RETURNS.length; month++) {
     const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
     const investmentPercentage = investmentPercentageOverride || (Math.random() * 17 + 3);
     const investment = monthlyExpense * (investmentPercentage / 100);
     
     totalInvestment += investment;
-    const monthlyReturn = NASDAQ_RETURNS[month];
     portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
     cumulativeProfit = portfolioValue - totalInvestment;
     

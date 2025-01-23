@@ -6,16 +6,17 @@ export interface MonthlyData {
   profit: number;
 }
 
-export type RiskProfile = 'Conservative' | 'Moderate' | 'Aggressive';
+export type InvestmentTrack = 'Nasdaq 100' | 'S&P 500' | 'Tech Sector' | 'Long Term Bonds' | 'Mixed Portfolio';
 
 export interface Client {
   id: number;
   name: string;
   profession: string;
-  riskProfile: RiskProfile;
-  monthlyData: MonthlyData[];
+  customProfession?: string;
   monthlyExpenses: number;
   investmentPercentage: string;
+  monthlyData: MonthlyData[];
+  investmentTrack: InvestmentTrack;
 }
 
 export interface Metrics {

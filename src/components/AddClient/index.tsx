@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
-import { PROFESSIONS, RISK_PROFILES } from '@/lib/constants';
-import { Client, RiskProfile } from '@/types/investment';
+import { PROFESSIONS, INVESTMENT_TRACKS } from '@/lib/constants';
+import { Client, InvestmentTrack } from '@/types/investment';
 import { generateMonthlyData } from '@/lib/utils';
 import { addClient } from '@/lib/localStorage';
 
@@ -18,16 +18,16 @@ const AddClient = () => {
   const [formData, setFormData] = useState({
     name: '',
     profession: '',
+    customProfession: '',
     monthlyIncome: '',
     monthlyExpenses: '',
     investmentPercentage: 10,
-    riskProfile: 'Moderate' as RiskProfile
+    investmentTrack: INVESTMENT_TRACKS[0].name as InvestmentTrack
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!formData.name || !formData.profession || !formData.monthlyIncome || !formData.monthlyExpenses) {
       toast({
         title: "Error",
@@ -37,17 +37,26 @@ const AddClient = () => {
       return;
     }
 
+    if (formData.profession === 'Other' && !formData.customProfession) {
+      toast({
+        title: "Error",
+        description: "Please specify your profession",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const newClient: Client = {
       id: Date.now(),
       name: formData.name,
-      profession: formData.profession,
+      profession: formData.profession === 'Other' ? formData.customProfession : formData.profession,
+      customProfession: formData.profession === 'Other' ? formData.customProfession : undefined,
       monthlyExpenses: Number(formData.monthlyExpenses),
       investmentPercentage: formData.investmentPercentage.toString(),
-      riskProfile: formData.riskProfile,
+      investmentTrack: formData.investmentTrack,
       monthlyData: generateMonthlyData(formData.investmentPercentage)
     };
 
-    // Save to localStorage
     addClient(newClient);
     
     toast({
@@ -55,7 +64,6 @@ const AddClient = () => {
       description: "Client added successfully"
     });
 
-    // Navigate to the dashboard
     navigate('/');
   };
 
@@ -99,6 +107,18 @@ const AddClient = () => {
             </Select>
           </div>
 
+          {formData.profession === 'Other' && (
+            <div className="space-y-2">
+              <Label htmlFor="customProfession">Specify Profession</Label>
+              <Input
+                id="customProfession"
+                value={formData.customProfession}
+                onChange={(e) => setFormData(prev => ({ ...prev, customProfession: e.target.value }))}
+                placeholder="Enter your profession"
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="monthlyIncome">Monthly Income (ILS)</Label>
             <Input
@@ -133,18 +153,18 @@ const AddClient = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="riskProfile">Risk Profile</Label>
+            <Label htmlFor="investmentTrack">Investment Track</Label>
             <Select
-              value={formData.riskProfile}
-              onValueChange={(value: RiskProfile) => setFormData(prev => ({ ...prev, riskProfile: value }))}
+              value={formData.investmentTrack}
+              onValueChange={(value: InvestmentTrack) => setFormData(prev => ({ ...prev, investmentTrack: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select risk profile" />
+                <SelectValue placeholder="Select investment track" />
               </SelectTrigger>
               <SelectContent>
-                {RISK_PROFILES.map((profile) => (
-                  <SelectItem key={profile} value={profile}>
-                    {profile}
+                {INVESTMENT_TRACKS.map((track) => (
+                  <SelectItem key={track.name} value={track.name}>
+                    {track.description}
                   </SelectItem>
                 ))}
               </SelectContent>
