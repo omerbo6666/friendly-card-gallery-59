@@ -6,7 +6,7 @@ export interface MonthlyData {
   profit: number;
 }
 
-export type InvestmentTrack = 'VTSAX' | 'VTI' | 'SWTSX' | 'IWV' | 'WFIVX';
+export type InvestmentTrack = 'SPY500' | 'NASDAQ100' | 'RUSSELL2000' | 'VTSAX' | 'VTI' | 'SWTSX' | 'IWV' | 'WFIVX';
 
 export interface Client {
   id: number;
