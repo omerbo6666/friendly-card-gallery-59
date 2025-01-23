@@ -39,6 +39,24 @@ const NASDAQ_RETURNS = [
   0.0199
 ].reverse();
 
+const generateRandomName = () => {
+  const FIRST_NAMES = [
+    'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Mason',
+    'Isabella', 'William', 'Mia', 'James', 'Charlotte', 'Benjamin', 'Amelia',
+    'Lucas', 'Harper', 'Henry', 'Evelyn', 'Alexander'
+  ];
+
+  const LAST_NAMES = [
+    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller',
+    'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez',
+    'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'
+  ];
+
+  const firstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+  const lastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+  return `${firstName} ${lastName}`;
+};
+
 export const Dashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -92,7 +110,7 @@ export const Dashboard = () => {
       
       return {
         id: i + 1,
-        name: `Client ${i + 1}`,
+        name: generateRandomName(),
         profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
         riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)],
         monthlyData: generateMonthlyData(),
