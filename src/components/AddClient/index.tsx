@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
-import { PROFESSIONS, INVESTMENT_TRACKS } from '@/lib/constants';
-import { Client, InvestmentTrack } from '@/types/investment';
+import { PROFESSIONS, RISK_PROFILES } from '@/lib/constants';
+import { Client, RiskProfile } from '@/types/investment';
 import { generateMonthlyData } from '@/lib/utils';
 import { addClient } from '@/lib/localStorage';
 
@@ -18,16 +18,16 @@ const AddClient = () => {
   const [formData, setFormData] = useState({
     name: '',
     profession: '',
-    customProfession: '',
     monthlyIncome: '',
     monthlyExpenses: '',
     investmentPercentage: 10,
-    investmentTrack: INVESTMENT_TRACKS[0].name as InvestmentTrack
+    riskProfile: 'Moderate' as RiskProfile
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Basic validation
     if (!formData.name || !formData.profession || !formData.monthlyIncome || !formData.monthlyExpenses) {
       toast({
         title: "Error",
@@ -37,26 +37,17 @@ const AddClient = () => {
       return;
     }
 
-    if (formData.profession === 'Other' && !formData.customProfession) {
-      toast({
-        title: "Error",
-        description: "Please specify your profession",
-        variant: "destructive"
-      });
-      return;
-    }
-
     const newClient: Client = {
       id: Date.now(),
       name: formData.name,
-      profession: formData.profession === 'Other' ? formData.customProfession : formData.profession,
-      customProfession: formData.profession === 'Other' ? formData.customProfession : undefined,
+      profession: formData.profession,
       monthlyExpenses: Number(formData.monthlyExpenses),
       investmentPercentage: formData.investmentPercentage.toString(),
-      investmentTrack: formData.investmentTrack,
+      riskProfile: formData.riskProfile,
       monthlyData: generateMonthlyData(formData.investmentPercentage)
     };
 
+    // Save to localStorage
     addClient(newClient);
     
     toast({
@@ -64,6 +55,7 @@ const AddClient = () => {
       description: "Client added successfully"
     });
 
+    // Navigate to the dashboard
     navigate('/');
   };
 
@@ -107,18 +99,6 @@ const AddClient = () => {
             </Select>
           </div>
 
-          {formData.profession === 'Other' && (
-            <div className="space-y-2">
-              <Label htmlFor="customProfession">Specify Profession</Label>
-              <Input
-                id="customProfession"
-                value={formData.customProfession}
-                onChange={(e) => setFormData(prev => ({ ...prev, customProfession: e.target.value }))}
-                placeholder="Enter your profession"
-              />
-            </div>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="monthlyIncome">Monthly Income (ILS)</Label>
             <Input
@@ -153,18 +133,18 @@ const AddClient = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="investmentTrack">Investment Track</Label>
+            <Label htmlFor="riskProfile">Risk Profile</Label>
             <Select
-              value={formData.investmentTrack}
-              onValueChange={(value: InvestmentTrack) => setFormData(prev => ({ ...prev, investmentTrack: value }))}
+              value={formData.riskProfile}
+              onValueChange={(value: RiskProfile) => setFormData(prev => ({ ...prev, riskProfile: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select investment track" />
+                <SelectValue placeholder="Select risk profile" />
               </SelectTrigger>
               <SelectContent>
-                {INVESTMENT_TRACKS.map((track) => (
-                  <SelectItem key={track.name} value={track.name}>
-                    {track.name}
+                {RISK_PROFILES.map((profile) => (
+                  <SelectItem key={profile} value={profile}>
+                    {profile}
                   </SelectItem>
                 ))}
               </SelectContent>
