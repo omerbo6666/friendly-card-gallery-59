@@ -1,49 +1,51 @@
 import React from 'react';
-import { Client } from '@/types/investment';
-
-interface ClientMetrics {
-  monthlyInvestment: number;
-  portfolioValue: number;
-  totalProfit: number;
-}
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Client, ClientMetrics } from '@/types/investment';
 
 interface ClientCardProps {
   client: Client;
   metrics: ClientMetrics;
-  onClick: () => void;
+  onSelect: (client: Client) => void;
 }
 
-export const ClientCard = ({ client, metrics, onClick }: ClientCardProps) => (
-  <div
-    className="bg-white p-6 rounded-lg shadow hover:shadow-md cursor-pointer"
-    onClick={onClick}
-  >
-    <div className="grid grid-cols-4 gap-4">
-      <div>
-        <div className="font-semibold">{client.name}</div>
-        <div className="text-sm text-gray-500">{client.profession}</div>
+export const ClientCard = ({ client, metrics, onSelect }: ClientCardProps) => (
+  <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onSelect(client)}>
+    <CardHeader className="pb-2">
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="font-semibold text-lg">{client.name}</h3>
+          <p className="text-sm text-muted-foreground">{client.profession}</p>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-sm ${
+          client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
+          client.riskProfile === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-red-100 text-red-800'
+        }`}>
+          {client.riskProfile}
+        </span>
       </div>
-      <div>
-        <div className="text-sm text-gray-500">Monthly Investment</div>
-        <div className="font-medium">₪{metrics.monthlyInvestment.toLocaleString()}</div>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Monthly Investment</p>
+          <p className="font-medium">
+            {(client.monthlyExpenses * (parseFloat(client.investmentPercentage) / 100)).toLocaleString('en-IL', { 
+              style: 'currency', 
+              currency: 'ILS' 
+            })}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Portfolio Value</p>
+          <p className="font-medium">
+            {metrics.portfolioValue.toLocaleString('en-IL', { 
+              style: 'currency', 
+              currency: 'ILS' 
+            })}
+          </p>
+        </div>
       </div>
-      <div>
-        <div className="text-sm text-gray-500">Portfolio Value</div>
-        <div className="font-medium">₪{metrics.portfolioValue.toLocaleString()}</div>
-      </div>
-      <div>
-        <div className="text-sm text-gray-500">Total Profit</div>
-        <div className="font-medium">₪{metrics.totalProfit.toLocaleString()}</div>
-      </div>
-    </div>
-    <div className="mt-2">
-      <span className={`px-3 py-1 rounded-full text-sm ${
-        client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
-        client.riskProfile === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
-        'bg-red-100 text-red-800'
-      }`}>
-        {client.riskProfile}
-      </span>
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 );
