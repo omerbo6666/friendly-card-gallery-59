@@ -21,27 +21,27 @@ export const INVESTMENT_TRACKS = [
   {
     name: 'Nasdaq 100',
     return: 11.3,
-    description: 'Nasdaq 100 - 11.3% Annual return'
+    description: 'Nasdaq 100'
   },
   {
     name: 'S&P 500',
     return: 7.7,
-    description: 'S&P 500 - 7.7% Annual return'
+    description: 'S&P 500'
   },
   {
     name: 'Tech Sector',
     return: 14.0,
-    description: 'Top 10 stocks Tech sector - 14% Annual return'
+    description: 'Top 10 stocks Tech sector'
   },
   {
     name: 'Long Term Bonds',
     return: 3.0,
-    description: 'Long term bonds - 3% Annual return'
+    description: 'Long term bonds'
   },
   {
     name: 'Mixed Portfolio',
     return: 5.0,
-    description: 'Short term bond + S&P 500 - 5% Annual return'
+    description: 'Short term bond + S&P 500'
   }
 ] as const;
 

@@ -73,67 +73,6 @@ export const Dashboard = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
-  const chartTheme = {
-    background: "transparent",
-    axis: {
-      domain: {
-        line: {
-          stroke: "hsl(var(--border))",
-          strokeWidth: 1
-        }
-      },
-      ticks: {
-        text: {
-          fill: "hsl(var(--muted-foreground))",
-          fontSize: 12
-        }
-      },
-      legend: {
-        text: {
-          fill: "hsl(var(--muted-foreground))",
-          fontSize: 12
-        }
-      }
-    },
-    grid: {
-      line: {
-        stroke: "hsl(var(--border))",
-        strokeWidth: 1,
-        strokeDasharray: "4 4"
-      }
-    },
-    crosshair: {
-      line: {
-        stroke: "hsl(var(--muted-foreground))",
-        strokeWidth: 1,
-        strokeOpacity: 0.35
-      }
-    },
-    tooltip: {
-      container: {
-        background: "hsl(var(--background))",
-        color: "hsl(var(--foreground))",
-        fontSize: 12,
-        borderRadius: "6px",
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        padding: "8px 12px",
-        border: "1px solid hsl(var(--border))"
-      }
-    },
-    legends: {
-      text: {
-        fill: "hsl(var(--muted-foreground))",
-        fontSize: 12
-      }
-    }
-  };
-
-  const CHART_COLORS = {
-    portfolioValue: "#8B5CF6", // Vivid Purple
-    investment: "#0EA5E9",    // Ocean Blue
-    profit: "#F97316"         // Bright Orange
-  };
-
   useEffect(() => {
     const storedClients = getClients();
     if (storedClients.length === 0) {
@@ -408,7 +347,8 @@ export const Dashboard = () => {
                   tickRotation: -45,
                   legend: 'Timeline',
                   legendOffset: 40,
-                  legendPosition: 'middle'
+                  legendPosition: 'middle',
+                  format: (value) => value?.toString() || ''
                 }}
                 axisLeft={{
                   tickSize: 5,
@@ -417,7 +357,18 @@ export const Dashboard = () => {
                   legend: 'Amount (ILS)',
                   legendOffset: -60,
                   legendPosition: 'middle',
-                  format: value => formatCurrency(Number(value))
+                  format: (value) => {
+                    if (value === null || value === undefined) return '';
+                    if (typeof value === 'number') {
+                      return new Intl.NumberFormat('he-IL', {
+                        style: 'currency',
+                        currency: 'ILS',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                      }).format(value);
+                    }
+                    return value.toString();
+                  }
                 }}
                 enableGridX={false}
                 enableGridY={true}
@@ -432,8 +383,6 @@ export const Dashboard = () => {
                 enableSlices="x"
                 crosshairType="cross"
                 motionConfig="gentle"
-                theme={chartTheme}
-                colors={[CHART_COLORS.portfolioValue, CHART_COLORS.investment, CHART_COLORS.profit]}
                 legends={[
                   {
                     anchor: 'right',
@@ -460,6 +409,46 @@ export const Dashboard = () => {
                     ]
                   }
                 ]}
+                theme={{
+                  axis: {
+                    ticks: {
+                      text: {
+                        fontSize: isMobile ? 10 : 12,
+                        fill: 'hsl(var(--muted-foreground))'
+                      }
+                    },
+                    legend: {
+                      text: {
+                        fontSize: 12,
+                        fill: 'hsl(var(--muted-foreground))'
+                      }
+                    }
+                  },
+                  grid: {
+                    line: {
+                      stroke: 'hsl(var(--border))',
+                      strokeWidth: 1
+                    }
+                  },
+                  crosshair: {
+                    line: {
+                      stroke: 'hsl(var(--muted-foreground))',
+                      strokeWidth: 1,
+                      strokeOpacity: 0.35
+                    }
+                  },
+                  tooltip: {
+                    container: {
+                      background: 'hsl(var(--background))',
+                      color: 'hsl(var(--foreground))',
+                      fontSize: 12,
+                      borderRadius: '6px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      padding: '8px 12px',
+                      border: '1px solid hsl(var(--border))'
+                    }
+                  }
+                }}
               />
             )}
           </div>
