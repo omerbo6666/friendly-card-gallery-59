@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, Users, Wallet, TrendingUp, DollarSign } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
@@ -129,7 +129,7 @@ export const Dashboard = () => {
         color: "#4F46E5",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Math.round(d.portfolioValue)
+          y: Number(d.portfolioValue)
         }))
       },
       {
@@ -137,7 +137,7 @@ export const Dashboard = () => {
         color: "#10B981",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Math.round(d.investment)
+          y: Number(d.investment)
         }))
       },
       {
@@ -145,7 +145,7 @@ export const Dashboard = () => {
         color: "#F59E0B",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Math.round(d.profit)
+          y: Number(d.profit)
         }))
       }
     ];
@@ -226,7 +226,7 @@ export const Dashboard = () => {
                 legend: 'Value (ILS)',
                 legendOffset: -50,
                 legendPosition: 'middle',
-                format: value => 
+                format: (value: number) => 
                   new Intl.NumberFormat('he-IL', {
                     style: 'currency',
                     currency: 'ILS',
@@ -289,7 +289,7 @@ export const Dashboard = () => {
                       currency: 'ILS',
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0
-                    }).format(point.data.y)
+                    }).format(Number(point.data.y))
                   }
                 </div>
               )}
@@ -456,7 +456,7 @@ export const Dashboard = () => {
                         legend: 'Value (ILS)',
                         legendOffset: -50,
                         legendPosition: 'middle',
-                        format: value => 
+                        format: (value: number) => 
                           new Intl.NumberFormat('he-IL', {
                             style: 'currency',
                             currency: 'ILS',
@@ -519,7 +519,7 @@ export const Dashboard = () => {
                               currency: 'ILS',
                               minimumFractionDigits: 0,
                               maximumFractionDigits: 0
-                            }).format(point.data.y)
+                            }).format(Number(point.data.y))
                           }
                         </div>
                       )}
