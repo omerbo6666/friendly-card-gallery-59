@@ -3,6 +3,8 @@ export interface MonthlyData {
   expenses: number;
   investment: number;
   portfolioValue: number;
+  monthlyProfit: number;
+  totalInvestment: number;
   profit: number;
 }
 
@@ -14,20 +16,21 @@ export interface Client {
   profession: string;
   riskProfile: RiskProfile;
   monthlyData: MonthlyData[];
-  monthlyExpenses: number;
-  investmentPercentage: string;
+}
+
+export interface MarketData {
+  date: string;
+  change: number;
 }
 
 export interface ClientMetrics {
-  totalInvestment: number;
+  monthlyInvestment: number;
   portfolioValue: number;
   totalProfit: number;
-  latestMonthlyInvestment: number;
-  managementFee: number;
 }
 
 export interface AggregateMetrics {
-  totalValue: number;
+  totalPortfolioValue: number;
   totalInvestment: number;
   totalProfit: number;
   totalClients: number;

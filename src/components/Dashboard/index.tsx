@@ -1,133 +1,164 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Search, ArrowUpRight, Users, Wallet, TrendingUp, DollarSign } from 'lucide-react';
-import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
+import { Search } from 'lucide-react';
+import Papa from 'papaparse';
+import { Client, MonthlyData, MarketData, ClientMetrics, AggregateMetrics } from '@/types/investment';
+import { MetricCard } from './MetricCard';
+import { ClientCard } from './ClientCard';
 
-// Constants
-const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
-const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
-const RISK_PROFILES: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
+interface MarketDataState {
+  nasdaq: MarketData[];
+  sp500: MarketData[];
+}
+
+const COLORS: Record<string, string> = {
+  'Doctor': '#10B981',
+  'Software Engineer': '#4F46E5',
+  'Lawyer': '#F59E0B',
+  'Business Owner': '#EF4444',
+  'Teacher': '#8B5CF6'
+};
 
 export const Dashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllClients, setShowAllClients] = useState(false);
+  const [marketData, setMarketData] = useState<MarketDataState>({ nasdaq: [], sp500: [] });
 
   useEffect(() => {
-    generateClients();
+    loadMarketData();
   }, []);
 
-  const generateMonthlyData = (): MonthlyData[] => {
-    const data: MonthlyData[] = [];
-    let portfolioValue = 0;
-    const monthlyReturn = Math.pow(1 + 0.0711, 1/12) - 1;
-    
-    for (let month = 1; month <= 60; month++) {
-      const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
-      const investmentPercentage = (Math.random() * 17 + 3);
-      const investment = monthlyExpense * (investmentPercentage / 100);
-      portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
+  const loadMarketData = async () => {
+    try {
+      const nasdaqFile = await window.fs.readFile('NASDAQ Composite Historical Data.csv', { encoding: 'utf8' });
+      const spFile = await window.fs.readFile('SP 500 Historical Data.csv', { encoding: 'utf8' });
       
-      data.push({
-        month,
-        expenses: monthlyExpense,
-        investment,
-        portfolioValue,
-        profit: portfolioValue - (investment * month)
-      });
+      const parseMarketData = (csvData) => {
+        const parsed = Papa.parse(csvData, { header: true });
+        return parsed.data
+          .map(row => ({
+            date: row.Date,
+            change: parseFloat(row['Change %'].replace('%', '')) / 100
+          }))
+          .filter(row => !isNaN(row.change))
+          .reverse();
+      };
+
+      const nasdaq = parseMarketData(nasdaqFile);
+      const sp500 = parseMarketData(spFile);
+      setMarketData({ nasdaq, sp500 });
+      generateClients(sp500);
+    } catch (error) {
+      console.error('Error loading market data:', error);
     }
-    return data;
   };
 
-  const generateClients = () => {
-    const newClients: Client[] = Array.from({ length: 100 }, (_, i) => {
-      const monthlyExpenses = Math.floor(Math.random() * 16000) + 4000;
-      const investmentPercentage = ((Math.random() * 17 + 3).toFixed(2));
-      
-      return {
-        id: i + 1,
-        name: `Client ${i + 1}`,
-        profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
-        riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)],
-        monthlyData: generateMonthlyData(),
-        monthlyExpenses,
-        investmentPercentage
-      };
-    });
+  const generateClients = (marketReturns) => {
+    const generateMonthlyData = () => {
+      const data = [];
+      let portfolioValue = 0;
+      let cumulativeProfit = 0;
+      let totalInvestment = 0;
+
+      for (let month = 0; month < 60; month++) {
+        const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
+        const investmentPercentage = (Math.random() * 17 + 3);
+        const investment = monthlyExpense * (investmentPercentage / 100);
+        
+        const monthlyReturn = marketReturns[month]?.change || 0.006;
+        portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
+        totalInvestment += investment;
+        const monthlyProfit = portfolioValue - totalInvestment;
+        
+        data.push({
+          month: month + 1,
+          expenses: monthlyExpense,
+          investment,
+          portfolioValue,
+          monthlyProfit,
+          totalInvestment,
+          profit: monthlyProfit
+        });
+      }
+      return data;
+    };
+
+    const professions = ['Doctor', 'Software Engineer', 'Lawyer', 'Business Owner', 'Teacher'];
+    const riskProfiles = ['Conservative', 'Moderate', 'Aggressive'];
+    
+    const newClients = Array.from({ length: 100 }, (_, i) => ({
+      id: i + 1,
+      name: `Client ${i + 1}`,
+      profession: professions[Math.floor(Math.random() * professions.length)],
+      riskProfile: riskProfiles[Math.floor(Math.random() * riskProfiles.length)],
+      monthlyData: generateMonthlyData()
+    }));
 
     setClients(newClients);
   };
 
-  const calculateMetrics = (client: Client): ClientMetrics => {
+  const calculateClientMetrics = (client) => {
     const lastMonth = client.monthlyData[client.monthlyData.length - 1];
     return {
-      totalInvestment: client.monthlyData.reduce((sum, data) => sum + data.investment, 0),
+      monthlyInvestment: lastMonth.investment,
       portfolioValue: lastMonth.portfolioValue,
-      totalProfit: lastMonth.profit,
-      latestMonthlyInvestment: lastMonth.investment,
-      managementFee: client.monthlyData.reduce((sum, data) => sum + data.investment, 0) * 0.005
+      totalProfit: lastMonth.profit
     };
   };
 
-  const aggregateMetrics: AggregateMetrics = clients.reduce((acc, client) => {
-    const metrics = calculateMetrics(client);
+  const aggregateMetrics = clients.reduce((acc, client) => {
+    const metrics = calculateClientMetrics(client);
     return {
-      totalValue: acc.totalValue + metrics.portfolioValue,
-      totalInvestment: acc.totalInvestment + metrics.totalInvestment,
+      totalPortfolioValue: acc.totalPortfolioValue + metrics.portfolioValue,
+      totalInvestment: acc.totalInvestment + metrics.monthlyInvestment * 60,
       totalProfit: acc.totalProfit + metrics.totalProfit,
       totalClients: clients.length
     };
-  }, { totalValue: 0, totalInvestment: 0, totalProfit: 0, totalClients: 0 });
+  }, { totalPortfolioValue: 0, totalInvestment: 0, totalProfit: 0, totalClients: 0 });
 
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.profession.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const professionDistribution = Object.entries(
+    clients.reduce((acc: Record<string, number>, client) => {
+      acc[client.profession] = (acc[client.profession] || 0) + 1;
+      return acc;
+    }, {})
+  ).map(([name, value]) => ({
+    name,
+    value,
+    percentage: Math.round((value / clients.length) * 100)
+  }));
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      {/* Header with Metrics */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Portfolio Value</h3>
-          <div className="text-2xl font-bold">₪{aggregateMetrics.totalValue.toLocaleString()}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>8.5%</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Investment</h3>
-          <div className="text-2xl font-bold">₪{aggregateMetrics.totalInvestment.toLocaleString()}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>12.3%</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Profit</h3>
-          <div className="text-2xl font-bold">₪{aggregateMetrics.totalProfit.toLocaleString()}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>15.7%</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Clients</h3>
-          <div className="text-2xl font-bold">{aggregateMetrics.totalClients}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>5.2%</span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-white p-8">
+      {/* Header Metrics */}
+      <div className="grid grid-cols-4 gap-6 mb-8">
+        <MetricCard
+          title="Total Portfolio Value"
+          value={`₪${aggregateMetrics.totalPortfolioValue.toLocaleString()}`}
+          change="+8.5%"
+        />
+        <MetricCard
+          title="Total Investment"
+          value={`₪${aggregateMetrics.totalInvestment.toLocaleString()}`}
+          change="+12.3%"
+        />
+        <MetricCard
+          title="Total Profit"
+          value={`₪${aggregateMetrics.totalProfit.toLocaleString()}`}
+          change="+15.7%"
+        />
+        <MetricCard
+          title="Total Clients"
+          value={aggregateMetrics.totalClients}
+          change="+5.2%"
+        />
       </div>
 
-      {/* Main Content */}
       <div className="grid grid-cols-2 gap-8">
-        {/* Performance Chart */}
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
+        {/* Portfolio Performance Chart */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Portfolio Performance</h2>
           <ResponsiveContainer width="100%" height={400}>
             <LineChart 
               data={selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData}
@@ -136,42 +167,34 @@ export const Dashboard = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip 
-                formatter={(value) => `₪${value.toLocaleString()}`}
-                labelFormatter={(label) => `Month ${label}`}
-              />
+              <Tooltip formatter={(value) => `₪${value.toLocaleString()}`} />
               <Legend />
-              <Line type="monotone" dataKey="portfolioValue" name="Portfolio Value" stroke="#4F46E5" strokeWidth={2} />
-              <Line type="monotone" dataKey="investment" name="Monthly Investment" stroke="#10B981" />
-              <Line type="monotone" dataKey="profit" name="Profit" stroke="#F59E0B" />
+              <Line type="monotone" dataKey="portfolioValue" name="Portfolio Value" stroke="#4F46E5" dot={false} />
+              <Line type="monotone" dataKey="investment" name="Monthly Investment" stroke="#10B981" dot={false} />
+              <Line type="monotone" dataKey="profit" name="Profit" stroke="#F59E0B" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         {/* Client Distribution */}
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-lg font-semibold mb-4">Client Distribution</h2>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Client Distribution</h2>
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={PROFESSIONS.map(profession => ({
-                  name: profession,
-                  value: clients.filter(client => client.profession === profession).length
-                }))}
+                data={professionDistribution}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
                 outerRadius={100}
-                fill="#8884d8"
                 paddingAngle={5}
                 dataKey="value"
-                label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                label={({name, percentage}) => `${name} (${percentage}%)`}
               >
-                {PROFESSIONS.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {professionDistribution.map((entry) => (
+                  <Cell key={entry.name} fill={COLORS[entry.name]} />
                 ))}
               </Pie>
-              <Tooltip />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -180,17 +203,17 @@ export const Dashboard = () => {
       {/* Client Overview */}
       <div className="mt-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Client Overview</h2>
+          <h2 className="text-xl font-semibold">Client Overview</h2>
           <div className="flex gap-4">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search clients..."
-                className="pl-10 pr-4 py-2 rounded-lg border"
+                className="pl-10 pr-4 py-2 border rounded-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
             <button
               onClick={() => setShowAllClients(!showAllClients)}
@@ -200,90 +223,27 @@ export const Dashboard = () => {
             </button>
           </div>
         </div>
-        
-        <div className="grid grid-cols-3 gap-4">
-          {filteredClients.slice(0, showAllClients ? undefined : 6).map(client => {
-            const metrics = calculateMetrics(client);
-            return (
-              <div
-                key={client.id}
-                className="bg-white p-6 rounded-xl shadow cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setSelectedClient(client)}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-semibold">{client.name}</h3>
-                    <p className="text-sm text-gray-500">{client.profession}</p>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-sm ${
-                    client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
-                    client.riskProfile === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {client.riskProfile}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Monthly Investment:</span>
-                    <span>₪{metrics.latestMonthlyInvestment.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Portfolio Value:</span>
-                    <span>₪{metrics.portfolioValue.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Total Profit:</span>
-                    <span>₪{metrics.totalProfit.toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+
+        <div className="grid grid-cols-1 gap-4">
+          {clients
+            .filter(client => 
+              client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              client.profession.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .slice(0, showAllClients ? undefined : 6)
+            .map(client => {
+              const metrics = calculateClientMetrics(client);
+              return (
+                <ClientCard
+                  key={client.id}
+                  client={client}
+                  metrics={metrics}
+                  onClick={() => setSelectedClient(client)}
+                />
+              );
+            })}
         </div>
       </div>
-
-      {/* Client Details Modal */}
-      {selectedClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-2xl font-bold">{selectedClient.name}</h2>
-                <p className="text-gray-500">{selectedClient.profession}</p>
-              </div>
-              <button onClick={() => setSelectedClient(null)} className="text-gray-500">×</button>
-            </div>
-            <div className="grid grid-cols-2 gap-8 mb-8">
-              <div>
-                <h3 className="font-semibold mb-4">Investment Profile</h3>
-                <div className="space-y-2">
-                  <p>Risk Profile: {selectedClient.riskProfile}</p>
-                  <p>Latest Monthly Investment: ₪{calculateMetrics(selectedClient).latestMonthlyInvestment.toLocaleString()}</p>
-                  <p>Total Investment: ₪{calculateMetrics(selectedClient).totalInvestment.toLocaleString()}</p>
-                  <p>Portfolio Value: ₪{calculateMetrics(selectedClient).portfolioValue.toLocaleString()}</p>
-                  <p>Total Profit: ₪{calculateMetrics(selectedClient).totalProfit.toLocaleString()}</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Performance Chart</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={selectedClient.monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `₪${value.toLocaleString()}`} />
-                    <Legend />
-                    <Line type="monotone" dataKey="portfolioValue" name="Portfolio Value" stroke="#4F46E5" />
-                    <Line type="monotone" dataKey="investment" name="Monthly Investment" stroke="#10B981" />
-                    <Line type="monotone" dataKey="profit" name="Profit" stroke="#F59E0B" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
