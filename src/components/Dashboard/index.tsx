@@ -43,13 +43,20 @@ export const Dashboard = () => {
   };
 
   const generateClients = () => {
-    const newClients: Client[] = Array.from({ length: 100 }, (_, i) => ({
-      id: i + 1,
-      name: `Client ${i + 1}`,
-      profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
-      riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)],
-      monthlyData: generateMonthlyData()
-    }));
+    const newClients: Client[] = Array.from({ length: 100 }, (_, i) => {
+      const monthlyExpenses = Math.floor(Math.random() * 16000) + 4000;
+      const investmentPercentage = (Math.random() * 17 + 3).toFixed(1);
+      
+      return {
+        id: i + 1,
+        name: `Client ${i + 1}`,
+        profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
+        riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)],
+        monthlyData: generateMonthlyData(),
+        monthlyExpenses,
+        investmentPercentage
+      };
+    });
 
     setClients(newClients);
   };
