@@ -137,7 +137,7 @@ export const Dashboard = () => {
         id: "Portfolio Value",
         color: "#4F46E5",
         data: data.map(d => ({
-          x: String(`Month ${d.month}`),
+          x: `Month ${d.month}`,
           y: Number(d.portfolioValue.toFixed(2))
         }))
       },
@@ -145,7 +145,7 @@ export const Dashboard = () => {
         id: "Monthly Investment",
         color: "#10B981",
         data: data.map(d => ({
-          x: String(`Month ${d.month}`),
+          x: `Month ${d.month}`,
           y: Number(d.investment.toFixed(2))
         }))
       },
@@ -153,7 +153,7 @@ export const Dashboard = () => {
         id: "Cumulative Profit",
         color: "#F59E0B",
         data: data.map(d => ({
-          x: String(`Month ${d.month}`),
+          x: `Month ${d.month}`,
           y: Number(d.profit.toFixed(2))
         }))
       }
@@ -228,7 +228,7 @@ export const Dashboard = () => {
                   legend: 'Timeline',
                   legendOffset: 40,
                   legendPosition: 'middle',
-                  format: (value) => String(value)
+                  format: (value) => value?.toString() || ''
                 }}
                 axisLeft={{
                   tickSize: 5,
@@ -238,6 +238,7 @@ export const Dashboard = () => {
                   legendOffset: -60,
                   legendPosition: 'middle',
                   format: (value) => {
+                    if (value === null || value === undefined) return '';
                     if (typeof value === 'number') {
                       return new Intl.NumberFormat('he-IL', {
                         style: 'currency',
@@ -246,7 +247,7 @@ export const Dashboard = () => {
                         maximumFractionDigits: 0
                       }).format(value);
                     }
-                    return '';
+                    return value.toString();
                   }
                 }}
                 enableGridX={false}
