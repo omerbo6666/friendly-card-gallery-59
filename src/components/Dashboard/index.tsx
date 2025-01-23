@@ -22,6 +22,8 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
@@ -50,6 +52,7 @@ export const Dashboard = () => {
   });
   const [investmentPercentage, setInvestmentPercentage] = useState(10);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   useEffect(() => {
     generateClients();
@@ -192,7 +195,10 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <Button variant="outline" onClick={() => navigate('/add-client')}>
+          Add New Client
+        </Button>
         <ThemeToggle />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
