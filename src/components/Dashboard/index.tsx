@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
-import { ResponsiveLine } from '@nivo/line';
-import { Search, ArrowUpRight } from 'lucide-react';
+import { Search, ArrowUpRight, Maximize2 } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { CustomTooltip } from '../CustomTooltip';
+import { Button } from "@/components/ui/button";
+import { MaximizedChart } from './MaximizedChart';
+import { ClientInsights } from './ClientInsights';
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
@@ -34,6 +27,7 @@ export const Dashboard = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllClients, setShowAllClients] = useState(false);
+  const [isChartMaximized, setIsChartMaximized] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -138,7 +132,7 @@ export const Dashboard = () => {
         id: "Portfolio Value",
         color: "#4F46E5",
         data: data.map(d => ({
-          x: `Month ${d.month}`,
+          x: d.month.toString(),
           y: Number(d.portfolioValue.toFixed(2))
         }))
       },
@@ -146,7 +140,7 @@ export const Dashboard = () => {
         id: "Monthly Investment",
         color: "#10B981",
         data: data.map(d => ({
-          x: `Month ${d.month}`,
+          x: d.month.toString(),
           y: Number(d.investment.toFixed(2))
         }))
       },
@@ -154,7 +148,7 @@ export const Dashboard = () => {
         id: "Cumulative Profit",
         color: "#F59E0B",
         data: data.map(d => ({
-          x: `Month ${d.month}`,
+          x: d.month.toString(),
           y: Number(d.profit.toFixed(2))
         }))
       }
@@ -203,7 +197,16 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Performance Chart */}
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
-          <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Portfolio Performance</h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsChartMaximized(true)}
+            >
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="h-[300px] md:h-[400px]">
             {clients.length > 0 && (
               <ResponsiveLine
@@ -237,13 +240,7 @@ export const Dashboard = () => {
                   legend: 'Amount (ILS)',
                   legendOffset: -60,
                   legendPosition: 'middle',
-                  format: (value) => 
-                    new Intl.NumberFormat('he-IL', {
-                      style: 'currency',
-                      currency: 'ILS',
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0
-                    }).format(value)
+                  format: value => formatCurrency(value as number)
                 }}
                 enableGridX={false}
                 enableGridY={true}
@@ -284,72 +281,6 @@ export const Dashboard = () => {
                     ]
                   }
                 ]}
-                theme={{
-                  axis: {
-                    ticks: {
-                      text: {
-                        fontSize: isMobile ? 10 : 12,
-                        fill: '#6B7280'
-                      }
-                    },
-                    legend: {
-                      text: {
-                        fontSize: 12,
-                        fill: '#374151'
-                      }
-                    }
-                  },
-                  grid: {
-                    line: {
-                      stroke: '#E5E7EB',
-                      strokeWidth: 1
-                    }
-                  },
-                  crosshair: {
-                    line: {
-                      stroke: '#6B7280',
-                      strokeWidth: 1,
-                      strokeOpacity: 0.35
-                    }
-                  },
-                  tooltip: {
-                    container: {
-                      background: 'white',
-                      color: '#374151',
-                      fontSize: 12,
-                      borderRadius: '6px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      padding: '8px 12px'
-                    }
-                  }
-                }}
-                sliceTooltip={({ slice }) => (
-                  <div className="bg-white p-2 shadow-lg rounded-lg border border-gray-200">
-                    <div className="text-sm font-medium text-gray-900 mb-2">
-                      {slice.points[0].data.x}
-                    </div>
-                    {slice.points.map(point => (
-                      <div
-                        key={point.id}
-                        className="flex items-center py-1"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full mr-2"
-                          style={{ backgroundColor: point.serieColor }}
-                        />
-                        <span className="text-sm text-gray-600">{point.serieId}:</span>
-                        <span className="text-sm font-medium ml-2">
-                          {new Intl.NumberFormat('he-IL', {
-                            style: 'currency',
-                            currency: 'ILS',
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0
-                          }).format(point.data.y as number)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               />
             )}
           </div>
@@ -409,6 +340,13 @@ export const Dashboard = () => {
         </div>
       </div>
 
+      {selectedClient && (
+        <div className="mt-8">
+          <ClientInsights client={selectedClient} />
+        </div>
+      )}
+
+      {/* Client Overview Section */}
       <div className="mt-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <h2 className="text-lg font-semibold">Client Overview</h2>
@@ -474,175 +412,13 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Client Details Modal */}
-      {selectedClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-4 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold">{selectedClient.name}</h2>
-                <p className="text-gray-500">{selectedClient.profession}</p>
-              </div>
-              <button 
-                onClick={() => setSelectedClient(null)}
-                className="text-gray-500 text-xl p-2"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div>
-                <h3 className="font-semibold mb-4">Investment Profile</h3>
-                <div className="space-y-2">
-                  <p>Risk Profile: {selectedClient.riskProfile}</p>
-                  <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
-                  <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
-                  <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
-                  <p>Total Profit: {formatCurrency(calculateMetrics(selectedClient).totalProfit)}</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Performance Chart</h3>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ResponsiveLine
-                      data={formatChartData(selectedClient.monthlyData)}
-                      margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
-                      xScale={{
-                        type: 'point'
-                      }}
-                      yScale={{
-                        type: 'linear',
-                        min: 'auto',
-                        max: 'auto',
-                        stacked: false,
-                        reverse: false
-                      }}
-                      curve="monotoneX"
-                      axisTop={null}
-                      axisRight={null}
-                      axisBottom={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: -45,
-                        legend: 'Month',
-                        legendOffset: 40,
-                        legendPosition: 'middle'
-                      }}
-                      axisLeft={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: 0,
-                        legend: 'Value (ILS)',
-                        legendOffset: -50,
-                        legendPosition: 'middle',
-                        format: (value: number) => 
-                          new Intl.NumberFormat('he-IL', {
-                            style: 'currency',
-                            currency: 'ILS',
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0
-                          }).format(value)
-                      }}
-                      enablePoints={false}
-                      pointSize={10}
-                      pointColor={{ theme: 'background' }}
-                      pointBorderWidth={2}
-                      pointBorderColor={{ from: 'serieColor' }}
-                      pointLabelYOffset={-12}
-                      useMesh={true}
-                      legends={[
-                        {
-                          anchor: 'bottom',
-                          direction: 'row',
-                          justify: false,
-                          translateX: 0,
-                          translateY: 50,
-                          itemsSpacing: 0,
-                          itemDirection: 'left-to-right',
-                          itemWidth: 140,
-                          itemHeight: 20,
-                          itemOpacity: 0.75,
-                          symbolSize: 12,
-                          symbolShape: 'circle',
-                          symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                          effects: [
-                            {
-                              on: 'hover',
-                              style: {
-                                itemBackground: 'rgba(0, 0, 0, .03)',
-                                itemOpacity: 1
-                              }
-                            }
-                          ]
-                        }
-                      ]}
-                      theme={{
-                        axis: {
-                          ticks: {
-                            text: {
-                              fontSize: isMobile ? 10 : 12
-                            }
-                          }
-                        },
-                        legends: {
-                          text: {
-                            fontSize: isMobile ? 10 : 12
-                          }
-                        }
-                      }}
-                      tooltip={({ point }) => (
-                        <div className="bg-white p-2 shadow rounded border">
-                          <strong>{point.serieId}</strong>: {
-                            new Intl.NumberFormat('he-IL', {
-                              style: 'currency',
-                              currency: 'ILS',
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0
-                            }).format(Number(point.data.y))
-                          }
-                        </div>
-                      )}
-                    />
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
-            {/* Monthly Data Table */}
-            <div className="mt-8">
-              <h3 className="font-semibold mb-4">Monthly Details</h3>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Month</TableHead>
-                      <TableHead>Monthly Expenses</TableHead>
-                      <TableHead>Investment Amount</TableHead>
-                      <TableHead>Portfolio Value</TableHead>
-                      <TableHead>Profit/Loss</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedClient.monthlyData.map((data, index) => (
-                      <TableRow key={index}>
-                        <TableCell>Month {data.month}</TableCell>
-                        <TableCell>{formatCurrency(data.expenses)}</TableCell>
-                        <TableCell>{formatCurrency(data.investment)}</TableCell>
-                        <TableCell>{formatCurrency(data.portfolioValue)}</TableCell>
-                        <TableCell className={data.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(data.profit)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Maximized Chart Modal */}
+      <MaximizedChart
+        isOpen={isChartMaximized}
+        onClose={() => setIsChartMaximized(false)}
+        data={formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData) || []}
+        title="Portfolio Performance"
+      />
     </div>
   );
 };
