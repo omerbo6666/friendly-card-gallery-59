@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Client, ClientMetrics } from '@/types/investment';
+import { Client, Metrics } from '@/types/investment';
 
 interface ClientCardProps {
   client: Client;
-  metrics: ClientMetrics;
+  metrics: Metrics;
   onSelect: (client: Client) => void;
 }
 
@@ -39,7 +39,7 @@ export const ClientCard = ({ client, metrics, onSelect }: ClientCardProps) => (
         <div>
           <p className="text-sm text-muted-foreground">Portfolio Value</p>
           <p className="font-medium">
-            {metrics.portfolioValue.toLocaleString('en-IL', { 
+            {metrics.currentValue.toLocaleString('en-IL', { 
               style: 'currency', 
               currency: 'ILS' 
             })}
