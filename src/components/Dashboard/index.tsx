@@ -177,7 +177,7 @@ export const Dashboard = () => {
     const series = [
       {
         id: "Portfolio Value",
-        color: "#8B5CF6", // Vivid Purple
+        color: "#8B5CF6",
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.portfolioValue.toFixed(2))
@@ -186,7 +186,7 @@ export const Dashboard = () => {
       },
       {
         id: "Monthly Investment",
-        color: "#0EA5E9", // Ocean Blue
+        color: "#0EA5E9",
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.investment.toFixed(2))
@@ -195,7 +195,7 @@ export const Dashboard = () => {
       },
       {
         id: "Cumulative Profit",
-        color: "#F97316", // Bright Orange
+        color: "#F97316",
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.profit.toFixed(2))
@@ -221,17 +221,21 @@ export const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <div className="w-full md:w-auto">
+        <div className="w-full md:w-auto relative group">
           <Button 
             size="lg"
-            className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all"
+            className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-8 rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden"
             onClick={() => navigate('/add-client')}
           >
-            <div className="flex flex-col items-center gap-2">
-              <span>Try Our Investment Simulator</span>
-              <span className="text-sm font-normal opacity-90">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-blue-400/10 animate-pulse"></div>
+            <div className="flex flex-col items-center gap-3 relative z-10">
+              <span className="text-xl md:text-2xl font-bold tracking-tight">
+                Try Our Investment Simulator
+              </span>
+              <span className="text-sm md:text-base font-normal text-white/90">
                 See how your money could grow over time
               </span>
+              <ArrowUpRight className="w-6 h-6 mt-1 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </div>
           </Button>
         </div>
@@ -537,7 +541,7 @@ export const Dashboard = () => {
             return (
               <div
                 key={client.id}
-                className={`bg-card text-card-foreground p-4 md:p-6 rounded-xl shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow ${
+                className={`bg-card text-card-foreground p-6 rounded-xl shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow ${
                   isSelected ? 'ring-2 ring-blue-500' : ''
                 } ${isComparison ? 'ring-2 ring-green-500' : ''}`}
                 onClick={() => {
@@ -552,31 +556,53 @@ export const Dashboard = () => {
                   }
                 }}
               >
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="font-semibold">{client.name}</h3>
+                    <h3 className="font-semibold text-lg">{client.name}</h3>
                     <p className="text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${
-                    track?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800' :
-                    track?.type === 'ETF' ? 'bg-green-100 text-green-800' :
-                    'bg-purple-100 text-purple-800'
+                    track?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                    track?.type === 'ETF' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                    'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                   }`}>
                     {track?.name}
                   </span>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Monthly Investment:</span>
-                    <span>{formatCurrency(metrics.latestMonthlyInvestment)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Portfolio Value:</span>
-                    <span>{formatCurrency(metrics.portfolioValue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Profit:</span>
-                    <span>{formatCurrency(metrics.totalProfit)}</span>
+
+                <div className="space-y-4">
+                  <div className="border-b border-border pb-4">
+                    <h4 className="font-medium mb-3">Investment Profile</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Investment Track:</span>
+                        <span className="text-sm font-medium">{track?.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Portfolio Value:</span>
+                        <span className="text-sm font-medium">{formatCurrency(metrics.portfolioValue)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Total Expenses:</span>
+                        <span className="text-sm font-medium">{formatCurrency(client.monthlyExpenses * 12)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Total Investment:</span>
+                        <span className="text-sm font-medium">{formatCurrency(metrics.totalInvestment)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Total Profit:</span>
+                        <span className={`text-sm font-medium ${
+                          metrics.totalProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {formatCurrency(metrics.totalProfit)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Latest Monthly Investment:</span>
+                        <span className="text-sm font-medium">{formatCurrency(metrics.latestMonthlyInvestment)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
