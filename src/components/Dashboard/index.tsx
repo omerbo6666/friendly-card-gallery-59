@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
-import { Search, ArrowUpRight, Users, Wallet, TrendingUp, DollarSign } from 'lucide-react';
+import { Search, ArrowUpRight } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Constants
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
 const RISK_PROFILES: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
@@ -122,14 +121,16 @@ export const Dashboard = () => {
     }).format(value / 100);
   };
 
-  const formatChartData = (data: MonthlyData[]) => {
+  const formatChartData = (data: MonthlyData[] | undefined) => {
+    if (!data) return [];
+    
     return [
       {
         id: "Portfolio Value",
         color: "#4F46E5",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.portfolioValue)
+          y: Number(d.portfolioValue.toFixed(2))
         }))
       },
       {
@@ -137,7 +138,7 @@ export const Dashboard = () => {
         color: "#10B981",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.investment)
+          y: Number(d.investment.toFixed(2))
         }))
       },
       {
@@ -145,7 +146,7 @@ export const Dashboard = () => {
         color: "#F59E0B",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.profit)
+          y: Number(d.profit.toFixed(2))
         }))
       }
     ];
@@ -195,105 +196,107 @@ export const Dashboard = () => {
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
           <div className="h-[300px] md:h-[400px]">
-            <ResponsiveLine
-              data={formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData)}
-              margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
-              xScale={{
-                type: 'point'
-              }}
-              yScale={{
-                type: 'linear',
-                min: 'auto',
-                max: 'auto',
-                stacked: false,
-                reverse: false
-              }}
-              curve="monotoneX"
-              axisTop={null}
-              axisRight={null}
-              axisBottom={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: -45,
-                legend: 'Month',
-                legendOffset: 40,
-                legendPosition: 'middle'
-              }}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'Value (ILS)',
-                legendOffset: -50,
-                legendPosition: 'middle',
-                format: (value: number) => 
-                  new Intl.NumberFormat('he-IL', {
-                    style: 'currency',
-                    currency: 'ILS',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                  }).format(value)
-              }}
-              enablePoints={false}
-              pointSize={10}
-              pointColor={{ theme: 'background' }}
-              pointBorderWidth={2}
-              pointBorderColor={{ from: 'serieColor' }}
-              pointLabelYOffset={-12}
-              useMesh={true}
-              legends={[
-                {
-                  anchor: 'bottom',
-                  direction: 'row',
-                  justify: false,
-                  translateX: 0,
-                  translateY: 50,
-                  itemsSpacing: 0,
-                  itemDirection: 'left-to-right',
-                  itemWidth: 140,
-                  itemHeight: 20,
-                  itemOpacity: 0.75,
-                  symbolSize: 12,
-                  symbolShape: 'circle',
-                  symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                  effects: [
-                    {
-                      on: 'hover',
-                      style: {
-                        itemBackground: 'rgba(0, 0, 0, .03)',
-                        itemOpacity: 1
-                      }
-                    }
-                  ]
-                }
-              ]}
-              theme={{
-                axis: {
-                  ticks: {
-                    text: {
-                      fontSize: isMobile ? 10 : 12
-                    }
-                  }
-                },
-                legends: {
-                  text: {
-                    fontSize: isMobile ? 10 : 12
-                  }
-                }
-              }}
-              tooltip={({ point }) => (
-                <div className="bg-white p-2 shadow rounded border">
-                  <strong>{point.serieId}</strong>: {
+            {clients.length > 0 && (
+              <ResponsiveLine
+                data={formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData) || []}
+                margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+                xScale={{
+                  type: 'point'
+                }}
+                yScale={{
+                  type: 'linear',
+                  min: 'auto',
+                  max: 'auto',
+                  stacked: false,
+                  reverse: false
+                }}
+                curve="monotoneX"
+                axisTop={null}
+                axisRight={null}
+                axisBottom={{
+                  tickSize: 5,
+                  tickPadding: 5,
+                  tickRotation: -45,
+                  legend: 'Month',
+                  legendOffset: 40,
+                  legendPosition: 'middle'
+                }}
+                axisLeft={{
+                  tickSize: 5,
+                  tickPadding: 5,
+                  tickRotation: 0,
+                  legend: 'Value (ILS)',
+                  legendOffset: -50,
+                  legendPosition: 'middle',
+                  format: (value: number) => 
                     new Intl.NumberFormat('he-IL', {
                       style: 'currency',
                       currency: 'ILS',
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0
-                    }).format(Number(point.data.y))
+                    }).format(value)
+                }}
+                enablePoints={false}
+                pointSize={10}
+                pointColor={{ theme: 'background' }}
+                pointBorderWidth={2}
+                pointBorderColor={{ from: 'serieColor' }}
+                pointLabelYOffset={-12}
+                useMesh={true}
+                legends={[
+                  {
+                    anchor: 'bottom',
+                    direction: 'row',
+                    justify: false,
+                    translateX: 0,
+                    translateY: 50,
+                    itemsSpacing: 0,
+                    itemDirection: 'left-to-right',
+                    itemWidth: 140,
+                    itemHeight: 20,
+                    itemOpacity: 0.75,
+                    symbolSize: 12,
+                    symbolShape: 'circle',
+                    symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                    effects: [
+                      {
+                        on: 'hover',
+                        style: {
+                          itemBackground: 'rgba(0, 0, 0, .03)',
+                          itemOpacity: 1
+                        }
+                      }
+                    ]
                   }
-                </div>
-              )}
-            />
+                ]}
+                theme={{
+                  axis: {
+                    ticks: {
+                      text: {
+                        fontSize: isMobile ? 10 : 12
+                      }
+                    }
+                  },
+                  legends: {
+                    text: {
+                      fontSize: isMobile ? 10 : 12
+                    }
+                  }
+                }}
+                tooltip={({ point }) => (
+                  <div className="bg-white p-2 shadow rounded border">
+                    <strong>{point.serieId}</strong>: {
+                      new Intl.NumberFormat('he-IL', {
+                        style: 'currency',
+                        currency: 'ILS',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                      }).format(Number(point.data.y))
+                    }
+                  </div>
+                )}
+              />
+            )}
           </div>
         </div>
 
@@ -328,7 +331,6 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Client Overview */}
       <div className="mt-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <h2 className="text-lg font-semibold">Client Overview</h2>
