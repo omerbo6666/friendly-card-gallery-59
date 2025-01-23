@@ -52,7 +52,7 @@ export const Dashboard = () => {
       monthlyExpenses: Math.floor(Math.random() * 16000) + 4000,
       investmentPercentage: (Math.random() * 17 + 3).toFixed(1),
       monthlyData: generateMonthlyData(),
-      riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)]
+      riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)] as Client['riskProfile']
     }));
 
     setClients(newClients);
@@ -207,7 +207,7 @@ export const Dashboard = () => {
           ))}
         </div>
       </div>
-
+      
       {/* Selected Client Dialog */}
       <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
         {selectedClient && (
@@ -226,7 +226,7 @@ export const Dashboard = () => {
                 <h3 className="font-semibold mb-4">Investment Details</h3>
                 <p className="mb-2">Monthly Expenses: {selectedClient.monthlyExpenses.toLocaleString('en-IL', { style: 'currency', currency: 'ILS' })}</p>
                 <p className="mb-2">Investment Rate: {selectedClient.investmentPercentage}%</p>
-                <p className="mb-2">Monthly Investment: {(selectedClient.monthlyExpenses * (selectedClient.investmentPercentage / 100)).toLocaleString('en-IL', { style: 'currency', currency: 'ILS' })}</p>
+                <p className="mb-2">Monthly Investment: {(selectedClient.monthlyExpenses * (parseFloat(selectedClient.investmentPercentage) / 100)).toLocaleString('en-IL', { style: 'currency', currency: 'ILS' })}</p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={300}>

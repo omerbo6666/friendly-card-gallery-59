@@ -6,6 +6,8 @@ export interface MonthlyData {
   profit: number;
 }
 
+export type RiskProfile = 'Conservative' | 'Moderate' | 'Aggressive';
+
 export interface Client {
   id: number;
   name: string;
@@ -14,7 +16,7 @@ export interface Client {
   monthlyExpenses: number;
   investmentPercentage: string;
   monthlyData: MonthlyData[];
-  riskProfile: 'Conservative' | 'Moderate' | 'Aggressive';
+  riskProfile: RiskProfile;
 }
 
 export interface Metrics {
@@ -31,21 +33,3 @@ export interface AggregateMetrics {
   totalProfit: number;
   totalFees: number;
 }
-
-export interface Person {
-  id: number;
-  monthlyExpenses: number;
-  investmentPercent: number;
-  annualReturn: number;
-  totalExpenses: number;
-  totalDeposits: number;
-  finalPortfolioValue: number;
-  profit: number;
-  monthlyData: MonthlyData[];
-  roi: number;
-}
-
-export type SortConfig = {
-  key: keyof Person;
-  direction: 'ascending' | 'descending';
-};
