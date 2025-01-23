@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { PROFESSIONS, RISK_PROFILES } from '@/lib/constants';
 import { Client, RiskProfile } from '@/types/investment';
 import { generateMonthlyData } from '@/lib/utils';
+import { addClient } from '@/lib/localStorage';
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const AddClient = () => {
     }
 
     const newClient: Client = {
-      id: Date.now(), // Simple ID generation
+      id: Date.now(),
       name: formData.name,
       profession: formData.profession,
       monthlyExpenses: Number(formData.monthlyExpenses),
@@ -46,8 +47,8 @@ const AddClient = () => {
       monthlyData: generateMonthlyData(formData.investmentPercentage)
     };
 
-    // Here you would typically save the client to your backend
-    console.log('New client created:', newClient);
+    // Save to localStorage
+    addClient(newClient);
     
     toast({
       title: "Success",

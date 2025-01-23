@@ -24,6 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
+import { getClients, saveClients, searchClients } from '@/lib/localStorage';
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
@@ -73,7 +74,12 @@ export const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    generateClients();
+    const storedClients = getClients();
+    if (storedClients.length === 0) {
+      generateClients();
+    } else {
+      setClients(storedClients);
+    }
   }, []);
 
   const generateMonthlyData = (investmentPercentageOverride?: number): MonthlyData[] => {
@@ -120,6 +126,7 @@ export const Dashboard = () => {
     });
 
     setClients(newClients);
+    saveClients(newClients);
   };
 
   const calculateMetrics = (client: Client): ClientMetrics => {
@@ -143,10 +150,7 @@ export const Dashboard = () => {
     };
   }, { totalValue: 0, totalInvestment: 0, totalProfit: 0, totalClients: 0 });
 
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.profession.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredClients = searchTerm ? searchClients(searchTerm) : clients;
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('he-IL', {
@@ -209,6 +213,7 @@ export const Dashboard = () => {
       monthlyData: generateMonthlyData(value[0])
     }));
     setClients(updatedClients);
+    saveClients(updatedClients);
   };
 
   return (
