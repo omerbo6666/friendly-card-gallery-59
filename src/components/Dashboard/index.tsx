@@ -208,7 +208,7 @@ export const Dashboard = () => {
             {clients.length > 0 && (
               <ResponsiveLine
                 data={formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData) || []}
-                margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+                margin={{ top: 30, right: 110, bottom: 50, left: 80 }}
                 xScale={{
                   type: 'point'
                 }}
@@ -226,7 +226,7 @@ export const Dashboard = () => {
                   tickSize: 5,
                   tickPadding: 5,
                   tickRotation: -45,
-                  legend: 'Month',
+                  legend: 'Timeline',
                   legendOffset: 40,
                   legendPosition: 'middle'
                 }}
@@ -234,10 +234,10 @@ export const Dashboard = () => {
                   tickSize: 5,
                   tickPadding: 5,
                   tickRotation: 0,
-                  legend: 'Value (ILS)',
-                  legendOffset: -50,
+                  legend: 'Amount (ILS)',
+                  legendOffset: -60,
                   legendPosition: 'middle',
-                  format: (value: number) => 
+                  format: (value) => 
                     new Intl.NumberFormat('he-IL', {
                       style: 'currency',
                       currency: 'ILS',
@@ -245,23 +245,29 @@ export const Dashboard = () => {
                       maximumFractionDigits: 0
                     }).format(value)
                 }}
-                enablePoints={false}
-                pointSize={10}
+                enableGridX={false}
+                enableGridY={true}
+                pointSize={8}
                 pointColor={{ theme: 'background' }}
                 pointBorderWidth={2}
                 pointBorderColor={{ from: 'serieColor' }}
                 pointLabelYOffset={-12}
+                enableArea={true}
+                areaOpacity={0.15}
                 useMesh={true}
+                enableSlices="x"
+                crosshairType="cross"
+                motionConfig="gentle"
                 legends={[
                   {
-                    anchor: 'bottom',
-                    direction: 'row',
+                    anchor: 'right',
+                    direction: 'column',
                     justify: false,
-                    translateX: 0,
-                    translateY: 50,
+                    translateX: 100,
+                    translateY: 0,
                     itemsSpacing: 0,
                     itemDirection: 'left-to-right',
-                    itemWidth: 140,
+                    itemWidth: 100,
                     itemHeight: 20,
                     itemOpacity: 0.75,
                     symbolSize: 12,
@@ -282,26 +288,66 @@ export const Dashboard = () => {
                   axis: {
                     ticks: {
                       text: {
-                        fontSize: isMobile ? 10 : 12
+                        fontSize: isMobile ? 10 : 12,
+                        fill: '#6B7280'
+                      }
+                    },
+                    legend: {
+                      text: {
+                        fontSize: 12,
+                        fill: '#374151'
                       }
                     }
                   },
-                  legends: {
-                    text: {
-                      fontSize: isMobile ? 10 : 12
+                  grid: {
+                    line: {
+                      stroke: '#E5E7EB',
+                      strokeWidth: 1
+                    }
+                  },
+                  crosshair: {
+                    line: {
+                      stroke: '#6B7280',
+                      strokeWidth: 1,
+                      strokeOpacity: 0.35
+                    }
+                  },
+                  tooltip: {
+                    container: {
+                      background: 'white',
+                      color: '#374151',
+                      fontSize: 12,
+                      borderRadius: '6px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      padding: '8px 12px'
                     }
                   }
                 }}
-                tooltip={({ point }) => (
-                  <div className="bg-white p-2 shadow rounded border">
-                    <strong>{point.serieId}</strong>: {
-                      new Intl.NumberFormat('he-IL', {
-                        style: 'currency',
-                        currency: 'ILS',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                      }).format(Number(point.data.y))
-                    }
+                sliceTooltip={({ slice }) => (
+                  <div className="bg-white p-2 shadow-lg rounded-lg border border-gray-200">
+                    <div className="text-sm font-medium text-gray-900 mb-2">
+                      {slice.points[0].data.x}
+                    </div>
+                    {slice.points.map(point => (
+                      <div
+                        key={point.id}
+                        className="flex items-center py-1"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: point.serieColor }}
+                        />
+                        <span className="text-sm text-gray-600">{point.serieId}:</span>
+                        <span className="text-sm font-medium ml-2">
+                          {new Intl.NumberFormat('he-IL', {
+                            style: 'currency',
+                            currency: 'ILS',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                          }).format(point.data.y as number)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
               />
@@ -309,7 +355,7 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Client Distribution */}
+        {/* Client Distribution Chart */}
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Client Distribution</h2>
           <div className="h-[300px] md:h-[400px]">
@@ -322,18 +368,41 @@ export const Dashboard = () => {
                   }))}
                   cx="50%"
                   cy="50%"
-                  innerRadius={isMobile ? 40 : 60}
-                  outerRadius={isMobile ? 80 : 100}
+                  innerRadius={isMobile ? 60 : 80}
+                  outerRadius={isMobile ? 90 : 120}
                   fill="#8884d8"
-                  paddingAngle={5}
+                  paddingAngle={2}
                   dataKey="value"
                   label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  labelLine={{ stroke: '#374151', strokeWidth: 1 }}
                 >
                   {PROFESSIONS.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]}
+                      stroke="#fff"
+                      strokeWidth={2}
+                    />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white p-3 shadow-lg rounded-lg border border-gray-200">
+                          <p className="text-sm font-medium text-gray-900">{payload[0].name}</p>
+                          <p className="text-sm text-gray-600">
+                            Clients: {payload[0].value}
+                            <span className="ml-2">
+                              ({((payload[0].value / clients.length) * 100).toFixed(1)}%)
+                            </span>
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
