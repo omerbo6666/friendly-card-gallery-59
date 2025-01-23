@@ -220,12 +220,24 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div className="flex justify-between items-center mb-4">
-        <Button variant="outline" onClick={() => navigate('/add-client')}>
-          Add New Client
-        </Button>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="w-full md:w-auto">
+          <Button 
+            size="lg"
+            className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all"
+            onClick={() => navigate('/add-client')}
+          >
+            <div className="flex flex-col items-center gap-2">
+              <span>Try Our Investment Simulator</span>
+              <span className="text-sm font-normal opacity-90">
+                See how your money could grow over time
+              </span>
+            </div>
+          </Button>
+        </div>
         <ThemeToggle />
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
