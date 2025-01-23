@@ -139,7 +139,7 @@ export const Dashboard = () => {
         color: "#4F46E5",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.portfolioValue.toFixed(2))
+          y: Number(d.portfolioValue)
         }))
       },
       {
@@ -147,7 +147,7 @@ export const Dashboard = () => {
         color: "#10B981",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.investment.toFixed(2))
+          y: Number(d.investment)
         }))
       },
       {
@@ -155,7 +155,7 @@ export const Dashboard = () => {
         color: "#F59E0B",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.profit.toFixed(2))
+          y: Number(d.profit)
         }))
       }
     ];
