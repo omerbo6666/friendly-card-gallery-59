@@ -34,22 +34,26 @@ export const Dashboard = () => {
   const generateMonthlyData = (): MonthlyData[] => {
     const data: MonthlyData[] = [];
     let portfolioValue = 0;
+    let cumulativeProfit = 0;
+    let totalInvestment = 0;
     
     for (let month = 0; month < NASDAQ_RETURNS.length; month++) {
       const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
       const investmentPercentage = (Math.random() * 17 + 3);
       const investment = monthlyExpense * (investmentPercentage / 100);
       
+      totalInvestment += investment;
       // Use actual NASDAQ returns for this month
       const monthlyReturn = NASDAQ_RETURNS[month];
       portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
+      cumulativeProfit = portfolioValue - totalInvestment;
       
       data.push({
         month: month + 1,
         expenses: monthlyExpense,
         investment,
         portfolioValue,
-        profit: portfolioValue - (investment * (month + 1))
+        profit: cumulativeProfit
       });
     }
     return data;
@@ -182,7 +186,7 @@ export const Dashboard = () => {
                 <Legend />
                 <Line type="monotone" dataKey="portfolioValue" name="Portfolio Value" stroke="#4F46E5" strokeWidth={2} />
                 <Line type="monotone" dataKey="investment" name="Monthly Investment" stroke="#10B981" />
-                <Line type="monotone" dataKey="profit" name="Profit" stroke="#F59E0B" />
+                <Line type="monotone" dataKey="profit" name="Cumulative Profit" stroke="#F59E0B" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -333,7 +337,7 @@ export const Dashboard = () => {
                       <Legend />
                       <Line type="monotone" dataKey="portfolioValue" name="Portfolio Value" stroke="#4F46E5" />
                       <Line type="monotone" dataKey="investment" name="Monthly Investment" stroke="#10B981" />
-                      <Line type="monotone" dataKey="profit" name="Profit" stroke="#F59E0B" />
+                      <Line type="monotone" dataKey="profit" name="Cumulative Profit" stroke="#F59E0B" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
