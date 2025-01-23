@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
-import { Search, ArrowUpRight } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MetricCard } from './MetricCard';
 import {
   Table,
   TableBody,
@@ -13,11 +14,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = {
+  primary: '#9b87f5',
+  secondary: '#8E9196',
+  success: '#10B981',
+  warning: '#FEC6A1',
+  danger: '#ea384c',
+  chart: {
+    portfolio: '#4F46E5',
+    investment: '#10B981',
+    profit: '#F59E0B'
+  }
+};
+
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
 const RISK_PROFILES: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
 
-// NASDAQ 100 monthly returns from 2020-2025
 const NASDAQ_RETURNS = [
   0.0362, 0.0048, 0.0621, -0.0052, 0.0268, 0.0065, -0.0075, 0.0596, 0.0688, -0.0441,
   0.0179, 0.0612, 0.0102, 0.0552, 0.1070, -0.0278, -0.0581, -0.0217, 0.0405, 0.0659,
@@ -26,7 +38,7 @@ const NASDAQ_RETURNS = [
   -0.0531, 0.0400, 0.0116, 0.0549, -0.0153, 0.0540, 0.0041, 0.0093, 0.0142, 0.0565,
   0.1180, -0.0229, -0.0516, 0.0959, 0.0682, 0.0599, 0.0675, 0.1545, -0.1012, -0.0638,
   0.0199
-].reverse(); // Reverse to start from oldest to newest
+].reverse();
 
 export const Dashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -51,7 +63,6 @@ export const Dashboard = () => {
       const investment = monthlyExpense * (investmentPercentage / 100);
       
       totalInvestment += investment;
-      // Use actual NASDAQ returns for this month
       const monthlyReturn = NASDAQ_RETURNS[month];
       portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
       cumulativeProfit = portfolioValue - totalInvestment;
@@ -129,13 +140,26 @@ export const Dashboard = () => {
     }).format(value / 100);
   };
 
+  const getRiskProfileColor = (profile: RiskProfile): string => {
+    switch (profile) {
+      case 'Conservative':
+        return COLORS.primary;
+      case 'Moderate':
+        return COLORS.warning;
+      case 'Aggressive':
+        return COLORS.danger;
+      default:
+        return COLORS.secondary;
+    }
+  };
+
   const formatChartData = (data: MonthlyData[] | undefined) => {
     if (!data) return [];
     
     return [
       {
         id: "Portfolio Value",
-        color: "#4F46E5",
+        color: COLORS.chart.portfolio,
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.portfolioValue.toFixed(2))
@@ -143,7 +167,7 @@ export const Dashboard = () => {
       },
       {
         id: "Monthly Investment",
-        color: "#10B981",
+        color: COLORS.chart.investment,
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.investment.toFixed(2))
@@ -151,7 +175,7 @@ export const Dashboard = () => {
       },
       {
         id: "Cumulative Profit",
-        color: "#F59E0B",
+        color: COLORS.chart.profit,
         data: data.map(d => ({
           x: `Month ${d.month}`,
           y: Number(d.profit.toFixed(2))
@@ -162,44 +186,39 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      {/* Header with Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Portfolio Value</h3>
-          <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalValue)}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>{formatPercentage(8.5)}</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Investment</h3>
-          <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalInvestment)}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>{formatPercentage(12.3)}</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Profit</h3>
-          <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalProfit)}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>{formatPercentage(15.7)}</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="text-sm text-gray-500">Total Clients</h3>
-          <div className="text-xl md:text-2xl font-bold">{aggregateMetrics.totalClients}</div>
-          <div className="flex items-center text-green-500">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>{formatPercentage(5.2)}</span>
-          </div>
+      {/* Summary Section */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Portfolio Summary</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            title="Total Portfolio Value"
+            value={formatCurrency(aggregateMetrics.totalValue)}
+            icon={ArrowUpRight}
+            change={8.5}
+          />
+          <MetricCard
+            title="Total Investment"
+            value={formatCurrency(aggregateMetrics.totalInvestment)}
+            icon={ArrowUpRight}
+            change={12.3}
+          />
+          <MetricCard
+            title="Total Profit"
+            value={formatCurrency(aggregateMetrics.totalProfit)}
+            icon={ArrowUpRight}
+            change={15.7}
+          />
+          <MetricCard
+            title="Total Clients"
+            value={aggregateMetrics.totalClients}
+            icon={ArrowUpRight}
+            change={5.2}
+          />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Performance Chart */}
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
@@ -234,7 +253,7 @@ export const Dashboard = () => {
                   tickSize: 5,
                   tickPadding: 5,
                   tickRotation: 0,
-                  legend: 'Amount (ILS)',
+                  legend: 'Amount (₪)',
                   legendOffset: -60,
                   legendPosition: 'middle',
                   format: (value) => {
@@ -331,7 +350,7 @@ export const Dashboard = () => {
                 sliceTooltip={({ slice }) => (
                   <div className="bg-white p-2 shadow-lg rounded-lg border border-gray-200">
                     <div className="text-sm font-medium text-gray-900 mb-2">
-                      {slice.points[0].data.x}
+                      {slice.points[0].data.x as string}
                     </div>
                     {slice.points.map(point => (
                       <div
@@ -360,7 +379,7 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Client Distribution Chart */}
+        {/* Distribution Chart */}
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Client Distribution</h2>
           <div className="h-[300px] md:h-[400px]">
@@ -393,13 +412,14 @@ export const Dashboard = () => {
                 <Tooltip 
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
+                      const data = payload[0];
                       return (
                         <div className="bg-white p-3 shadow-lg rounded-lg border border-gray-200">
-                          <p className="text-sm font-medium text-gray-900">{payload[0].name}</p>
+                          <p className="text-sm font-medium text-gray-900">{data.name}</p>
                           <p className="text-sm text-gray-600">
-                            Clients: {payload[0].value}
+                            Clients: {data.value}
                             <span className="ml-2">
-                              ({((payload[0].value / clients.length) * 100).toFixed(1)}%)
+                              ({((data.value / clients.length) * 100).toFixed(1)}%)
                             </span>
                           </p>
                         </div>
@@ -414,6 +434,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
+      {/* Client Overview Section */}
       <div className="mt-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <h2 className="text-lg font-semibold">Client Overview</h2>
@@ -423,27 +444,28 @@ export const Dashboard = () => {
               <input
                 type="text"
                 placeholder="Search clients..."
-                className="w-full md:w-auto pl-10 pr-4 py-2 rounded-lg border"
+                className="w-full md:w-auto pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <button
               onClick={() => setShowAllClients(!showAllClients)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg w-full md:w-auto"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors w-full md:w-auto"
             >
               {showAllClients ? 'Show Less' : 'Show All Clients'}
             </button>
           </div>
         </div>
-        
+
+        {/* Client Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredClients.slice(0, showAllClients ? undefined : 6).map(client => {
             const metrics = calculateMetrics(client);
             return (
               <div
                 key={client.id}
-                className="bg-white p-4 md:p-6 rounded-xl shadow cursor-pointer hover:shadow-md transition-shadow"
+                className="bg-white p-4 md:p-6 rounded-xl shadow hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedClient(client)}
               >
                 <div className="flex justify-between items-start mb-4">
@@ -451,11 +473,14 @@ export const Dashboard = () => {
                     <h3 className="font-semibold">{client.name}</h3>
                     <p className="text-sm text-gray-500">{client.profession}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm ${
-                    client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
-                    client.riskProfile === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
+                  <span 
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      client.riskProfile === 'Conservative' ? 'bg-primary/10 text-primary' :
+                      client.riskProfile === 'Moderate' ? 'bg-warning/10 text-warning-foreground' :
+                      'bg-danger/10 text-danger'
+                    }`}
+                    style={{ backgroundColor: `${getRiskProfileColor(client.riskProfile)}20` }}
+                  >
                     {client.riskProfile}
                   </span>
                 </div>
@@ -470,7 +495,9 @@ export const Dashboard = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500">Total Profit:</span>
-                    <span>{formatCurrency(metrics.totalProfit)}</span>
+                    <span className={metrics.totalProfit >= 0 ? 'text-success' : 'text-danger'}>
+                      {formatCurrency(metrics.totalProfit)}
+                    </span>
                   </div>
                 </div>
               </div>
