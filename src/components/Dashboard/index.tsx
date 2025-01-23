@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart } from 'recharts';
+import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, Users, Wallet, TrendingUp, DollarSign } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -121,6 +122,35 @@ export const Dashboard = () => {
     }).format(value / 100);
   };
 
+  const formatChartData = (data: MonthlyData[]) => {
+    return [
+      {
+        id: "Portfolio Value",
+        color: "#4F46E5",
+        data: data.map(d => ({
+          x: `Month ${d.month}`,
+          y: Math.round(d.portfolioValue)
+        }))
+      },
+      {
+        id: "Monthly Investment",
+        color: "#10B981",
+        data: data.map(d => ({
+          x: `Month ${d.month}`,
+          y: Math.round(d.investment)
+        }))
+      },
+      {
+        id: "Cumulative Profit",
+        color: "#F59E0B",
+        data: data.map(d => ({
+          x: `Month ${d.month}`,
+          y: Math.round(d.profit)
+        }))
+      }
+    ];
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       {/* Header with Metrics */}
@@ -165,30 +195,105 @@ export const Dashboard = () => {
         <div className="bg-white rounded-xl p-4 md:p-6 shadow">
           <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
           <div className="h-[300px] md:h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart 
-                data={selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData}
-                margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month"
-                  tick={{ fontSize: isMobile ? 10 : 12 }}
-                />
-                <YAxis 
-                  tick={{ fontSize: isMobile ? 10 : 12 }}
-                  tickFormatter={(value) => formatCurrency(value).replace('ILS', '')}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), '']}
-                  labelFormatter={(label) => `Month ${label}`}
-                />
-                <Legend />
-                <Line type="monotone" dataKey="portfolioValue" name="Portfolio Value" stroke="#4F46E5" strokeWidth={2} />
-                <Line type="monotone" dataKey="investment" name="Monthly Investment" stroke="#10B981" />
-                <Line type="monotone" dataKey="profit" name="Cumulative Profit" stroke="#F59E0B" />
-              </LineChart>
-            </ResponsiveContainer>
+            <ResponsiveLine
+              data={formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData)}
+              margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+              xScale={{
+                type: 'point'
+              }}
+              yScale={{
+                type: 'linear',
+                min: 'auto',
+                max: 'auto',
+                stacked: false,
+                reverse: false
+              }}
+              curve="monotoneX"
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: 'Month',
+                legendOffset: 40,
+                legendPosition: 'middle'
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: 'Value (ILS)',
+                legendOffset: -50,
+                legendPosition: 'middle',
+                format: value => 
+                  new Intl.NumberFormat('he-IL', {
+                    style: 'currency',
+                    currency: 'ILS',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(value)
+              }}
+              enablePoints={false}
+              pointSize={10}
+              pointColor={{ theme: 'background' }}
+              pointBorderWidth={2}
+              pointBorderColor={{ from: 'serieColor' }}
+              pointLabelYOffset={-12}
+              useMesh={true}
+              legends={[
+                {
+                  anchor: 'bottom',
+                  direction: 'row',
+                  justify: false,
+                  translateX: 0,
+                  translateY: 50,
+                  itemsSpacing: 0,
+                  itemDirection: 'left-to-right',
+                  itemWidth: 140,
+                  itemHeight: 20,
+                  itemOpacity: 0.75,
+                  symbolSize: 12,
+                  symbolShape: 'circle',
+                  symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                  effects: [
+                    {
+                      on: 'hover',
+                      style: {
+                        itemBackground: 'rgba(0, 0, 0, .03)',
+                        itemOpacity: 1
+                      }
+                    }
+                  ]
+                }
+              ]}
+              theme={{
+                axis: {
+                  ticks: {
+                    text: {
+                      fontSize: isMobile ? 10 : 12
+                    }
+                  }
+                },
+                legends: {
+                  text: {
+                    fontSize: isMobile ? 10 : 12
+                  }
+                }
+              }}
+              tooltip={({ point }) => (
+                <div className="bg-white p-2 shadow rounded border">
+                  <strong>{point.serieId}</strong>: {
+                    new Intl.NumberFormat('he-IL', {
+                      style: 'currency',
+                      currency: 'ILS',
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    }).format(point.data.y)
+                  }
+                </div>
+              )}
+            />
           </div>
         </div>
 
@@ -320,25 +425,105 @@ export const Dashboard = () => {
                 <h3 className="font-semibold mb-4">Performance Chart</h3>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={selectedClient.monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="month"
-                        tick={{ fontSize: isMobile ? 10 : 12 }}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: isMobile ? 10 : 12 }}
-                        tickFormatter={(value) => formatCurrency(value).replace('ILS', '')}
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [formatCurrency(value), '']}
-                        labelFormatter={(label) => `Month ${label}`}
-                      />
-                      <Legend />
-                      <Line type="monotone" dataKey="portfolioValue" name="Portfolio Value" stroke="#4F46E5" />
-                      <Line type="monotone" dataKey="investment" name="Monthly Investment" stroke="#10B981" />
-                      <Line type="monotone" dataKey="profit" name="Cumulative Profit" stroke="#F59E0B" />
-                    </LineChart>
+                    <ResponsiveLine
+                      data={formatChartData(selectedClient.monthlyData)}
+                      margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+                      xScale={{
+                        type: 'point'
+                      }}
+                      yScale={{
+                        type: 'linear',
+                        min: 'auto',
+                        max: 'auto',
+                        stacked: false,
+                        reverse: false
+                      }}
+                      curve="monotoneX"
+                      axisTop={null}
+                      axisRight={null}
+                      axisBottom={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: -45,
+                        legend: 'Month',
+                        legendOffset: 40,
+                        legendPosition: 'middle'
+                      }}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        legend: 'Value (ILS)',
+                        legendOffset: -50,
+                        legendPosition: 'middle',
+                        format: value => 
+                          new Intl.NumberFormat('he-IL', {
+                            style: 'currency',
+                            currency: 'ILS',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                          }).format(value)
+                      }}
+                      enablePoints={false}
+                      pointSize={10}
+                      pointColor={{ theme: 'background' }}
+                      pointBorderWidth={2}
+                      pointBorderColor={{ from: 'serieColor' }}
+                      pointLabelYOffset={-12}
+                      useMesh={true}
+                      legends={[
+                        {
+                          anchor: 'bottom',
+                          direction: 'row',
+                          justify: false,
+                          translateX: 0,
+                          translateY: 50,
+                          itemsSpacing: 0,
+                          itemDirection: 'left-to-right',
+                          itemWidth: 140,
+                          itemHeight: 20,
+                          itemOpacity: 0.75,
+                          symbolSize: 12,
+                          symbolShape: 'circle',
+                          symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                          effects: [
+                            {
+                              on: 'hover',
+                              style: {
+                                itemBackground: 'rgba(0, 0, 0, .03)',
+                                itemOpacity: 1
+                              }
+                            }
+                          ]
+                        }
+                      ]}
+                      theme={{
+                        axis: {
+                          ticks: {
+                            text: {
+                              fontSize: isMobile ? 10 : 12
+                            }
+                          }
+                        },
+                        legends: {
+                          text: {
+                            fontSize: isMobile ? 10 : 12
+                          }
+                        }
+                      }}
+                      tooltip={({ point }) => (
+                        <div className="bg-white p-2 shadow rounded border">
+                          <strong>{point.serieId}</strong>: {
+                            new Intl.NumberFormat('he-IL', {
+                              style: 'currency',
+                              currency: 'ILS',
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0
+                            }).format(point.data.y)
+                          }
+                        </div>
+                      )}
+                    />
                   </ResponsiveContainer>
                 </div>
               </div>
