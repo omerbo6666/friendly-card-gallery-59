@@ -220,7 +220,7 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-2 md:p-8">
-      <div className="flex flex-col md:flex-row justify-between items-start mb-8 md:mb-12">
+      <div className="flex flex-col md:flex-row justify-between items-start mb-6 md:mb-8">
         <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4 mb-4 md:mb-0">
           <div className="w-full sm:w-auto">
             <Button 
@@ -229,7 +229,7 @@ export const Dashboard = () => {
               onClick={() => navigate('/add-client')}
             >
               <div className="flex flex-col items-center gap-2">
-                <span className="text-base md:text-lg font-bold tracking-tight">
+                <span className="text-xs md:text-base font-bold tracking-tight">
                   Add New Client
                 </span>
                 <span className="text-xs md:text-sm font-normal text-white/90">
@@ -246,7 +246,7 @@ export const Dashboard = () => {
               onClick={() => navigate('/simulator')}
             >
               <div className="flex flex-col items-center gap-2">
-                <span className="text-base md:text-lg font-bold tracking-tight">
+                <span className="text-xs md:text-base font-bold tracking-tight">
                   Investment Simulator
                 </span>
                 <span className="text-xs md:text-sm font-normal text-white/90">
@@ -260,9 +260,9 @@ export const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border">
+        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm text-muted-foreground">Total Portfolio Value</h3>
+            <h3 className="text-xs md:text-sm text-muted-foreground">Total Portfolio Value</h3>
             <TooltipProvider>
               <UITooltip>
                 <TooltipTrigger>
@@ -274,40 +274,40 @@ export const Dashboard = () => {
               </UITooltip>
             </TooltipProvider>
           </div>
-          <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalValue)}</div>
-          <div className="flex items-center text-emerald-500 dark:text-emerald-400">
-            <ArrowUpRight className="w-4 h-4" />
+          <div className="text-lg md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalValue)}</div>
+          <div className="flex items-center text-emerald-500 dark:text-emerald-400 text-xs md:text-sm">
+            <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4" />
             <span>{formatPercentage(8.5)}</span>
           </div>
         </div>
-        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border">
-          <h3 className="text-sm text-muted-foreground">Total Investment</h3>
-          <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalInvestment)}</div>
-          <div className="flex items-center text-emerald-500 dark:text-emerald-400">
-            <ArrowUpRight className="w-4 h-4" />
+        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border">
+          <h3 className="text-xs md:text-sm text-muted-foreground">Total Investment</h3>
+          <div className="text-lg md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalInvestment)}</div>
+          <div className="flex items-center text-emerald-500 dark:text-emerald-400 text-xs md:text-sm">
+            <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4" />
             <span>{formatPercentage(12.3)}</span>
           </div>
         </div>
-        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border">
-          <h3 className="text-sm text-muted-foreground">Total Profit</h3>
-          <div className="text-xl md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalProfit)}</div>
-          <div className="flex items-center text-emerald-500 dark:text-emerald-400">
-            <ArrowUpRight className="w-4 h-4" />
+        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border">
+          <h3 className="text-xs md:text-sm text-muted-foreground">Total Profit</h3>
+          <div className="text-lg md:text-2xl font-bold">{formatCurrency(aggregateMetrics.totalProfit)}</div>
+          <div className="flex items-center text-emerald-500 dark:text-emerald-400 text-xs md:text-sm">
+            <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4" />
             <span>{formatPercentage(15.7)}</span>
           </div>
         </div>
-        <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border">
-          <h3 className="text-sm text-muted-foreground">Total Clients</h3>
-          <div className="text-xl md:text-2xl font-bold">{aggregateMetrics.totalClients}</div>
-          <div className="flex items-center text-emerald-500 dark:text-emerald-400">
-            <ArrowUpRight className="w-4 h-4" />
+        <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border">
+          <h3 className="text-xs md:text-sm text-muted-foreground">Total Clients</h3>
+          <div className="text-lg md:text-2xl font-bold">{aggregateMetrics.totalClients}</div>
+          <div className="flex items-center text-emerald-500 dark:text-emerald-400 text-xs md:text-sm">
+            <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4" />
             <span>{formatPercentage(5.2)}</span>
           </div>
         </div>
       </div>
 
       <div className="bg-card text-card-foreground rounded-xl p-3 md:p-4 mb-6 md:mb-8 border border-border">
-        <h3 className="text-sm font-medium mb-4">Chart Controls</h3>
+        <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4">Chart Controls</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label>Investment Percentage ({investmentPercentage}%)</Label>
@@ -354,7 +354,7 @@ export const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
-          <h2 className="text-sm md:text-base font-semibold mb-2 md:mb-4">Portfolio Performance</h2>
+          <h2 className="text-xs md:text-base font-semibold mb-2 md:mb-4">Portfolio Performance</h2>
           <div className="h-[400px] md:h-[500px] w-full">
             {clients.length > 0 && (
               <ResponsiveLine
@@ -449,13 +449,13 @@ export const Dashboard = () => {
                   axis: {
                     ticks: {
                       text: {
-                        fontSize: isMobile ? 10 : 12,
+                        fontSize: isMobile ? 8 : 11,
                         fill: 'hsl(var(--muted-foreground))'
                       }
                     },
                     legend: {
                       text: {
-                        fontSize: isMobile ? 11 : 13,
+                        fontSize: isMobile ? 9 : 12,
                         fill: 'hsl(var(--muted-foreground))',
                         fontWeight: 500
                       }
@@ -479,10 +479,10 @@ export const Dashboard = () => {
                     container: {
                       background: 'hsl(var(--background))',
                       color: 'hsl(var(--foreground))',
-                      fontSize: isMobile ? 11 : 12,
+                      fontSize: isMobile ? 10 : 12,
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      padding: '8px 12px',
+                      padding: '6px 10px',
                       border: '1px solid hsl(var(--border))'
                     }
                   }
@@ -493,7 +493,7 @@ export const Dashboard = () => {
         </div>
 
         <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4">Client Distribution</h2>
+          <h2 className="text-xs md:text-base font-semibold mb-3 md:mb-4">Client Distribution</h2>
           <div className="h-[300px] md:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -530,7 +530,7 @@ export const Dashboard = () => {
 
       <div className="mt-6 md:mt-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <h2 className="text-base md:text-lg font-semibold">Client Overview</h2>
+          <h2 className="text-sm md:text-lg font-semibold">Client Overview</h2>
           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
             <div className="relative flex-grow md:flex-grow-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
@@ -562,7 +562,7 @@ export const Dashboard = () => {
             return (
               <div
                 key={client.id}
-                className={`bg-card text-card-foreground p-6 rounded-xl shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow ${
+                className={`bg-card text-card-foreground p-4 md:p-6 rounded-xl shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow ${
                   isSelected ? 'ring-2 ring-blue-500' : ''
                 } ${isComparison ? 'ring-2 ring-green-500' : ''}`}
                 onClick={() => {
@@ -577,12 +577,12 @@ export const Dashboard = () => {
                   }
                 }}
               >
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex justify-between items-start mb-4 md:mb-6">
                   <div>
-                    <h3 className="font-semibold text-lg">{client.name}</h3>
-                    <p className="text-sm text-muted-foreground">{client.profession}</p>
+                    <h3 className="font-semibold text-sm md:text-lg">{client.name}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground">{client.profession}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm ${
+                  <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm ${
                     selectedTrack?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                     selectedTrack?.type === 'ETF' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                     'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
