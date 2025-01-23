@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react';
-import { Client, MonthlyData, ClientMetrics, AggregateMetrics, RiskProfile } from '@/types/investment';
+import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
@@ -25,10 +25,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { getClients, saveClients, searchClients } from '@/lib/localStorage';
+import { INVESTMENT_TRACKS, PROFESSIONS } from '@/lib/constants';
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
-const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
-const RISK_PROFILES: RiskProfile[] = ['Conservative', 'Moderate', 'Aggressive'];
+const RISK_PROFILES = ['Conservative', 'Moderate', 'Aggressive'];
 
 const NASDAQ_RETURNS = [
   0.0362, 0.0048, 0.0621, -0.0052, 0.0268, 0.0065, -0.0075, 0.0596, 0.0688, -0.0441,
@@ -113,12 +113,14 @@ export const Dashboard = () => {
     const newClients: Client[] = Array.from({ length: 100 }, (_, i) => {
       const monthlyExpenses = Math.floor(Math.random() * 16000) + 4000;
       const investmentPercentage = (Math.random() * 17 + 3).toFixed(1);
+      const tracks = INVESTMENT_TRACKS.map(track => track.id);
+      const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
       
       return {
         id: i + 1,
         name: generateRandomName(),
         profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
-        riskProfile: RISK_PROFILES[Math.floor(Math.random() * RISK_PROFILES.length)],
+        investmentTrack: randomTrack,
         monthlyData: generateMonthlyData(),
         monthlyExpenses,
         investmentPercentage
@@ -518,6 +520,7 @@ export const Dashboard = () => {
             const metrics = calculateMetrics(client);
             const isSelected = selectedClient?.id === client.id;
             const isComparison = comparisonClient?.id === client.id;
+            const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === client.investmentTrack);
 
             return (
               <div
@@ -543,11 +546,11 @@ export const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${
-                    client.riskProfile === 'Conservative' ? 'bg-blue-100 text-blue-800' :
-                    client.riskProfile === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
+                    selectedTrack?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800' :
+                    selectedTrack?.type === 'ETF' ? 'bg-green-100 text-green-800' :
+                    'bg-purple-100 text-purple-800'
                   }`}>
-                    {client.riskProfile}
+                    {selectedTrack?.name}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -590,7 +593,7 @@ export const Dashboard = () => {
               <div>
                 <h3 className="font-semibold mb-4">Investment Profile</h3>
                 <div className="space-y-2">
-                  <p>Risk Profile: {selectedClient.riskProfile}</p>
+                  <p>Investment Track: {selectedTrack?.name}</p>
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
                   <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
