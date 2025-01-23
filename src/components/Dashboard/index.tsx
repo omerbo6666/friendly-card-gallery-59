@@ -82,16 +82,11 @@ export const Dashboard = () => {
     }
   }, []);
 
-  const generateMonthlyData = (investmentPercentageOverride?: number, investmentTrack?: string): MonthlyData[] => {
+  const generateMonthlyData = (investmentPercentageOverride?: number): MonthlyData[] => {
     const data: MonthlyData[] = [];
     let portfolioValue = 0;
     let cumulativeProfit = 0;
     let totalInvestment = 0;
-    
-    // Get annual return rate based on investment track
-    const trackInfo = INVESTMENT_TRACKS.find(track => track.name === investmentTrack) || INVESTMENT_TRACKS[0];
-    const annualReturn = trackInfo.return / 100; // Convert percentage to decimal
-    const monthlyReturn = Math.pow(1 + annualReturn, 1/12) - 1;
     
     for (let month = 0; month < NASDAQ_RETURNS.length; month++) {
       const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
@@ -99,6 +94,7 @@ export const Dashboard = () => {
       const investment = monthlyExpense * (investmentPercentage / 100);
       
       totalInvestment += investment;
+      const monthlyReturn = NASDAQ_RETURNS[month];
       portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
       cumulativeProfit = portfolioValue - totalInvestment;
       
@@ -117,14 +113,13 @@ export const Dashboard = () => {
     const newClients: Client[] = Array.from({ length: 100 }, (_, i) => {
       const monthlyExpenses = Math.floor(Math.random() * 16000) + 4000;
       const investmentPercentage = (Math.random() * 17 + 3).toFixed(1);
-      const selectedTrack = INVESTMENT_TRACKS[Math.floor(Math.random() * INVESTMENT_TRACKS.length)].name;
       
       return {
         id: i + 1,
         name: generateRandomName(),
         profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
-        investmentTrack: selectedTrack,
-        monthlyData: generateMonthlyData(Number(investmentPercentage), selectedTrack),
+        investmentTrack: INVESTMENT_TRACKS[Math.floor(Math.random() * INVESTMENT_TRACKS.length)].name,
+        monthlyData: generateMonthlyData(),
         monthlyExpenses,
         investmentPercentage
       };
@@ -215,7 +210,7 @@ export const Dashboard = () => {
     const updatedClients = clients.map(client => ({
       ...client,
       investmentPercentage: value[0].toString(),
-      monthlyData: generateMonthlyData(value[0], client.investmentTrack)
+      monthlyData: generateMonthlyData(value[0])
     }));
     setClients(updatedClients);
     saveClients(updatedClients);
@@ -548,11 +543,9 @@ export const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${
-                    client.investmentTrack === 'Long Term Bonds' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    client.investmentTrack === 'Mixed Portfolio' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                    client.investmentTrack === 'Nasdaq 100' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                    client.investmentTrack === 'S&P 500' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                    'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200'
+                    client.investmentTrack === 'Long Term Bonds' ? 'bg-blue-100 text-blue-800' :
+                    client.investmentTrack === 'Mixed Portfolio' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
                   }`}>
                     {client.investmentTrack}
                   </span>
@@ -597,11 +590,7 @@ export const Dashboard = () => {
               <div>
                 <h3 className="font-semibold mb-4">Investment Profile</h3>
                 <div className="space-y-2">
-                  <p>Investment Track: <span className={`px-2 py-1 rounded-full text-sm ${
-                    selectedClient.investmentTrack === 'Long Term Bonds' ? 'bg-blue-100 text-blue-800' :
-                    selectedClient.investmentTrack === 'Mixed Portfolio' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>{selectedClient.investmentTrack}</span></p>
+                  <p>Investment Track: {selectedClient.investmentTrack}</p>
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
                   <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
