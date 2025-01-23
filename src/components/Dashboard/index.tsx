@@ -594,8 +594,8 @@ export const Dashboard = () => {
                 <h3 className="font-semibold mb-4">Investment Profile</h3>
                 <div className="space-y-2">
                   {(() => {
-                    const track = INVESTMENT_TRACKS.find(t => t.id === selectedClient.investmentTrack);
-                    return <p>Investment Track: {track?.name}</p>;
+                    const selectedTrack = INVESTMENT_TRACKS.find(t => t.id === selectedClient.investmentTrack);
+                    return <p>Investment Track: {selectedTrack?.name}</p>;
                   })()}
                   <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
                   <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
