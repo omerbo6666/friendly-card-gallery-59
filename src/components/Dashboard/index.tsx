@@ -359,14 +359,14 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border">
           <h2 className="text-lg font-semibold mb-4">Portfolio Performance</h2>
-          <div className="h-[300px] md:h-[400px]">
+          <div className="h-[400px] md:h-[500px] w-full">
             {clients.length > 0 && (
               <ResponsiveLine
                 data={[
                   ...formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData),
                   ...(comparisonClient ? formatChartData(comparisonClient.monthlyData) : [])
                 ]}
-                margin={{ top: 30, right: 110, bottom: 50, left: 80 }}
+                margin={{ top: 30, right: 80, bottom: 70, left: 80 }}
                 xScale={{
                   type: 'point'
                 }}
@@ -385,7 +385,7 @@ export const Dashboard = () => {
                   tickPadding: 5,
                   tickRotation: -45,
                   legend: 'Timeline',
-                  legendOffset: 40,
+                  legendOffset: 50,
                   legendPosition: 'middle',
                   format: (value) => value?.toString() || ''
                 }}
@@ -402,8 +402,8 @@ export const Dashboard = () => {
                       return new Intl.NumberFormat('he-IL', {
                         style: 'currency',
                         currency: 'ILS',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
+                        notation: 'compact',
+                        maximumFractionDigits: 1
                       }).format(value);
                     }
                     return value.toString();
@@ -411,7 +411,7 @@ export const Dashboard = () => {
                 }}
                 enableGridX={false}
                 enableGridY={true}
-                pointSize={8}
+                pointSize={isMobile ? 4 : 8}
                 pointColor={{ theme: 'background' }}
                 pointBorderWidth={2}
                 pointBorderColor={{ from: 'serieColor' }}
@@ -424,14 +424,14 @@ export const Dashboard = () => {
                 motionConfig="gentle"
                 legends={[
                   {
-                    anchor: 'right',
-                    direction: 'column',
+                    anchor: 'bottom',
+                    direction: 'row',
                     justify: false,
-                    translateX: 100,
-                    translateY: 0,
-                    itemsSpacing: 0,
+                    translateX: 0,
+                    translateY: 60,
+                    itemsSpacing: 10,
                     itemDirection: 'left-to-right',
-                    itemWidth: 100,
+                    itemWidth: isMobile ? 80 : 140,
                     itemHeight: 20,
                     itemOpacity: 0.75,
                     symbolSize: 12,
@@ -458,15 +458,17 @@ export const Dashboard = () => {
                     },
                     legend: {
                       text: {
-                        fontSize: 12,
-                        fill: 'hsl(var(--muted-foreground))'
+                        fontSize: isMobile ? 11 : 13,
+                        fill: 'hsl(var(--muted-foreground))',
+                        fontWeight: 500
                       }
                     }
                   },
                   grid: {
                     line: {
                       stroke: 'hsl(var(--border))',
-                      strokeWidth: 1
+                      strokeWidth: 1,
+                      strokeDasharray: '4 4'
                     }
                   },
                   crosshair: {
@@ -480,8 +482,8 @@ export const Dashboard = () => {
                     container: {
                       background: 'hsl(var(--background))',
                       color: 'hsl(var(--foreground))',
-                      fontSize: 12,
-                      borderRadius: '6px',
+                      fontSize: isMobile ? 11 : 12,
+                      borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                       padding: '8px 12px',
                       border: '1px solid hsl(var(--border))'
