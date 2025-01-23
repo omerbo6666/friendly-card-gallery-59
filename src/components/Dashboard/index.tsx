@@ -3,6 +3,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, HelpCircle } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/investment';
+import { INVESTMENT_TRACKS } from '@/lib/constants';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
