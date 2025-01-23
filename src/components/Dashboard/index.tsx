@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CustomTooltip } from '../CustomTooltip';
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 const PROFESSIONS = ['Software Engineer', 'Doctor', 'Lawyer', 'Business Owner', 'Teacher'];
@@ -139,7 +138,7 @@ export const Dashboard = () => {
         color: "#4F46E5",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.portfolioValue)
+          y: Number(d.portfolioValue.toFixed(2))
         }))
       },
       {
@@ -147,7 +146,7 @@ export const Dashboard = () => {
         color: "#10B981",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.investment)
+          y: Number(d.investment.toFixed(2))
         }))
       },
       {
@@ -155,7 +154,7 @@ export const Dashboard = () => {
         color: "#F59E0B",
         data: data.map(d => ({
           x: `Month ${d.month}`,
-          y: Number(d.profit)
+          y: Number(d.profit.toFixed(2))
         }))
       }
     ];
@@ -228,7 +227,8 @@ export const Dashboard = () => {
                   tickRotation: -45,
                   legend: 'Timeline',
                   legendOffset: 40,
-                  legendPosition: 'middle'
+                  legendPosition: 'middle',
+                  format: (value) => String(value)
                 }}
                 axisLeft={{
                   tickSize: 5,
@@ -243,7 +243,7 @@ export const Dashboard = () => {
                       currency: 'ILS',
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0
-                    }).format(value)
+                    }).format(Number(value))
                 }}
                 enableGridX={false}
                 enableGridY={true}
