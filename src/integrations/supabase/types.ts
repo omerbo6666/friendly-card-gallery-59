@@ -77,39 +77,6 @@ export type Database = {
         }
         Relationships: []
       }
-      global_metrics: {
-        Row: {
-          created_at: string | null
-          cumulative_investment: number
-          cumulative_profit: number
-          date: string
-          id: string
-          management_fees: number
-          total_clients: number
-          total_managed_funds: number
-        }
-        Insert: {
-          created_at?: string | null
-          cumulative_investment?: number
-          cumulative_profit?: number
-          date: string
-          id?: string
-          management_fees?: number
-          total_clients?: number
-          total_managed_funds?: number
-        }
-        Update: {
-          created_at?: string | null
-          cumulative_investment?: number
-          cumulative_profit?: number
-          date?: string
-          id?: string
-          management_fees?: number
-          total_clients?: number
-          total_managed_funds?: number
-        }
-        Relationships: []
-      }
       index_performance: {
         Row: {
           created_at: string | null
@@ -216,10 +183,6 @@ export type Database = {
         Returns: undefined
       }
       insert_performance_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_global_metrics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
