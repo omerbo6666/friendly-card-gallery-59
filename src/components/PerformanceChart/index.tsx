@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import { format, parse } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Play, ChartLine, TrendingUp, TrendingDown } from "lucide-react";
+import { Play, ChartLine, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -16,7 +16,11 @@ interface DataPoint {
   fullDate: string;
 }
 
-const PerformanceChart = () => {
+interface PerformanceChartProps {
+  selectedTrack?: string;
+}
+
+const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [startDate, setStartDate] = useState<Date | undefined>(new Date(2000, 0, 1));
@@ -27,9 +31,15 @@ const PerformanceChart = () => {
   const [performanceData, setPerformanceData] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<any[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchPerformanceData();
   }, []);
+
+  useEffect(() => {
+    if (selectedTrack) {
+      setSelectedTracks([selectedTrack]);
+    }
+  }, [selectedTrack]);
 
   const fetchPerformanceData = async () => {
     try {
@@ -58,9 +68,9 @@ const PerformanceChart = () => {
   const processPerformanceData = (data: any[]) => {
     const indices = ['SPY500', 'NASDAQ', 'RUSSELL2000'];
     const colors = {
-      'SPY500': 'hsl(var(--primary))',
-      'NASDAQ': 'hsl(var(--destructive))',
-      'RUSSELL2000': 'hsl(var(--success))'
+      'SPY500': '#10B981',
+      'NASDAQ': '#F43F5E',
+      'RUSSELL2000': '#8B5CF6'
     };
 
     return indices.map(index => {
@@ -95,6 +105,7 @@ const PerformanceChart = () => {
   };
 
   const toggleTrack = (trackId: string) => {
+    if (selectedTrack) return; // Don't allow toggling if a track is selected from client details
     setSelectedTracks(prev => 
       prev.includes(trackId)
         ? prev.filter(id => id !== trackId)
@@ -128,69 +139,76 @@ const PerformanceChart = () => {
   }, [filteredData, selectedTracks]);
 
   return (
-    <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border space-y-6">
+    <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-lg border border-border space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
           <ChartLine className="w-5 h-5 text-primary" />
           <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
         </div>
-        <div className="flex flex-wrap gap-4 w-full sm:w-auto">
-          <div className="flex gap-2 w-full sm:w-auto justify-center">
-            {['SPY500', 'NASDAQ', 'RUSSELL2000'].map(trackId => (
-              <Button
-                key={trackId}
-                variant={selectedTracks.includes(trackId) ? "default" : "outline"}
-                onClick={() => toggleTrack(trackId)}
-                className={cn(
-                  "text-xs sm:text-sm transition-all flex items-center gap-2 flex-1 sm:flex-none",
-                  selectedTracks.includes(trackId) 
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                    : "hover:bg-accent"
-                )}
-              >
-                <TrendingUp className="w-4 h-4" />
-                {trackId === 'SPY500' ? 'S&P 500' : 
-                 trackId === 'RUSSELL2000' ? 'Russell 2000' : 'NASDAQ'}
-              </Button>
-            ))}
-          </div>
-          
-          <div className="grid gap-4 p-4 bg-background/50 rounded-lg border border-border w-full sm:w-auto">
-            <div className="grid gap-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDateInput}
-                onChange={(e) => handleDateInputChange(e.target.value, setStartDate, setStartDateInput)}
-                className="w-full sm:w-[160px] bg-background"
-              />
+        {!selectedTrack && (
+          <div className="flex flex-wrap gap-4 w-full sm:w-auto">
+            <div className="flex gap-2 w-full sm:w-auto justify-center">
+              {['SPY500', 'NASDAQ', 'RUSSELL2000'].map(trackId => (
+                <Button
+                  key={trackId}
+                  variant={selectedTracks.includes(trackId) ? "default" : "outline"}
+                  onClick={() => toggleTrack(trackId)}
+                  className={cn(
+                    "text-xs sm:text-sm transition-all flex items-center gap-2 flex-1 sm:flex-none",
+                    selectedTracks.includes(trackId) 
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                      : "hover:bg-accent"
+                  )}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  {trackId === 'SPY500' ? 'S&P 500' : 
+                   trackId === 'RUSSELL2000' ? 'Russell 2000' : 'NASDAQ'}
+                </Button>
+              ))}
             </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDateInput}
-                onChange={(e) => handleDateInputChange(e.target.value, setEndDate, setEndDateInput)}
-                className="w-full sm:w-[160px] bg-background"
-              />
-            </div>
-
-            <Button 
-              onClick={applyDateFilter}
-              className="w-full"
-              variant="default"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Apply Filter
-            </Button>
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="h-[400px] bg-background/50 rounded-lg p-4">
+      <div className="flex flex-wrap gap-4 items-end mb-6">
+        <div className="grid gap-2 flex-1 min-w-[200px]">
+          <Label htmlFor="startDate" className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            Start Date
+          </Label>
+          <Input
+            id="startDate"
+            type="date"
+            value={startDateInput}
+            onChange={(e) => handleDateInputChange(e.target.value, setStartDate, setStartDateInput)}
+            className="bg-background"
+          />
+        </div>
+
+        <div className="grid gap-2 flex-1 min-w-[200px]">
+          <Label htmlFor="endDate" className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            End Date
+          </Label>
+          <Input
+            id="endDate"
+            type="date"
+            value={endDateInput}
+            onChange={(e) => handleDateInputChange(e.target.value, setEndDate, setEndDateInput)}
+            className="bg-background"
+          />
+        </div>
+
+        <Button 
+          onClick={applyDateFilter}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <Play className="w-4 h-4 mr-2" />
+          Apply Filter
+        </Button>
+      </div>
+
+      <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
         <ResponsiveLine
           data={chartData}
           margin={{ 
@@ -229,7 +247,7 @@ const PerformanceChart = () => {
             format: value => `${value.toFixed(2)}%`
           }}
           enablePoints={!isMobile}
-          pointSize={isMobile ? 0 : 8}
+          pointSize={isMobile ? 0 : 6}
           pointColor={{ theme: 'background' }}
           pointBorderWidth={2}
           pointBorderColor={{ from: 'serieColor' }}
@@ -285,14 +303,20 @@ const PerformanceChart = () => {
           tooltip={({ point }) => {
             const data = point.data as unknown as DataPoint;
             return (
-              <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-2 text-sm">
-                <div className="font-semibold">{data.fullDate}</div>
+              <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-3 space-y-2">
+                <div className="font-semibold border-b border-border pb-2">{data.fullDate}</div>
                 <div className="flex items-center gap-2">
                   <div 
-                    className="w-2 h-2 rounded-full"
+                    className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: point.serieColor }}
                   />
-                  <span>{point.serieId}: {data.y}%</span>
+                  <span className="font-medium">{point.serieId}</span>
+                  <span className={cn(
+                    "font-semibold ml-2",
+                    data.y >= 0 ? "text-green-500" : "text-red-500"
+                  )}>
+                    {data.y >= 0 ? "+" : ""}{data.y}%
+                  </span>
                 </div>
               </div>
             );
@@ -320,7 +344,7 @@ const PerformanceChart = () => {
               </div>
               <span className={cn(
                 "font-semibold flex items-center gap-1",
-                series.totalReturn >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                series.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'
               )}>
                 {series.totalReturn >= 0 ? (
                   <TrendingUp className="w-4 h-4" />
