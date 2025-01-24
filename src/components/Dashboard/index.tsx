@@ -6,7 +6,7 @@ import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/in
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import ClientDetails from '@/components/ClientDetails';
-import GlobalManagedFundsChart from '@/components/GlobalManagedFundsChart';
+import PerformanceChart from '@/components/PerformanceChart';
 import {
   Table,
   TableBody,
@@ -28,7 +28,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { getClients, saveClients, searchClients } from '@/lib/localStorage';
 import { INVESTMENT_TRACKS, PROFESSIONS } from '@/lib/constants';
-import PerformanceChart from '@/components/PerformanceChart';
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const RISK_PROFILES = ['Conservative', 'Moderate', 'Aggressive'];
@@ -234,7 +233,6 @@ export const Dashboard = () => {
       </div>
 
       <div className="space-y-6 md:space-y-8">
-        <GlobalManagedFundsChart />
         <div className="mb-6 md:mb-8">
           <PerformanceChart showTrackSelector={false} />
         </div>
