@@ -2,13 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import { format, parse } from 'date-fns';
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -115,6 +112,8 @@ const PerformanceChart = () => {
       return;
     }
 
+    console.log('Applying date filter:', { startDate, endDate });
+    
     const filtered = performanceData.map(series => ({
       ...series,
       data: series.data.filter((point: DataPoint) => {
@@ -123,8 +122,8 @@ const PerformanceChart = () => {
       })
     }));
 
+    console.log('Filtered data:', filtered);
     setFilteredData(filtered);
-    console.log('Applied date filter:', { startDate, endDate });
   };
 
   const chartData = useMemo(() => {
@@ -156,82 +155,26 @@ const PerformanceChart = () => {
           </div>
           
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <div className="grid gap-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={startDateInput}
-                    onChange={(e) => handleDateInputChange(e.target.value, setStartDate, setStartDateInput)}
-                    className="w-[160px] bg-background"
-                  />
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-[40px] p-0 bg-background",
-                          !startDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        mode="single"
-                        selected={startDate}
-                        onSelect={(date) => {
-                          setStartDate(date);
-                          if (date) setStartDateInput(format(date, 'yyyy-MM-dd'));
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="startDate">Start Date</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={startDateInput}
+                onChange={(e) => handleDateInputChange(e.target.value, setStartDate, setStartDateInput)}
+                className="w-[160px] bg-background"
+              />
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="grid gap-2">
-                <Label htmlFor="endDate">End Date</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={endDateInput}
-                    onChange={(e) => handleDateInputChange(e.target.value, setEndDate, setEndDateInput)}
-                    className="w-[160px] bg-background"
-                  />
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-[40px] p-0 bg-background",
-                          !endDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        mode="single"
-                        selected={endDate}
-                        onSelect={(date) => {
-                          setEndDate(date);
-                          if (date) setEndDateInput(format(date, 'yyyy-MM-dd'));
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="endDate">End Date</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={endDateInput}
+                onChange={(e) => handleDateInputChange(e.target.value, setEndDate, setEndDateInput)}
+                className="w-[160px] bg-background"
+              />
             </div>
 
             <Button 
@@ -353,7 +296,7 @@ const PerformanceChart = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
         {chartData.map((series) => (
-          <Card key={series.id} className="p-4">
+          <div key={series.id} className="bg-card text-card-foreground rounded-lg p-4 border border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div 
@@ -372,7 +315,7 @@ const PerformanceChart = () => {
                 {series.totalReturn >= 0 ? '+' : ''}{series.totalReturn}%
               </span>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
     </div>

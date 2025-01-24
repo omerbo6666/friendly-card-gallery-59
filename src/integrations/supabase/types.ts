@@ -142,6 +142,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      insert_extended_performance_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       insert_performance_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
