@@ -35,7 +35,7 @@ const NASDAQ_RETURNS = [
   0.0199
 ].reverse();
 
-// New S&P 500 returns
+// S&P 500 returns
 const SP500_RETURNS = [
   0.0348, -0.0250, 0.0573, -0.0099, 0.0202, 0.0228, 0.0113, 0.0347, 0.0480, -0.0416,
   0.0310, 0.0517, 0.0159, 0.0442, 0.0892, -0.0220, -0.0487, -0.0177, 0.0311, 0.0647,
@@ -47,6 +47,18 @@ const SP500_RETURNS = [
   0.0179, 0.0297, 0.0787
 ].reverse();
 
+// VTI returns
+const VTI_RETURNS = [
+  0.0427, -0.0335, 0.0670, -0.0075, 0.0172, 0.0213, 0.0189, 0.0271, 0.0476, -0.0434,
+  0.0290, 0.0530, 0.0112, 0.0484, 0.0942, -0.0265, -0.0515, -0.0193, 0.0366, 0.0632,
+  0.0043, 0.0108, 0.0230, -0.0240, 0.0693, -0.0631, 0.0517, 0.0811, -0.0961, -0.0373,
+  0.0935, -0.0860, -0.0025, -0.0913, 0.0294, -0.0249, -0.0606, 0.0342, -0.0146, 0.0669,
+  -0.0476, 0.0286, 0.0174, 0.0217, 0.0046, 0.0504, 0.0330, 0.0314, -0.0033, 0.0425,
+  0.1180, -0.0195, -0.0393, 0.0710, 0.0574, 0.0183, 0.0540, 0.1313, -0.1431, -0.0800,
+  -0.0006, 0.0225, 0.0379, 0.0211, 0.0132, -0.0208, 0.0141, 0.0668, -0.0645, 0.0393,
+  0.0087, 0.0356, 0.0854
+].reverse();
+
 export const generateMonthlyData = ({ investmentPercentageOverride, investmentTrack }: { investmentPercentageOverride?: number; investmentTrack?: string } = {}): MonthlyData[] => {
   const data: MonthlyData[] = [];
   let portfolioValue = 0;
@@ -54,7 +66,17 @@ export const generateMonthlyData = ({ investmentPercentageOverride, investmentTr
   let totalInvestment = 0;
   
   // Select returns based on investment track
-  const returns = investmentTrack === 'SPY500' ? SP500_RETURNS : NASDAQ_RETURNS;
+  let returns;
+  switch(investmentTrack) {
+    case 'SPY500':
+      returns = SP500_RETURNS;
+      break;
+    case 'VTI':
+      returns = VTI_RETURNS;
+      break;
+    default:
+      returns = NASDAQ_RETURNS;
+  }
   
   for (let month = 0; month < returns.length; month++) {
     const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
