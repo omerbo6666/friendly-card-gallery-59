@@ -17,10 +17,10 @@ interface PerformanceChartProps {
   nasdaqReturns: number[];
 }
 
-const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiReturns, nasdaqReturns }) => {
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date(2019, 0, 1));
+const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, nasdaqReturns }) => {
+  const [startDate, setStartDate] = useState<Date | undefined>(new Date(2000, 0, 1));
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
-  const [startDateInput, setStartDateInput] = useState(format(new Date(2019, 0, 1), 'yyyy-MM-dd'));
+  const [startDateInput, setStartDateInput] = useState(format(new Date(2000, 0, 1), 'yyyy-MM-dd'));
   const [endDateInput, setEndDateInput] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
 
@@ -44,8 +44,9 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         date.setMonth(date.getMonth() + index);
         
         return {
-          x: format(date, 'MMM yyyy'),
-          y: Number(((cumulativeValue - 100) / 100 * 100).toFixed(2))
+          x: format(date, 'yyyy'),
+          y: Number(((cumulativeValue - 100) / 100 * 100).toFixed(2)),
+          fullDate: format(date, 'MMM yyyy')
         };
       }),
       totalReturn: Number(((cumulativeValue - 100) / 100 * 100).toFixed(2))
@@ -105,7 +106,10 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
                 key={trackId}
                 variant={selectedTracks.includes(trackId) ? "default" : "outline"}
                 onClick={() => toggleTrack(trackId)}
-                className="text-xs sm:text-sm"
+                className={cn(
+                  "text-xs sm:text-sm",
+                  selectedTracks.includes(trackId) ? "bg-primary" : "bg-background"
+                )}
               >
                 {trackId === 'SPY500' ? 'S&P 500' : 
                  trackId === 'RUSSELL2000' ? 'Russell 2000' : trackId}
@@ -123,14 +127,14 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
                     type="date"
                     value={startDateInput}
                     onChange={(e) => handleDateInputChange(e.target.value, setStartDate, setStartDateInput)}
-                    className="w-[160px]"
+                    className="w-[160px] bg-background"
                   />
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-[40px] p-0",
+                          "w-[40px] p-0 bg-background",
                           !startDate && "text-muted-foreground"
                         )}
                       >
@@ -162,14 +166,14 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
                     type="date"
                     value={endDateInput}
                     onChange={(e) => handleDateInputChange(e.target.value, setEndDate, setEndDateInput)}
-                    className="w-[160px]"
+                    className="w-[160px] bg-background"
                   />
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-[40px] p-0",
+                          "w-[40px] p-0 bg-background",
                           !endDate && "text-muted-foreground"
                         )}
                       >
@@ -199,7 +203,9 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         <ResponsiveLine
           data={chartData}
           margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-          xScale={{ type: 'point' }}
+          xScale={{ 
+            type: 'point',
+          }}
           yScale={{
             type: 'linear',
             min: 'auto',
@@ -217,7 +223,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
             tickRotation: -45,
             legend: 'Timeline',
             legendOffset: 36,
-            legendPosition: 'middle'
+            legendPosition: 'middle',
+            format: (value) => value
           }}
           axisLeft={{
             tickSize: 5,
@@ -228,8 +235,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
             legendPosition: 'middle',
             format: value => `${value.toFixed(2)}%`
           }}
-          enablePoints={false}
-          pointSize={10}
+          enablePoints={true}
+          pointSize={8}
           pointColor={{ theme: 'background' }}
           pointBorderWidth={2}
           pointBorderColor={{ from: 'serieColor' }}
@@ -239,6 +246,18 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
           useMesh={true}
           enableSlices="x"
           crosshairType="cross"
+          tooltip={({ point }) => (
+            <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-2 text-sm">
+              <div className="font-semibold">{point.data.fullDate}</div>
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: point.serieColor }}
+                />
+                <span>{point.serieId}: {point.data.y}%</span>
+              </div>
+            </div>
+          )}
           legends={[
             {
               anchor: 'bottom-right',
