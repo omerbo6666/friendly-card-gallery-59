@@ -1,61 +1,49 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { DollarSign, TrendingUp, Coins, BarChart3 } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Users, PiggyBank, TrendingUp, Coins } from 'lucide-react';
 import { formatCurrency } from '@/utils/chartDataUtils';
 
 interface MetricsPanelProps {
-  totalInvestment: number;
-  monthlyAverageInvestment: number;
+  totalClients: number;
+  totalManagedFunds: number;
   totalProfit: number;
-  roi: number;
   managementFees: number;
-  portfolioValue: number;
 }
 
 const MetricsPanel: React.FC<MetricsPanelProps> = ({
-  totalInvestment,
-  monthlyAverageInvestment,
+  totalClients,
+  totalManagedFunds,
   totalProfit,
-  roi,
   managementFees,
-  portfolioValue,
 }) => {
   const metrics = [
     {
-      title: "Total Investment",
-      value: formatCurrency(totalInvestment),
-      subValue: `Monthly Average: ${formatCurrency(monthlyAverageInvestment)}`,
-      icon: DollarSign,
-      tooltip: "Total amount invested across all clients and average monthly investment",
-      color: "text-blue-500"
+      title: "Total Clients",
+      value: totalClients.toLocaleString(),
+      icon: Users,
+      color: "text-blue-500",
+      subtext: "Active portfolios"
+    },
+    {
+      title: "Total Managed Funds",
+      value: formatCurrency(totalManagedFunds),
+      icon: PiggyBank,
+      color: "text-yellow-500",
+      subtext: "Assets under management"
     },
     {
       title: "Total Profit",
       value: formatCurrency(totalProfit),
-      subValue: `ROI: ${roi.toFixed(2)}%`,
       icon: TrendingUp,
-      tooltip: "Cumulative profit and Return on Investment percentage",
-      color: "text-green-500"
+      color: "text-green-500",
+      subtext: "Cumulative returns"
     },
     {
       title: "Management Fees",
       value: formatCurrency(managementFees),
       icon: Coins,
-      tooltip: "Total profit earned from management fees (0.5% of investments)",
-      color: "text-orange-500"
-    },
-    {
-      title: "Portfolio Value",
-      value: formatCurrency(portfolioValue),
-      icon: BarChart3,
-      tooltip: "Total managed funds (Investments + Profit)",
-      color: "text-yellow-500"
+      color: "text-orange-500",
+      subtext: "Total fees collected"
     }
   ];
 
@@ -64,29 +52,18 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({
       {metrics.map((metric, index) => (
         <Card key={index} className="bg-card">
           <CardContent className="pt-6">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-muted-foreground">
-                        {metric.title}
-                      </p>
-                      <p className="text-2xl font-bold">{metric.value}</p>
-                      {metric.subValue && (
-                        <p className="text-sm text-muted-foreground">
-                          {metric.subValue}
-                        </p>
-                      )}
-                    </div>
-                    <metric.icon className={`h-5 w-5 ${metric.color}`} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">{metric.tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {metric.title}
+                </p>
+                <p className="text-2xl font-bold">{metric.value}</p>
+                <p className="text-sm text-muted-foreground">
+                  {metric.subtext}
+                </p>
+              </div>
+              <metric.icon className={`h-5 w-5 ${metric.color}`} />
+            </div>
           </CardContent>
         </Card>
       ))}
