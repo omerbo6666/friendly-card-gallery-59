@@ -252,7 +252,8 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
                 tickRotation: -45,
                 legend: 'Timeline',
                 legendOffset: 36,
-                legendPosition: 'middle'
+                legendPosition: 'middle',
+                format: (value) => String(value)  // Explicitly convert to string
               }}
               axisLeft={{
                 tickSize: 5,
@@ -261,7 +262,7 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
                 legend: 'Portfolio Value (ILS)',
                 legendOffset: -40,
                 legendPosition: 'middle',
-                format: value => formatCurrency(Number(value))
+                format: (value) => formatCurrency(Number(value))  // Ensure value is converted to number
               }}
               enablePoints={true}
               pointSize={8}
@@ -324,7 +325,7 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
                     <div className="space-y-1">
                       <div className="flex items-center justify-between gap-4">
                         <span>Portfolio Value:</span>
-                        <span className="font-medium">{formatCurrency(point.data.y)}</span>
+                        <span className="font-medium">{formatCurrency(point.data.y as number)}</span>
                       </div>
                       <div className="flex items-center justify-between gap-4">
                         <span>Investment:</span>
