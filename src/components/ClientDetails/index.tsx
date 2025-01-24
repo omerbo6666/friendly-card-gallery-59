@@ -321,7 +321,7 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
                 const data = point.data as any;
                 return (
                   <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-2 text-sm">
-                    <div className="font-semibold">{point.data.x}</div>
+                    <div className="font-semibold">{String(point.data.x)}</div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between gap-4">
                         <span>Portfolio Value:</span>
