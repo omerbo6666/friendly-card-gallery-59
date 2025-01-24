@@ -224,7 +224,7 @@ const GlobalManagedFundsChart = () => {
                 }}
                 xScale={{
                   type: 'point',
-                  pointPadding: 0.5
+                  innerPadding: 0.5
                 }}
                 yScale={{
                   type: 'linear',
