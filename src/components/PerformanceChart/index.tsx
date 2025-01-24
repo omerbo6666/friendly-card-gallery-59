@@ -208,13 +208,13 @@ const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
         </Button>
       </div>
 
-      <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
+      <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50 overflow-hidden">
         <ResponsiveLine
           data={chartData}
           margin={{ 
             top: 50, 
             right: isMobile ? 20 : 110, 
-            bottom: 50, 
+            bottom: 70, // Increased bottom margin to prevent cutoff
             left: isMobile ? 40 : 60 
           }}
           xScale={{ type: 'point' }}
@@ -234,7 +234,7 @@ const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
             tickPadding: 5,
             tickRotation: -45,
             legend: 'Timeline',
-            legendOffset: 36,
+            legendOffset: 50,
             legendPosition: 'middle'
           }}
           axisLeft={{
@@ -257,7 +257,7 @@ const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
           useMesh={true}
           enableSlices="x"
           crosshairType="cross"
-          lineWidth={isMobile ? 3 : 2}
+          lineWidth={isMobile ? 4 : 2.5} // Increased line thickness, especially on mobile
           theme={{
             axis: {
               ticks: {
