@@ -35,8 +35,12 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
             left: isMobile ? 60 : 80 
           }}
           xScale={{
-            type: 'point'
+            type: 'time',
+            format: '%Y-%m-%d',
+            useUTC: false,
+            precision: 'day',
           }}
+          xFormat="time:%Y-%m-%d"
           yScale={{
             type: 'linear',
             min: 'auto',
@@ -50,7 +54,7 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: -45,
-            format: (value) => value,
+            format: '%b %d, %Y',
             legend: 'Timeline',
             legendOffset: 50,
             legendPosition: 'middle'
@@ -137,7 +141,7 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
             const data = point.data as any;
             return (
               <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-3 space-y-2">
-                <div className="font-semibold border-b border-border pb-2">{data.x}</div>
+                <div className="font-semibold border-b border-border pb-2">{data.xFormatted}</div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <div 
