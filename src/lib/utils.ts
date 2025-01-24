@@ -2,7 +2,6 @@ import { MonthlyData } from '@/types/investment';
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { getReturnsForTrack } from './investmentReturns';
-import { validateInvestmentTrack } from '@/config/investmentTracks';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,6 +16,11 @@ export const generateMonthlyData = ({ investmentPercentageOverride, investmentTr
   // Get returns based on investment track
   const returns = getReturnsForTrack(investmentTrack || 'SWTSX');
   console.log(`Generating monthly data for track: ${investmentTrack}`);
+  
+  if (returns.length === 0) {
+    console.warn(`No returns data available for track: ${investmentTrack}`);
+    return data;
+  }
   
   for (let month = 0; month < returns.length; month++) {
     const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
