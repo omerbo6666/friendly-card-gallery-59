@@ -1,6 +1,8 @@
 import { MonthlyData } from '@/types/investment';
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { getReturnsForTrack } from '@/config/returnData';
+import { validateInvestmentTrack } from '@/config/investmentTracks';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -85,24 +87,12 @@ export const generateMonthlyData = ({ investmentPercentageOverride, investmentTr
   let cumulativeProfit = 0;
   let totalInvestment = 0;
   
-  // Select returns based on investment track
-  let returns;
-  switch(investmentTrack) {
-    case 'SPY500':
-      returns = SP500_RETURNS;
-      break;
-    case 'Vanguard Total Stock Market ETF':
-      returns = VTI_RETURNS;
-      break;
-    case 'NASDAQ':
-      returns = NASDAQ_RETURNS;
-      break;
-    case 'Schwab Total Stock Market Index':
-      returns = SCHWAB_RETURNS;
-      break;
-    default:
-      returns = NASDAQ_RETURNS;
+  // Validate investment track and get returns
+  if (!investmentTrack || !validateInvestmentTrack(investmentTrack)) {
+    console.warn(`Invalid investment track: ${investmentTrack}, using default returns`);
   }
+  
+  const returns = getReturnsForTrack(investmentTrack || 'NASDAQ');
   
   for (let month = 0; month < returns.length; month++) {
     const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
