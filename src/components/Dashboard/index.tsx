@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react';
-import { Client, MonthlyData, ClientMetrics, AggregateMetrics, InvestmentTrack } from '@/types/investment';
-
+import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
@@ -28,7 +27,6 @@ import { useNavigate } from 'react-router-dom';
 import { getClients, saveClients, searchClients } from '@/lib/localStorage';
 import { INVESTMENT_TRACKS, PROFESSIONS } from '@/lib/constants';
 import PerformanceChart from '@/components/PerformanceChart';
-import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const RISK_PROFILES = ['Conservative', 'Moderate', 'Aggressive'];
@@ -103,7 +101,7 @@ export const Dashboard = () => {
     let totalInvestment = 0;
     
     // Select returns based on investment track
-    const returns = investmentTrack === 'SPY' ? SP500_RETURNS : NASDAQ_RETURNS;
+    const returns = investmentTrack === 'SPY500' ? SP500_RETURNS : NASDAQ_RETURNS;
     
     for (let month = 0; month < returns.length; month++) {
       const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
@@ -130,7 +128,7 @@ export const Dashboard = () => {
     const newClients: Client[] = Array.from({ length: 100 }, (_, i) => {
       const monthlyExpenses = Math.floor(Math.random() * 16000) + 4000;
       const investmentPercentage = (Math.random() * 17 + 3).toFixed(1);
-      const tracks: InvestmentTrack[] = INVESTMENT_TRACKS.map(track => track.id as InvestmentTrack);
+      const tracks = INVESTMENT_TRACKS.map(track => track.id);
       const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
       
       return {
@@ -288,7 +286,11 @@ export const Dashboard = () => {
 
       {/* Add performance chart after the metrics cards */}
       <div className="mb-6 md:mb-8">
-        <PerformanceChart />
+        <PerformanceChart
+          spyReturns={SP500_RETURNS}
+          vtiReturns={[]}
+          nasdaqReturns={NASDAQ_RETURNS}
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
