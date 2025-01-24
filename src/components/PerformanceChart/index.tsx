@@ -13,7 +13,12 @@ import {
   DollarSign,
   PieChart,
   Activity,
-  HelpCircle
+  HelpCircle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Percent,
+  Wallet,
+  LineChart
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -26,6 +31,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface DataPoint {
   x: string;
@@ -44,6 +57,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
   const isMobile = useIsMobile();
   const [performanceData, setPerformanceData] = useState<any[]>([]);
   const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
+  const [timeRange, setTimeRange] = useState('1Y'); // New state for time range
 
   useEffect(() => {
     fetchPerformanceData();
@@ -79,7 +93,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
   };
 
   const processPerformanceData = (data: any[]) => {
-    const indices = ['SPY500', 'NASDAQ100', 'RUSSELL2000'];
+    const indices = ['SPY500', 'NASDAQ', 'RUSSELL2000'];
     const colors = {
       'SPY500': '#22c55e',
       'NASDAQ': '#ec4899',
@@ -130,78 +144,75 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
     return ((totalValue - totalInvestment) / totalInvestment * 100).toFixed(2);
   };
 
+  const MetricCard = ({ title, value, subValue, icon: Icon, trend, tooltipContent }: any) => (
+    <Card className="bg-card/50 hover:bg-card/70 transition-colors">
+      <CardHeader className="p-4">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">{title}</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tooltipContent}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <div className="text-2xl font-bold flex items-center gap-2">
+              {value}
+              {trend && (
+                <span className={cn(
+                  "text-sm font-medium flex items-center",
+                  trend > 0 ? "text-green-500" : "text-red-500"
+                )}>
+                  {trend > 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                  {Math.abs(trend)}%
+                </span>
+              )}
+            </div>
+            {subValue && (
+              <div className="text-sm text-muted-foreground">{subValue}</div>
+            )}
+          </div>
+          <Icon className="w-5 h-5 text-primary/70" />
+        </div>
+      </CardHeader>
+    </Card>
+  );
+
   return (
     <div className="space-y-8">
-      {/* Key Metrics Section */}
+      {/* Key Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Total Investment</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Total amount invested across all tracks</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <div className="text-2xl font-bold">{formatCurrency(1000000)}</div>
-              <div className="text-sm text-muted-foreground">Monthly: {formatCurrency(50000)}</div>
-            </div>
-            <DollarSign className="w-5 h-5 text-primary/70" />
-          </div>
-        </div>
-
-        <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Portfolio Value</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Current total value of your investments</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <div className="text-2xl font-bold">{formatCurrency(1250000)}</div>
-              <div className="text-sm text-muted-foreground">Fees: {formatCurrency(25000)}</div>
-            </div>
-            <PieChart className="w-5 h-5 text-primary/70" />
-          </div>
-        </div>
-
-        <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Total Profit</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Net profit from your investments</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <div className="text-2xl font-bold text-green-500">{formatCurrency(250000)}</div>
-              <div className="text-sm text-muted-foreground">ROI: {calculateROI(1250000, 1000000)}%</div>
-            </div>
-            <Activity className="w-5 h-5 text-primary/70" />
-          </div>
-        </div>
+        <MetricCard
+          title="Total Investment"
+          value={formatCurrency(1000000)}
+          subValue={`Monthly: ${formatCurrency(50000)}`}
+          icon={Wallet}
+          tooltipContent="Total amount invested across all tracks"
+        />
+        
+        <MetricCard
+          title="Portfolio Value"
+          value={formatCurrency(1250000)}
+          subValue={`Fees: ${formatCurrency(25000)}`}
+          icon={DollarSign}
+          trend={5.2}
+          tooltipContent="Current total value of your investments"
+        />
+        
+        <MetricCard
+          title="Total Profit"
+          value={formatCurrency(250000)}
+          subValue={`ROI: ${calculateROI(1250000, 1000000)}%`}
+          icon={LineChart}
+          trend={12.5}
+          tooltipContent="Net profit from your investments"
+        />
 
         <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
           <div className="space-y-4">
@@ -232,116 +243,138 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
       </div>
 
       {/* Performance Chart Section */}
-      <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-lg border border-border space-y-6">
-        <ResponsiveLine
-          data={chartData}
-          margin={{ 
-            top: 50, 
-            right: isMobile ? 20 : 110, 
-            bottom: 70,
-            left: isMobile ? 40 : 60 
-          }}
-          xScale={{ type: 'point' }}
-          yScale={{
-            type: 'linear',
-            min: 'auto',
-            max: 'auto',
-            stacked: false,
-            reverse: false
-          }}
-          yFormat=" >-.2f"
-          curve="monotoneX"
-          axisTop={null}
-          axisRight={null}
-          axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: -45,
-            legend: 'Timeline',
-            legendOffset: 50,
-            legendPosition: 'middle'
-          }}
-          axisLeft={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: 'Total Return (%)',
-            legendOffset: -40,
-            legendPosition: 'middle',
-            format: value => `${value.toFixed(0)}%`
-          }}
-          enablePoints={false}
-          lineWidth={1.5}
-          enableArea={true}
-          areaOpacity={0.1}
-          useMesh={true}
-          enableSlices="x"
-          crosshairType="cross"
-          theme={{
-            axis: {
-              ticks: {
-                text: {
-                  fontSize: isMobile ? 10 : 11,
-                  fill: 'hsl(var(--muted-foreground))'
+      <Card className="bg-card text-card-foreground rounded-xl shadow-lg border border-border">
+        <CardHeader className="p-6 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Performance Overview</CardTitle>
+            <CardDescription>Track performance across different indices</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            {['1M', '3M', '6M', '1Y', '5Y', 'ALL'].map((range) => (
+              <Button
+                key={range}
+                variant={timeRange === range ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTimeRange(range)}
+              >
+                {range}
+              </Button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="h-[400px]">
+            <ResponsiveLine
+              data={chartData}
+              margin={{ 
+                top: 50, 
+                right: isMobile ? 20 : 110, 
+                bottom: 70,
+                left: isMobile ? 40 : 60 
+              }}
+              xScale={{ type: 'point' }}
+              yScale={{
+                type: 'linear',
+                min: 'auto',
+                max: 'auto',
+                stacked: false,
+                reverse: false
+              }}
+              yFormat=" >-.2f"
+              curve="monotoneX"
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: 'Timeline',
+                legendOffset: 50,
+                legendPosition: 'middle'
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: 'Total Return (%)',
+                legendOffset: -40,
+                legendPosition: 'middle',
+                format: value => `${value.toFixed(0)}%`
+              }}
+              enablePoints={false}
+              lineWidth={1.5}
+              enableArea={true}
+              areaOpacity={0.1}
+              useMesh={true}
+              enableSlices="x"
+              crosshairType="cross"
+              theme={{
+                axis: {
+                  ticks: {
+                    text: {
+                      fontSize: isMobile ? 10 : 11,
+                      fill: 'hsl(var(--muted-foreground))'
+                    }
+                  },
+                  legend: {
+                    text: {
+                      fontSize: isMobile ? 11 : 12,
+                      fill: 'hsl(var(--muted-foreground))',
+                      fontWeight: 500
+                    }
+                  }
+                },
+                grid: {
+                  line: {
+                    stroke: 'hsl(var(--border))',
+                    strokeWidth: 1,
+                    strokeDasharray: '4 4'
+                  }
+                },
+                crosshair: {
+                  line: {
+                    stroke: 'hsl(var(--primary))',
+                    strokeWidth: 1,
+                    strokeOpacity: 0.5
+                  }
+                },
+                tooltip: {
+                  container: {
+                    background: 'hsl(var(--background))',
+                    color: 'hsl(var(--foreground))',
+                    fontSize: isMobile ? 11 : 12,
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    padding: '8px 12px',
+                    border: '1px solid hsl(var(--border))'
+                  }
                 }
-              },
-              legend: {
-                text: {
-                  fontSize: isMobile ? 11 : 12,
-                  fill: 'hsl(var(--muted-foreground))',
-                  fontWeight: 500
-                }
-              }
-            },
-            grid: {
-              line: {
-                stroke: 'hsl(var(--border))',
-                strokeWidth: 1,
-                strokeDasharray: '4 4'
-              }
-            },
-            crosshair: {
-              line: {
-                stroke: 'hsl(var(--primary))',
-                strokeWidth: 1,
-                strokeOpacity: 0.5
-              }
-            },
-            tooltip: {
-              container: {
-                background: 'hsl(var(--background))',
-                color: 'hsl(var(--foreground))',
-                fontSize: isMobile ? 11 : 12,
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                padding: '8px 12px',
-                border: '1px solid hsl(var(--border))'
-              }
-            }
-          }}
-          tooltip={({ point }) => {
-            const data = point.data as unknown as DataPoint;
-            return (
-              <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-3 space-y-2">
-                <div className="font-semibold border-b border-border pb-2">{data.fullDate}</div>
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: point.serieColor }}
-                  />
-                  <span className="font-medium">{point.serieId}</span>
-                  <span className={cn(
-                    "font-semibold ml-2",
-                    data.y >= 0 ? "text-green-500" : "text-red-500"
-                  )}>
-                    {data.y >= 0 ? "+" : ""}{data.y}%
-                  </span>
-                </div>
-              </div>
-            );
-          }}
-        />
-      </div>
+              }}
+              tooltip={({ point }) => {
+                const data = point.data as unknown as DataPoint;
+                return (
+                  <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-3 space-y-2">
+                    <div className="font-semibold border-b border-border pb-2">{data.fullDate}</div>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: point.serieColor }}
+                      />
+                      <span className="font-medium">{point.serieId}</span>
+                      <span className={cn(
+                        "font-semibold ml-2",
+                        data.y >= 0 ? "text-green-500" : "text-red-500"
+                      )}>
+                        {data.y >= 0 ? "+" : ""}{data.y}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
