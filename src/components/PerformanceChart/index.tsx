@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ResponsiveLine } from '@nivo/line';
-import { format, parse, differenceInYears } from 'date-fns';
+import { format, parse, differenceInYears, subMonths, isAfter } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,12 +52,14 @@ interface PerformanceChartProps {
   showTrackSelector?: boolean;
 }
 
+type TimePeriod = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'ALL';
+
 const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = true }: PerformanceChartProps) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [performanceData, setPerformanceData] = useState<any[]>([]);
   const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
-  const [timeRange, setTimeRange] = useState('1Y'); // New state for time range
+  const [timeRange, setTimeRange] = useState<TimePeriod>('1Y');
 
   useEffect(() => {
     fetchPerformanceData();
@@ -92,6 +94,37 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
     }
   };
 
+  const filterDataByTimeRange = (data: DataPoint[], range: TimePeriod): DataPoint[] => {
+    const now = new Date();
+    let filterDate = now;
+
+    switch (range) {
+      case '1M':
+        filterDate = subMonths(now, 1);
+        break;
+      case '3M':
+        filterDate = subMonths(now, 3);
+        break;
+      case '6M':
+        filterDate = subMonths(now, 6);
+        break;
+      case '1Y':
+        filterDate = subMonths(now, 12);
+        break;
+      case '5Y':
+        filterDate = subMonths(now, 60);
+        break;
+      case 'ALL':
+      default:
+        return data;
+    }
+
+    return data.filter(point => {
+      const pointDate = parse(point.fullDate, 'MMMM yyyy', new Date());
+      return isAfter(pointDate, filterDate);
+    });
+  };
+
   const processPerformanceData = (data: any[]) => {
     const indices = ['SPY500', 'NASDAQ', 'RUSSELL2000'];
     const colors = {
@@ -120,7 +153,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
         id: index,
         trackId: index,
         color: colors[index as keyof typeof colors],
-        data: lineData,
+        data: filterDataByTimeRange(lineData, timeRange),
         totalReturn: Number((cumulativeReturn - 100).toFixed(2)),
         annualizedReturn: Number(annualizedReturn)
       };
@@ -129,7 +162,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
 
   const chartData = useMemo(() => {
     return performanceData.filter(track => selectedTracks.includes(track.trackId));
-  }, [performanceData, selectedTracks]);
+  }, [performanceData, selectedTracks, timeRange]);
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('he-IL', {
@@ -186,7 +219,6 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
 
   return (
     <div className="space-y-8">
-      {/* Key Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Investment"
@@ -242,7 +274,6 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
         </div>
       </div>
 
-      {/* Performance Chart Section */}
       <Card className="bg-card text-card-foreground rounded-xl shadow-lg border border-border">
         <CardHeader className="p-6 flex flex-row items-center justify-between">
           <div>
@@ -250,12 +281,16 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
             <CardDescription>Track performance across different indices</CardDescription>
           </div>
           <div className="flex gap-2">
-            {['1M', '3M', '6M', '1Y', '5Y', 'ALL'].map((range) => (
+            {(['1M', '3M', '6M', '1Y', '5Y', 'ALL'] as TimePeriod[]).map((range) => (
               <Button
                 key={range}
                 variant={timeRange === range ? "default" : "outline"}
                 size="sm"
-                onClick={() => setTimeRange(range)}
+                onClick={() => {
+                  setTimeRange(range);
+                  const newData = processPerformanceData(performanceData);
+                  setPerformanceData(newData);
+                }}
               >
                 {range}
               </Button>
