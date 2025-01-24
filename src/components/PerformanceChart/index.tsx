@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Play, ChartLine, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DataPoint {
   x: string;
@@ -17,6 +18,7 @@ interface DataPoint {
 
 const PerformanceChart = () => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [startDate, setStartDate] = useState<Date | undefined>(new Date(2000, 0, 1));
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [startDateInput, setStartDateInput] = useState(format(new Date(2000, 0, 1), 'yyyy-MM-dd'));
@@ -31,7 +33,6 @@ const PerformanceChart = () => {
 
   const fetchPerformanceData = async () => {
     try {
-      console.log('Fetching performance data...');
       const { data, error } = await supabase
         .from('index_performance')
         .select('*')
@@ -40,7 +41,6 @@ const PerformanceChart = () => {
       if (error) throw error;
 
       if (data) {
-        console.log('Received data:', data.length, 'records');
         const formattedData = processPerformanceData(data);
         setPerformanceData(formattedData);
         setFilteredData(formattedData);
@@ -128,21 +128,21 @@ const PerformanceChart = () => {
   }, [filteredData, selectedTracks]);
 
   return (
-    <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border space-y-6">
+    <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-sm border border-border space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
           <ChartLine className="w-5 h-5 text-primary" />
           <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
         </div>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap gap-4 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto justify-center">
             {['SPY500', 'NASDAQ', 'RUSSELL2000'].map(trackId => (
               <Button
                 key={trackId}
                 variant={selectedTracks.includes(trackId) ? "default" : "outline"}
                 onClick={() => toggleTrack(trackId)}
                 className={cn(
-                  "text-xs sm:text-sm transition-all flex items-center gap-2",
+                  "text-xs sm:text-sm transition-all flex items-center gap-2 flex-1 sm:flex-none",
                   selectedTracks.includes(trackId) 
                     ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                     : "hover:bg-accent"
@@ -155,26 +155,26 @@ const PerformanceChart = () => {
             ))}
           </div>
           
-          <div className="grid gap-4 p-4 bg-background/50 rounded-lg border border-border">
+          <div className="grid gap-4 p-4 bg-background/50 rounded-lg border border-border w-full sm:w-auto">
             <div className="grid gap-2">
-              <Label htmlFor="startDate" className="text-sm font-medium">Start Date</Label>
+              <Label htmlFor="startDate">Start Date</Label>
               <Input
                 id="startDate"
                 type="date"
                 value={startDateInput}
                 onChange={(e) => handleDateInputChange(e.target.value, setStartDate, setStartDateInput)}
-                className="w-[160px] bg-background"
+                className="w-full sm:w-[160px] bg-background"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="endDate" className="text-sm font-medium">End Date</Label>
+              <Label htmlFor="endDate">End Date</Label>
               <Input
                 id="endDate"
                 type="date"
                 value={endDateInput}
                 onChange={(e) => handleDateInputChange(e.target.value, setEndDate, setEndDateInput)}
-                className="w-[160px] bg-background"
+                className="w-full sm:w-[160px] bg-background"
               />
             </div>
 
@@ -193,7 +193,12 @@ const PerformanceChart = () => {
       <div className="h-[400px] bg-background/50 rounded-lg p-4">
         <ResponsiveLine
           data={chartData}
-          margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+          margin={{ 
+            top: 50, 
+            right: isMobile ? 20 : 110, 
+            bottom: 50, 
+            left: isMobile ? 40 : 60 
+          }}
           xScale={{ type: 'point' }}
           yScale={{
             type: 'linear',
@@ -223,8 +228,8 @@ const PerformanceChart = () => {
             legendPosition: 'middle',
             format: value => `${value.toFixed(2)}%`
           }}
-          enablePoints={true}
-          pointSize={8}
+          enablePoints={!isMobile}
+          pointSize={isMobile ? 0 : 8}
           pointColor={{ theme: 'background' }}
           pointBorderWidth={2}
           pointBorderColor={{ from: 'serieColor' }}
@@ -234,17 +239,18 @@ const PerformanceChart = () => {
           useMesh={true}
           enableSlices="x"
           crosshairType="cross"
+          lineWidth={isMobile ? 3 : 2}
           theme={{
             axis: {
               ticks: {
                 text: {
-                  fontSize: 11,
+                  fontSize: isMobile ? 10 : 11,
                   fill: 'hsl(var(--muted-foreground))'
                 }
               },
               legend: {
                 text: {
-                  fontSize: 12,
+                  fontSize: isMobile ? 11 : 12,
                   fill: 'hsl(var(--muted-foreground))',
                   fontWeight: 500
                 }
@@ -260,7 +266,7 @@ const PerformanceChart = () => {
             crosshair: {
               line: {
                 stroke: 'hsl(var(--primary))',
-                strokeWidth: 1,
+                strokeWidth: isMobile ? 2 : 1,
                 strokeOpacity: 0.5
               }
             },
@@ -268,7 +274,7 @@ const PerformanceChart = () => {
               container: {
                 background: 'hsl(var(--background))',
                 color: 'hsl(var(--foreground))',
-                fontSize: 12,
+                fontSize: isMobile ? 11 : 12,
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 padding: '8px 12px',

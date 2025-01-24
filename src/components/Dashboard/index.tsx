@@ -272,11 +272,11 @@ export const Dashboard = () => {
         <div className="w-full md:w-auto">
           <Button 
             size="lg"
-            className="w-full h-auto bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            className="w-full h-auto bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 hover:from-violet-600 hover:via-purple-600 hover:to-indigo-600 text-white font-semibold px-6 md:px-8 py-4 md:py-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/10"
             onClick={() => navigate('/add-client')}
           >
             <div className="flex flex-col items-center gap-2">
-              <span className="text-xs md:text-base font-bold tracking-tight">
+              <span className="text-sm md:text-lg font-bold tracking-tight">
                 Add New Client
               </span>
               <span className="text-xs md:text-sm font-normal text-white/90">
