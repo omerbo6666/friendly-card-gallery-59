@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { PROFESSIONS } from '@/lib/constants';
 import { generateMonthlyData } from '@/lib/utils';
-import { InvestmentAllocation } from '@/components/InvestmentAllocation';
+import InvestmentAllocation from '@/components/InvestmentAllocation'; // Fixed import
 import type { Client, InvestmentAllocation as IInvestmentAllocation } from '@/types/investment';
 import { supabase } from "@/integrations/supabase/client";
 import Preview from './Preview';
