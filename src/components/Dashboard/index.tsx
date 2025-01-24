@@ -121,7 +121,7 @@ export const Dashboard = () => {
         name: generateRandomName(),
         profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
         investmentTrack: randomTrack,
-        monthlyData: generateMonthlyData(),
+        monthlyData: generateMonthlyData(Number(investmentPercentage), randomTrack),
         monthlyExpenses,
         investmentPercentage
       };

@@ -24,6 +24,7 @@ export const generateRandomName = () => {
   return `${firstName} ${lastName}`;
 };
 
+// Original NASDAQ returns for other investment tracks
 const NASDAQ_RETURNS = [
   0.0362, 0.0048, 0.0621, -0.0052, 0.0268, 0.0065, -0.0075, 0.0596, 0.0688, -0.0441,
   0.0179, 0.0612, 0.0102, 0.0552, 0.1070, -0.0278, -0.0581, -0.0217, 0.0405, 0.0659,
@@ -34,19 +35,34 @@ const NASDAQ_RETURNS = [
   0.0199
 ].reverse();
 
-export const generateMonthlyData = (investmentPercentageOverride?: number): MonthlyData[] => {
+// New S&P 500 returns
+const SP500_RETURNS = [
+  0.0348, -0.0250, 0.0573, -0.0099, 0.0202, 0.0228, 0.0113, 0.0347, 0.0480, -0.0416,
+  0.0310, 0.0517, 0.0159, 0.0442, 0.0892, -0.0220, -0.0487, -0.0177, 0.0311, 0.0647,
+  0.0025, 0.0146, 0.0351, -0.0261, 0.0618, -0.0590, 0.0538, 0.0799, -0.0934, -0.0424,
+  0.0911, -0.0839, 0.0001, -0.0880, 0.0358, -0.0314, -0.0526, 0.0436, -0.0083, 0.0691,
+  -0.0476, 0.0290, 0.0227, 0.0222, 0.0055, 0.0524, 0.0424, 0.0261, -0.0111, 0.0371,
+  0.1075, -0.0277, -0.0392, 0.0701, 0.0551, 0.0184, 0.0453, 0.1268, -0.1251, -0.0841,
+  -0.0016, 0.0286, 0.0340, 0.0204, 0.0172, -0.0181, 0.0131, 0.0689, -0.0658, 0.0393,
+  0.0179, 0.0297, 0.0787
+].reverse();
+
+export const generateMonthlyData = (investmentPercentageOverride?: number, investmentTrack?: string): MonthlyData[] => {
   const data: MonthlyData[] = [];
   let portfolioValue = 0;
   let cumulativeProfit = 0;
   let totalInvestment = 0;
   
-  for (let month = 0; month < NASDAQ_RETURNS.length; month++) {
+  // Select returns based on investment track
+  const returns = investmentTrack === 'SPY500' ? SP500_RETURNS : NASDAQ_RETURNS;
+  
+  for (let month = 0; month < returns.length; month++) {
     const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
     const investmentPercentage = investmentPercentageOverride || (Math.random() * 17 + 3);
     const investment = monthlyExpense * (investmentPercentage / 100);
     
     totalInvestment += investment;
-    const monthlyReturn = NASDAQ_RETURNS[month];
+    const monthlyReturn = returns[month];
     portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
     cumulativeProfit = portfolioValue - totalInvestment;
     
