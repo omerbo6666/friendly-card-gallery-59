@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { aggregateMonthlyData, type AggregatedChartData } from '@/utils/chartDataUtils';
 import ChartTooltip from '@/components/ChartTooltip';
 import { useToast } from '@/components/ui/use-toast';
+import { MonthlyData } from '@/types/investment';
 
 const GlobalManagedFundsChart = () => {
   const [data, setData] = useState<AggregatedChartData[]>([]);
@@ -42,6 +43,7 @@ const GlobalManagedFundsChart = () => {
         .from('monthly_performance')
         .select(`
           month,
+          expenses,
           investment,
           portfolio_value,
           profit
@@ -59,7 +61,16 @@ const GlobalManagedFundsChart = () => {
         return;
       }
 
-      const aggregatedData = aggregateMonthlyData(monthlyData);
+      // Transform the data to match MonthlyData type
+      const transformedData: MonthlyData[] = monthlyData.map(item => ({
+        month: item.month,
+        expenses: item.expenses,
+        investment: item.investment,
+        portfolioValue: item.portfolio_value, // Map portfolio_value to portfolioValue
+        profit: item.profit
+      }));
+
+      const aggregatedData = aggregateMonthlyData(transformedData);
       console.log('Processed global funds data:', aggregatedData);
       setData(aggregatedData);
     } catch (error) {
@@ -195,115 +206,123 @@ const GlobalManagedFundsChart = () => {
       </CardHeader>
       <CardContent className="p-6 pt-0">
         <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
-          <ResponsiveLine
-            data={chartData}
-            margin={{ 
-              top: 50, 
-              right: isMobile ? 20 : 110, 
-              bottom: 70, 
-              left: isMobile ? 40 : 60 
-            }}
-            xScale={{ type: 'point' }}
-            yScale={{
-              type: 'linear',
-              min: 'auto',
-              max: 'auto',
-              stacked: false,
-              reverse: false
-            }}
-            curve="monotoneX"
-            axisTop={null}
-            axisRight={null}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: -45,
-              legend: 'Timeline',
-              legendOffset: 50,
-              legendPosition: 'middle'
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: 'Amount (₪)',
-              legendOffset: -40,
-              legendPosition: 'middle',
-              format: value => `₪${value.toLocaleString()}`
-            }}
-            enablePoints={false}
-            enableArea={true}
-            areaOpacity={0.1}
-            enableGridX={true}
-            enableGridY={true}
-            pointSize={8}
-            pointColor={{ theme: 'background' }}
-            pointBorderWidth={2}
-            pointBorderColor={{ from: 'serieColor' }}
-            pointLabelYOffset={-12}
-            useMesh={true}
-            legends={[
-              {
-                anchor: 'bottom-right',
-                direction: 'column',
-                justify: false,
-                translateX: 100,
-                translateY: 0,
-                itemsSpacing: 0,
-                itemDirection: 'left-to-right',
-                itemWidth: 140,
-                itemHeight: 20,
-                itemOpacity: 0.75,
-                symbolSize: 12,
-                symbolShape: 'circle',
-                symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                effects: [
-                  {
-                    on: 'hover',
-                    style: {
-                      itemBackground: 'rgba(0, 0, 0, .03)',
-                      itemOpacity: 1
+          {isLoading ? (
+            <Skeleton className="w-full h-full" />
+          ) : data.length === 0 ? (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-muted-foreground">No data available for the selected time range</p>
+            </div>
+          ) : (
+            <ResponsiveLine
+              data={chartData}
+              margin={{ 
+                top: 50, 
+                right: isMobile ? 20 : 110, 
+                bottom: 70, 
+                left: isMobile ? 40 : 60 
+              }}
+              xScale={{ type: 'point' }}
+              yScale={{
+                type: 'linear',
+                min: 'auto',
+                max: 'auto',
+                stacked: false,
+                reverse: false
+              }}
+              curve="monotoneX"
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: 'Timeline',
+                legendOffset: 50,
+                legendPosition: 'middle'
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: 'Amount (₪)',
+                legendOffset: -40,
+                legendPosition: 'middle',
+                format: value => `₪${value.toLocaleString()}`
+              }}
+              enablePoints={false}
+              enableArea={true}
+              areaOpacity={0.1}
+              enableGridX={true}
+              enableGridY={true}
+              pointSize={8}
+              pointColor={{ theme: 'background' }}
+              pointBorderWidth={2}
+              pointBorderColor={{ from: 'serieColor' }}
+              pointLabelYOffset={-12}
+              useMesh={true}
+              legends={[
+                {
+                  anchor: 'bottom-right',
+                  direction: 'column',
+                  justify: false,
+                  translateX: 100,
+                  translateY: 0,
+                  itemsSpacing: 0,
+                  itemDirection: 'left-to-right',
+                  itemWidth: 140,
+                  itemHeight: 20,
+                  itemOpacity: 0.75,
+                  symbolSize: 12,
+                  symbolShape: 'circle',
+                  symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                  effects: [
+                    {
+                      on: 'hover',
+                      style: {
+                        itemBackground: 'rgba(0, 0, 0, .03)',
+                        itemOpacity: 1
+                      }
+                    }
+                  ]
+                }
+              ]}
+              tooltip={({ point }) => {
+                const data = point.data as any;
+                return <ChartTooltip data={data} />;
+              }}
+              theme={{
+                axis: {
+                  ticks: {
+                    text: {
+                      fontSize: isMobile ? 10 : 11,
+                      fill: 'hsl(var(--muted-foreground))'
+                    }
+                  },
+                  legend: {
+                    text: {
+                      fontSize: isMobile ? 11 : 12,
+                      fill: 'hsl(var(--muted-foreground))',
+                      fontWeight: 500
                     }
                   }
-                ]
-              }
-            ]}
-            tooltip={({ point }) => {
-              const data = point.data as any;
-              return <ChartTooltip data={data} />;
-            }}
-            theme={{
-              axis: {
-                ticks: {
-                  text: {
-                    fontSize: isMobile ? 10 : 11,
-                    fill: 'hsl(var(--muted-foreground))'
+                },
+                grid: {
+                  line: {
+                    stroke: 'hsl(var(--border))',
+                    strokeWidth: 1,
+                    strokeDasharray: '4 4'
                   }
                 },
-                legend: {
-                  text: {
-                    fontSize: isMobile ? 11 : 12,
-                    fill: 'hsl(var(--muted-foreground))',
-                    fontWeight: 500
+                crosshair: {
+                  line: {
+                    stroke: 'hsl(var(--primary))',
+                    strokeWidth: 1,
+                    strokeOpacity: 0.5
                   }
                 }
-              },
-              grid: {
-                line: {
-                  stroke: 'hsl(var(--border))',
-                  strokeWidth: 1,
-                  strokeDasharray: '4 4'
-                }
-              },
-              crosshair: {
-                line: {
-                  stroke: 'hsl(var(--primary))',
-                  strokeWidth: 1,
-                  strokeOpacity: 0.5
-                }
-              }
-            }}
-          />
+              }}
+            />
+          )}
         </div>
       </CardContent>
     </Card>
