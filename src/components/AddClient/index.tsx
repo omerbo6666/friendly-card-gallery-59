@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { PROFESSIONS, INVESTMENT_TRACKS } from '@/lib/constants';
+import { PROFESSIONS } from '@/lib/constants';
 import { generateMonthlyData } from '@/lib/utils';
-import { Client, InvestmentTrack } from '@/types/investment';
-import { getClients, saveClients } from '@/lib/localStorage';
+import { InvestmentAllocation } from '@/components/InvestmentAllocation';
+import type { Client, InvestmentAllocation as IInvestmentAllocation } from '@/types/investment';
+import { supabase } from "@/integrations/supabase/client";
 import Preview from './Preview';
 
 const AddClient = () => {
@@ -20,8 +21,10 @@ const AddClient = () => {
     customProfession: '',
     monthlyExpenses: '',
     investmentPercentage: '',
-    investmentTrack: '' as InvestmentTrack,
   });
+  const [allocations, setAllocations] = useState<IInvestmentAllocation[]>([
+    { trackId: 'SPY500', percentage: 100 }
+  ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -85,10 +88,11 @@ const AddClient = () => {
       return false;
     }
 
-    if (!formData.investmentTrack) {
+    const totalAllocation = allocations.reduce((sum, allocation) => sum + allocation.percentage, 0);
+    if (totalAllocation !== 100) {
       toast({
         title: "Error",
-        description: "Please select an investment track",
+        description: "Total investment allocation must equal 100%",
         variant: "destructive",
       });
       return false;
@@ -97,36 +101,75 @@ const AddClient = () => {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
-    const clients = getClients();
-    const newClient: Client = {
-      id: clients.length + 1,
-      name: formData.name,
-      profession: formData.profession === 'Other' ? formData.customProfession : formData.profession,
-      customProfession: formData.profession === 'Other' ? formData.customProfession : undefined,
-      monthlyExpenses: Number(formData.monthlyExpenses),
-      investmentPercentage: formData.investmentPercentage,
-      investmentTrack: formData.investmentTrack,
-      monthlyData: generateMonthlyData({
+    try {
+      // Insert new client
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          name: formData.name,
+          profession: formData.profession === 'Other' ? formData.customProfession : formData.profession,
+          monthly_expenses: Number(formData.monthlyExpenses),
+          investment_percentage: Number(formData.investmentPercentage),
+          start_date: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (clientError) throw clientError;
+
+      // Insert allocations
+      const { error: allocationsError } = await supabase
+        .from('client_allocations')
+        .insert(
+          allocations.map(allocation => ({
+            client_id: clientData.id,
+            track_id: allocation.trackId,
+            percentage: allocation.percentage
+          }))
+        );
+
+      if (allocationsError) throw allocationsError;
+
+      // Insert monthly performance data
+      const monthlyData = generateMonthlyData({
         investmentPercentageOverride: Number(formData.investmentPercentage),
         startDate: new Date()
-      }),
-      startDate: new Date()
-    };
+      });
 
-    clients.push(newClient);
-    saveClients(clients);
+      const { error: performanceError } = await supabase
+        .from('monthly_performance')
+        .insert(
+          monthlyData.map(data => ({
+            client_id: clientData.id,
+            month: data.month,
+            expenses: data.expenses,
+            investment: data.investment,
+            portfolio_value: data.portfolioValue,
+            profit: data.profit
+          }))
+        );
 
-    toast({
-      title: "Success",
-      description: "Client added successfully",
-    });
+      if (performanceError) throw performanceError;
 
-    navigate('/');
+      toast({
+        title: "Success",
+        description: "Client added successfully",
+      });
+
+      navigate('/');
+    } catch (error) {
+      console.error('Error adding client:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add client. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -214,24 +257,10 @@ const AddClient = () => {
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="investmentTrack">Investment Track</Label>
-              <Select
-                value={formData.investmentTrack}
-                onValueChange={(value) => handleSelectChange('investmentTrack', value as InvestmentTrack)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select investment track" />
-                </SelectTrigger>
-                <SelectContent>
-                  {INVESTMENT_TRACKS.map((track) => (
-                    <SelectItem key={track.id} value={track.id}>
-                      {track.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <InvestmentAllocation
+              allocations={allocations}
+              onAllocationsChange={setAllocations}
+            />
           </div>
 
           <div className="flex justify-end gap-4">
