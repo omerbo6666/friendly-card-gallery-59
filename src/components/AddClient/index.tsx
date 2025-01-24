@@ -1,145 +1,137 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 import { PROFESSIONS, INVESTMENT_TRACKS } from '@/lib/constants';
-import { Client, InvestmentTrack } from '@/types/investment';
 import { generateMonthlyData } from '@/lib/utils';
-import { addClient } from '@/lib/localStorage';
-import { Calendar } from "@/components/ui/calendar";
-import { format, parse, isValid } from "date-fns";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from 'lucide-react';
-import { cn } from "@/lib/utils";
-
-interface InvestmentAllocation {
-  trackId: InvestmentTrack;
-  percentage: number;
-}
+import { Client, InvestmentTrack } from '@/types/investment';
+import { getClients, saveClients } from '@/lib/localStorage';
+import Preview from './Preview';
 
 const AddClient = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [dateInputValue, setDateInputValue] = useState(format(new Date(), 'yyyy-MM-dd'));
-  
   const [formData, setFormData] = useState({
     name: '',
     profession: '',
     customProfession: '',
-    monthlyIncome: '',
     monthlyExpenses: '',
-    investmentPercentage: 10,
+    investmentPercentage: '',
+    investmentTrack: '' as InvestmentTrack,
   });
 
-  const [allocations, setAllocations] = useState<InvestmentAllocation[]>([
-    { trackId: 'SPY500', percentage: 100 }
-  ]);
-
-  const handleDateChange = (date: Date | undefined) => {
-    if (date) {
-      setStartDate(date);
-      setDateInputValue(format(date, 'yyyy-MM-dd'));
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setDateInputValue(value);
-    
-    const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
-    if (isValid(parsedDate)) {
-      setStartDate(parsedDate);
-    }
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const addTrack = () => {
-    if (allocations.length < 3) {
-      const availableTracks = INVESTMENT_TRACKS.filter(
-        track => !allocations.find(a => a.trackId === track.id)
-      );
-      if (availableTracks.length > 0) {
-        setAllocations([...allocations, { trackId: availableTracks[0].id, percentage: 0 }]);
-      }
-    }
-  };
-
-  const removeTrack = (index: number) => {
-    setAllocations(allocations.filter((_, i) => i !== index));
-  };
-
-  const updateAllocation = (index: number, value: number) => {
-    const newAllocations = [...allocations];
-    newAllocations[index].percentage = value;
-    
-    // Adjust other allocations to maintain 100% total
-    const total = newAllocations.reduce((sum, alloc, i) => i === index ? sum : sum + alloc.percentage, 0);
-    const remaining = 100 - value;
-    
-    if (remaining > 0) {
-      const othersCount = newAllocations.length - 1;
-      newAllocations.forEach((alloc, i) => {
-        if (i !== index) {
-          alloc.percentage = remaining / othersCount;
-        }
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter client name",
+        variant: "destructive",
       });
+      return false;
     }
-    
-    setAllocations(newAllocations);
+
+    if (!formData.profession) {
+      toast({
+        title: "Error",
+        description: "Please select a profession",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (formData.profession === 'Other' && !formData.customProfession.trim()) {
+      toast({
+        title: "Error",
+        description: "Please specify the profession",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.monthlyExpenses || isNaN(Number(formData.monthlyExpenses)) || Number(formData.monthlyExpenses) <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter valid monthly expenses",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.investmentPercentage || isNaN(Number(formData.investmentPercentage)) || 
+        Number(formData.investmentPercentage) <= 0 || Number(formData.investmentPercentage) > 100) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid investment percentage (1-100)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.investmentTrack) {
+      toast({
+        title: "Error",
+        description: "Please select an investment track",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.profession || !formData.monthlyIncome || !formData.monthlyExpenses) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    // Generate monthly data for each allocation
-    const combinedMonthlyData = generateMonthlyData({
-      investmentPercentageOverride: formData.investmentPercentage,
-      allocations,
-      startDate
-    });
+    if (!validateForm()) return;
 
+    const clients = getClients();
     const newClient: Client = {
-      id: Date.now(),
+      id: clients.length + 1,
       name: formData.name,
-      profession: formData.profession === 'Other' ? 'Other' : formData.profession,
+      profession: formData.profession === 'Other' ? formData.customProfession : formData.profession,
       customProfession: formData.profession === 'Other' ? formData.customProfession : undefined,
       monthlyExpenses: Number(formData.monthlyExpenses),
-      investmentPercentage: formData.investmentPercentage.toString(),
-      investmentTrack: allocations[0].trackId,
-      monthlyData: combinedMonthlyData,
-      startDate,
-      allocations
+      investmentPercentage: formData.investmentPercentage,
+      investmentTrack: formData.investmentTrack,
+      monthlyData: generateMonthlyData({
+        investmentPercentageOverride: Number(formData.investmentPercentage),
+        investmentTrack: formData.investmentTrack,
+        startDate: new Date()
+      }),
+      startDate: new Date()
     };
 
-    addClient(newClient);
-    
+    clients.push(newClient);
+    saveClients(clients);
+
     toast({
       title: "Success",
-      description: "Client added successfully"
+      description: "Client added successfully",
     });
 
     navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col gap-6 mb-8">
           <div className="flex justify-between items-center">
@@ -149,193 +141,106 @@ const AddClient = () => {
             </Button>
           </div>
           
-          <div className="bg-card/50 p-6 rounded-lg border border-border/50 space-y-4">
-            <h2 className="font-semibold text-lg">Investment Portfolio Management</h2>
-            <p className="text-muted-foreground">
-              Create a new client profile and set up their investment strategy. You'll be able to:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li>Configure monthly investment amounts based on income</li>
-              <li>Choose from multiple investment tracks (S&P 500, NASDAQ, Russell 2000)</li>
-              <li>Set custom investment allocations across different indices</li>
-              <li>Track performance and portfolio growth over time</li>
-            </ul>
-          </div>
+          <Preview />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 rounded-xl border border-border">
-          {/* Basic Info */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Client Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Enter client name"
-            />
-          </div>
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Client Name</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="Enter client name"
+                value={formData.name}
+                onChange={handleInputChange}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="profession">Profession</Label>
-            <Select
-              value={formData.profession}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, profession: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select profession" />
-              </SelectTrigger>
-              <SelectContent>
-                {PROFESSIONS.map((profession) => (
-                  <SelectItem key={profession} value={profession}>
-                    {profession}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
+            <div className="grid gap-2">
+              <Label htmlFor="profession">Profession</Label>
+              <Select
+                value={formData.profession}
+                onValueChange={(value) => handleSelectChange('profession', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select profession" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROFESSIONS.map((profession) => (
+                    <SelectItem key={profession} value={profession}>
+                      {profession}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {formData.profession === 'Other' && (
-              <div className="mt-2">
+              <div className="grid gap-2">
                 <Label htmlFor="customProfession">Specify Profession</Label>
                 <Input
                   id="customProfession"
+                  name="customProfession"
+                  placeholder="Enter profession"
                   value={formData.customProfession}
-                  onChange={(e) => setFormData(prev => ({ ...prev, customProfession: e.target.value }))}
-                  placeholder="Enter your profession"
+                  onChange={handleInputChange}
                 />
               </div>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="startDate">Start Date</Label>
-            <div className="flex gap-2">
+            <div className="grid gap-2">
+              <Label htmlFor="monthlyExpenses">Monthly Expenses (ILS)</Label>
               <Input
-                type="date"
-                value={dateInputValue}
-                onChange={handleDateInputChange}
-                className="flex-1"
+                id="monthlyExpenses"
+                name="monthlyExpenses"
+                type="number"
+                placeholder="Enter monthly expenses"
+                value={formData.monthlyExpenses}
+                onChange={handleInputChange}
               />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-[280px] justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={handleDateChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="investmentPercentage">Investment Percentage (%)</Label>
+              <Input
+                id="investmentPercentage"
+                name="investmentPercentage"
+                type="number"
+                placeholder="Enter investment percentage"
+                value={formData.investmentPercentage}
+                onChange={handleInputChange}
+                min="1"
+                max="100"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="investmentTrack">Investment Track</Label>
+              <Select
+                value={formData.investmentTrack}
+                onValueChange={(value) => handleSelectChange('investmentTrack', value as InvestmentTrack)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select investment track" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INVESTMENT_TRACKS.map((track) => (
+                    <SelectItem key={track.id} value={track.id}>
+                      {track.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="monthlyIncome">Monthly Income (ILS)</Label>
-            <Input
-              id="monthlyIncome"
-              type="number"
-              value={formData.monthlyIncome}
-              onChange={(e) => setFormData(prev => ({ ...prev, monthlyIncome: e.target.value }))}
-              placeholder="Enter monthly income"
-            />
+          <div className="flex justify-end gap-4">
+            <Button type="button" variant="outline" onClick={() => navigate('/')}>
+              Cancel
+            </Button>
+            <Button type="submit">Add Client</Button>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="monthlyExpenses">Monthly Expenses (ILS)</Label>
-            <Input
-              id="monthlyExpenses"
-              type="number"
-              value={formData.monthlyExpenses}
-              onChange={(e) => setFormData(prev => ({ ...prev, monthlyExpenses: e.target.value }))}
-              placeholder="Enter monthly expenses"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Investment Percentage ({formData.investmentPercentage}%)</Label>
-            <Slider
-              value={[formData.investmentPercentage]}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, investmentPercentage: value[0] }))}
-              min={3}
-              max={20}
-              step={0.5}
-            />
-          </div>
-
-          {/* Investment Allocations */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Label>Investment Allocations</Label>
-              {allocations.length < 3 && (
-                <Button type="button" variant="outline" onClick={addTrack}>
-                  Add Track
-                </Button>
-              )}
-            </div>
-            
-            {allocations.map((allocation, index) => (
-              <div key={index} className="space-y-2 p-4 border rounded-lg">
-                <div className="flex justify-between items-center">
-                  <Select
-                    value={allocation.trackId}
-                    onValueChange={(value: InvestmentTrack) => {
-                      const newAllocations = [...allocations];
-                      newAllocations[index].trackId = value;
-                      setAllocations(newAllocations);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INVESTMENT_TRACKS
-                        .filter(track => !allocations.find((a, i) => i !== index && a.trackId === track.id))
-                        .map((track) => (
-                          <SelectItem key={track.id} value={track.id}>
-                            {track.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  {allocations.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeTrack(index)}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label>Allocation ({allocation.percentage.toFixed(1)}%)</Label>
-                  <Slider
-                    value={[allocation.percentage]}
-                    onValueChange={(value) => updateAllocation(index, value[0])}
-                    min={0}
-                    max={100}
-                    step={1}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Button type="submit" className="w-full">
-            Add Client
-          </Button>
         </form>
       </div>
     </div>
