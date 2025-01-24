@@ -11,7 +11,7 @@ import { INVESTMENT_TRACKS, PROFESSIONS } from '@/lib/constants';
 import PerformanceChart from '@/components/PerformanceChart';
 import { format } from 'date-fns';
 
-const Dashboard = () => {
+export const Dashboard = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const navigate = useNavigate();
 
