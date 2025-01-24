@@ -18,17 +18,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { aggregateMonthlyData, type AggregatedChartData } from '@/utils/chartDataUtils';
+import { aggregateMonthlyData, formatCurrency } from '@/utils/chartDataUtils';
 import ChartTooltip from '@/components/ChartTooltip';
 import { useToast } from '@/components/ui/use-toast';
 import { MonthlyData } from '@/types/investment';
+import MetricsPanel from './MetricsPanel';
 
 const GlobalManagedFundsChart = () => {
-  const [data, setData] = useState<AggregatedChartData[]>([]);
+  const [data, setData] = useState<MonthlyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('1y');
   const isMobile = useIsMobile();
   const { toast } = useToast();
+
+  const calculateMetrics = (monthlyData: MonthlyData[]) => {
+    const totalInvestment = monthlyData.reduce((sum, d) => sum + d.investment, 0);
+    const totalProfit = monthlyData.reduce((sum, d) => sum + d.profit, 0);
+    const portfolioValue = totalInvestment + totalProfit;
+    const managementFees = totalInvestment * 0.005;
+    const monthlyAverageInvestment = totalInvestment / monthlyData.length;
+    const roi = (totalProfit / totalInvestment) * 100;
+
+    return {
+      totalInvestment,
+      monthlyAverageInvestment,
+      totalProfit,
+      roi,
+      managementFees,
+      portfolioValue
+    };
+  };
 
   useEffect(() => {
     fetchGlobalFundsData();
@@ -41,13 +60,7 @@ const GlobalManagedFundsChart = () => {
       
       const { data: monthlyData, error } = await supabase
         .from('monthly_performance')
-        .select(`
-          month,
-          expenses,
-          investment,
-          portfolio_value,
-          profit
-        `)
+        .select('*')
         .order('month', { ascending: true });
 
       if (error) {
@@ -66,13 +79,12 @@ const GlobalManagedFundsChart = () => {
         month: item.month,
         expenses: item.expenses,
         investment: item.investment,
-        portfolioValue: item.portfolio_value, // Map portfolio_value to portfolioValue
+        portfolioValue: item.portfolio_value,
         profit: item.profit
       }));
 
-      const aggregatedData = aggregateMonthlyData(transformedData);
-      console.log('Processed global funds data:', aggregatedData);
-      setData(aggregatedData);
+      console.log('Processed global funds data:', transformedData);
+      setData(transformedData);
     } catch (error) {
       console.error('Error fetching global funds data:', error);
       toast({
@@ -89,44 +101,46 @@ const GlobalManagedFundsChart = () => {
   const chartData = React.useMemo(() => {
     if (!data || data.length === 0) return [];
 
+    const aggregated = aggregateMonthlyData(data);
+    
     return [
       {
         id: 'Total Managed Funds',
-        color: '#22d3ee',
-        data: data.map(d => ({
+        color: '#fbbf24',
+        data: aggregated.map(d => ({
           x: d.date,
           y: d.totalManagedFunds,
-          ...d
         }))
       },
       {
         id: 'Cumulative Investment',
-        color: '#0ea5e9',
-        data: data.map(d => ({
+        color: '#3b82f6',
+        data: aggregated.map(d => ({
           x: d.date,
           y: d.cumulativeInvestment,
-          ...d
         }))
       },
       {
         id: 'Cumulative Profit',
         color: '#22c55e',
-        data: data.map(d => ({
+        data: aggregated.map(d => ({
           x: d.date,
           y: d.cumulativeProfit,
-          ...d
         }))
       },
       {
         id: 'Management Fees',
-        color: '#a855f7',
-        data: data.map(d => ({
+        color: '#f97316',
+        data: aggregated.map(d => ({
           x: d.date,
           y: d.managementFees,
-          ...d
         }))
       }
     ];
+  }, [data]);
+
+  const metrics = React.useMemo(() => {
+    return calculateMetrics(data);
   }, [data]);
 
   if (isLoading) {
@@ -146,29 +160,6 @@ const GlobalManagedFundsChart = () => {
         <CardContent className="p-6 pt-0">
           <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
             <Skeleton className="w-full h-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!chartData || chartData.length === 0) {
-    return (
-      <Card className="bg-card text-card-foreground rounded-xl shadow-lg border border-border">
-        <CardHeader className="space-y-1.5 p-6">
-          <div className="flex items-center gap-2">
-            <ChartLine className="w-5 h-5 text-primary" />
-            <CardTitle className="text-2xl font-bold">
-              Global Managed Funds Overview
-            </CardTitle>
-          </div>
-          <CardDescription className="text-muted-foreground">
-            No data available for the selected time range
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6 pt-0">
-          <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50 flex items-center justify-center">
-            <p className="text-muted-foreground">No data to display</p>
           </div>
         </CardContent>
       </Card>
@@ -205,10 +196,9 @@ const GlobalManagedFundsChart = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6 pt-0">
+        <MetricsPanel {...metrics} />
         <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
-          {isLoading ? (
-            <Skeleton className="w-full h-full" />
-          ) : data.length === 0 ? (
+          {data.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <p className="text-muted-foreground">No data available for the selected time range</p>
             </div>
@@ -238,7 +228,8 @@ const GlobalManagedFundsChart = () => {
                 tickRotation: -45,
                 legend: 'Timeline',
                 legendOffset: 50,
-                legendPosition: 'middle'
+                legendPosition: 'middle',
+                format: (value) => value.toString()
               }}
               axisLeft={{
                 tickSize: 5,
@@ -247,7 +238,7 @@ const GlobalManagedFundsChart = () => {
                 legend: 'Amount (₪)',
                 legendOffset: -40,
                 legendPosition: 'middle',
-                format: value => `₪${value.toLocaleString()}`
+                format: value => formatCurrency(value)
               }}
               enablePoints={false}
               enableArea={true}
