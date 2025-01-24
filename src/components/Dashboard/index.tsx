@@ -269,40 +269,21 @@ export const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background text-foreground p-2 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start mb-6 md:mb-8">
-        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4 mb-4 md:mb-0">
-          <div className="w-full sm:w-auto">
-            <Button 
-              size="lg"
-              className="w-full h-auto bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => navigate('/add-client')}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-xs md:text-base font-bold tracking-tight">
-                  Add New Client
-                </span>
-                <span className="text-xs md:text-sm font-normal text-white/90">
-                  Start managing a new portfolio
-                </span>
-              </div>
-            </Button>
-          </div>
-          
-          <div className="w-full sm:w-auto">
-            <Button 
-              size="lg"
-              className="w-full h-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => navigate('/simulator')}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-xs md:text-base font-bold tracking-tight">
-                  Investment Simulator
-                </span>
-                <span className="text-xs md:text-sm font-normal text-white/90">
-                  See how your money could grow
-                </span>
-              </div>
-            </Button>
-          </div>
+        <div className="w-full md:w-auto">
+          <Button 
+            size="lg"
+            className="w-full h-auto bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            onClick={() => navigate('/add-client')}
+          >
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-xs md:text-base font-bold tracking-tight">
+                Add New Client
+              </span>
+              <span className="text-xs md:text-sm font-normal text-white/90">
+                Start managing a new portfolio
+              </span>
+            </div>
+          </Button>
         </div>
         <ThemeToggle />
       </div>

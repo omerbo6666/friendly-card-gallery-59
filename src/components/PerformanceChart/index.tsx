@@ -112,8 +112,6 @@ const PerformanceChart = () => {
       return;
     }
 
-    console.log('Applying date filter:', { startDate, endDate });
-    
     const filtered = performanceData.map(series => ({
       ...series,
       data: series.data.filter((point: DataPoint) => {
@@ -122,7 +120,6 @@ const PerformanceChart = () => {
       })
     }));
 
-    console.log('Filtered data:', filtered);
     setFilteredData(filtered);
   };
 
@@ -215,8 +212,7 @@ const PerformanceChart = () => {
             tickRotation: -45,
             legend: 'Timeline',
             legendOffset: 36,
-            legendPosition: 'middle',
-            format: (value) => value?.toString() || ''
+            legendPosition: 'middle'
           }}
           axisLeft={{
             tickSize: 5,
