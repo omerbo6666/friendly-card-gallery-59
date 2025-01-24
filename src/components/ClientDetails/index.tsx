@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { INVESTMENT_TRACKS } from '@/lib/constants';
 import { ResponsiveLine } from '@nivo/line';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 
 interface ClientDetailsProps {
   client: Client;
@@ -66,6 +66,20 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
     if (!lastMonth || !previousMonth) return 0;
     
     return ((lastMonth.portfolioValue - previousMonth.portfolioValue) / previousMonth.portfolioValue) * 100;
+  };
+
+  const formatDate = (dateString: string | Date) => {
+    try {
+      const date = typeof dateString === 'string' ? parseISO(dateString) : dateString;
+      if (!isValid(date)) {
+        console.error('Invalid date:', dateString);
+        return 'Invalid date';
+      }
+      return format(date, 'MMM dd, yyyy');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
   };
 
   const formatChartData = () => {
@@ -118,7 +132,7 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
                 <span>Investment Start</span>
               </div>
               <p className="text-lg font-medium">
-                {format(new Date(client.startDate), 'MMM dd, yyyy')}
+                {formatDate(client.startDate)}
               </p>
             </div>
             <div className="space-y-2">
