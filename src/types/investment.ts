@@ -6,7 +6,7 @@ export interface MonthlyData {
   profit: number;
 }
 
-export type InvestmentTrack = 'SPY500' | 'Vanguard Total Stock Market ETF' | 'NASDAQ' | 'Schwab Total Stock Market Index';
+export type InvestmentTrack = 'SPY' | 'QQQ' | 'IWM' | 'VTSAX' | 'VTI' | 'SWTSX' | 'IWV' | 'WFIVX';
 
 export interface Client {
   id: number;

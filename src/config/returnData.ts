@@ -56,13 +56,17 @@ export const SCHWAB_RETURNS = [
 
 export const getReturnsForTrack = (trackId: string): number[] => {
   switch(trackId) {
-    case 'SPY500':
+    case 'SPY':
       return SP500_RETURNS;
-    case 'Vanguard Total Stock Market ETF':
-      return VTI_RETURNS;
-    case 'NASDAQ':
+    case 'QQQ':
       return NASDAQ_RETURNS;
-    case 'Schwab Total Stock Market Index':
+    case 'IWM':
+    case 'VTSAX':
+    case 'VTI':
+      return VTI_RETURNS;
+    case 'SWTSX':
+    case 'IWV':
+    case 'WFIVX':
       return SCHWAB_RETURNS;
     default:
       console.warn(`No return data found for track ${trackId}`);
