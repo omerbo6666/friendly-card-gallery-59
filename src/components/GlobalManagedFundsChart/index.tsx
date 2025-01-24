@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface GlobalFundsData {
   date: string;
@@ -29,6 +30,7 @@ interface GlobalFundsData {
 
 const GlobalManagedFundsChart = () => {
   const [data, setData] = useState<GlobalFundsData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('1y');
   const isMobile = useIsMobile();
 
@@ -39,6 +41,8 @@ const GlobalManagedFundsChart = () => {
   const fetchGlobalFundsData = async () => {
     try {
       console.log('Fetching global funds data...');
+      setIsLoading(true);
+      
       const { data: monthlyData, error } = await supabase
         .from('monthly_performance')
         .select(`
@@ -50,6 +54,13 @@ const GlobalManagedFundsChart = () => {
         .order('month', { ascending: true });
 
       if (error) throw error;
+
+      if (!monthlyData || monthlyData.length === 0) {
+        console.log('No data found');
+        setData([]);
+        setIsLoading(false);
+        return;
+      }
 
       // Process and aggregate the data
       const aggregatedData = monthlyData.reduce((acc: GlobalFundsData[], curr) => {
@@ -78,6 +89,9 @@ const GlobalManagedFundsChart = () => {
       setData(aggregatedData);
     } catch (error) {
       console.error('Error fetching global funds data:', error);
+      setData([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,6 +142,52 @@ const GlobalManagedFundsChart = () => {
       maximumFractionDigits: 0
     }).format(value);
   };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card text-card-foreground rounded-xl shadow-lg border border-border">
+        <CardHeader className="space-y-1.5 p-6">
+          <div className="flex items-center gap-2">
+            <ChartLine className="w-5 h-5 text-primary" />
+            <CardTitle className="text-2xl font-bold">
+              Global Managed Funds Overview
+            </CardTitle>
+          </div>
+          <CardDescription className="text-muted-foreground">
+            Loading chart data...
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
+          <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
+            <Skeleton className="w-full h-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <Card className="bg-card text-card-foreground rounded-xl shadow-lg border border-border">
+        <CardHeader className="space-y-1.5 p-6">
+          <div className="flex items-center gap-2">
+            <ChartLine className="w-5 h-5 text-primary" />
+            <CardTitle className="text-2xl font-bold">
+              Global Managed Funds Overview
+            </CardTitle>
+          </div>
+          <CardDescription className="text-muted-foreground">
+            No data available for the selected time range
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
+          <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50 flex items-center justify-center">
+            <p className="text-muted-foreground">No data to display</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-card text-card-foreground rounded-xl shadow-lg border border-border">
