@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ResponsiveLine } from '@nivo/line';
 import { Search, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react';
-import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/investment';
+import { Client, MonthlyData, ClientMetrics, AggregateMetrics, InvestmentTrack } from '@/types/investment';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
