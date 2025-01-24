@@ -45,6 +45,30 @@ export type Database = {
         }
         Relationships: []
       }
+      index_performance: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          index_name: string
+          monthly_return: number
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          index_name: string
+          monthly_return: number
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          index_name?: string
+          monthly_return?: number
+        }
+        Relationships: []
+      }
       monthly_performance: {
         Row: {
           client_id: string | null
@@ -118,7 +142,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      insert_performance_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
