@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card } from "@/components/ui/card";
-import { RUSSELL2000_RETURNS } from '@/lib/utils';
+import { RUSSELL2000_RETURNS, SWTSX_RETURNS } from '@/lib/utils';
 
 interface PerformanceChartProps {
   spyReturns: number[];
@@ -16,7 +16,7 @@ interface PerformanceChartProps {
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiReturns, nasdaqReturns }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date(2019, 0, 1));
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
-  const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
+  const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000', 'SWTSX']);
 
   const calculateCumulativeReturns = (returns: number[], start: Date, end: Date) => {
     const startIndex = Math.max(0, returns.length - Math.ceil((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000)));
@@ -53,6 +53,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
     const spyData = calculateCumulativeReturns(spyReturns, startDate, endDate);
     const nasdaqData = calculateCumulativeReturns(nasdaqReturns, startDate, endDate);
     const russell2000Data = calculateCumulativeReturns(RUSSELL2000_RETURNS, startDate, endDate);
+    const swtsxData = calculateCumulativeReturns(SWTSX_RETURNS, startDate, endDate);
     
     const allData = [
       {
@@ -75,6 +76,13 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         color: "#10B981",
         data: russell2000Data.data,
         totalReturn: russell2000Data.totalReturn
+      },
+      {
+        id: "Schwab Total Stock Market",
+        trackId: "SWTSX",
+        color: "#EC4899",
+        data: swtsxData.data,
+        totalReturn: swtsxData.totalReturn
       }
     ];
 
@@ -87,7 +95,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
         <div className="flex flex-wrap gap-4">
           <div className="flex gap-2">
-            {['SPY500', 'NASDAQ', 'RUSSELL2000'].map(trackId => (
+            {['SPY500', 'NASDAQ', 'RUSSELL2000', 'SWTSX'].map(trackId => (
               <Button
                 key={trackId}
                 variant={selectedTracks.includes(trackId) ? "default" : "outline"}
@@ -95,7 +103,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
                 className="text-xs sm:text-sm"
               >
                 {trackId === 'SPY500' ? 'S&P 500' : 
-                 trackId === 'RUSSELL2000' ? 'Russell 2000' : trackId}
+                 trackId === 'RUSSELL2000' ? 'Russell 2000' :
+                 trackId === 'SWTSX' ? 'Schwab Total Market' : trackId}
               </Button>
             ))}
           </div>
