@@ -94,7 +94,7 @@ export const Dashboard = () => {
     }
   }, []);
 
-  const generateMonthlyData = ({ investmentPercentageOverride, investmentTrack }: { investmentPercentageOverride?: number; investmentTrack?: string } = {}): MonthlyData[] => {
+  const generateMonthlyData = ({ investmentPercentageOverride, investmentTrack, startDate }: { investmentPercentageOverride?: number; investmentTrack?: string; startDate?: Date } = {}): MonthlyData[] => {
     const data: MonthlyData[] = [];
     let portfolioValue = 0;
     let cumulativeProfit = 0;

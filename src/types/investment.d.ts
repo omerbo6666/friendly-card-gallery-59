@@ -9,6 +9,7 @@ export interface MonthlyData {
 export interface GenerateMonthlyDataParams {
   investmentPercentageOverride?: number;
   investmentTrack?: string;
+  startDate?: Date;
 }
 
 export type GenerateMonthlyDataFunction = (params?: GenerateMonthlyDataParams) => MonthlyData[];
