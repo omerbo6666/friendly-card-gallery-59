@@ -11,13 +11,14 @@ import { Client, InvestmentTrack } from '@/types/investment';
 import { generateMonthlyData } from '@/lib/utils';
 import { addClient } from '@/lib/localStorage';
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { InfoIcon } from 'lucide-react';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface InvestmentAllocation {
   trackId: InvestmentTrack;
@@ -28,6 +29,7 @@ const AddClient = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [startDate, setStartDate] = useState<Date>(new Date());
+  const [dateInputValue, setDateInputValue] = useState(format(new Date(), 'yyyy-MM-dd'));
   
   const [formData, setFormData] = useState({
     name: '',
@@ -41,6 +43,23 @@ const AddClient = () => {
   const [allocations, setAllocations] = useState<InvestmentAllocation[]>([
     { trackId: 'SPY500', percentage: 100 }
   ]);
+
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setStartDate(date);
+      setDateInputValue(format(date, 'yyyy-MM-dd'));
+    }
+  };
+
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDateInputValue(value);
+    
+    const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+    if (isValid(parsedDate)) {
+      setStartDate(parsedDate);
+    }
+  };
 
   const addTrack = () => {
     if (allocations.length < 3) {
@@ -103,7 +122,7 @@ const AddClient = () => {
       customProfession: formData.profession === 'Other' ? formData.customProfession : undefined,
       monthlyExpenses: Number(formData.monthlyExpenses),
       investmentPercentage: formData.investmentPercentage.toString(),
-      investmentTrack: allocations[0].trackId, // Keep main track for compatibility
+      investmentTrack: allocations[0].trackId,
       monthlyData: combinedMonthlyData,
       startDate,
       allocations
@@ -174,12 +193,36 @@ const AddClient = () => {
 
           <div className="space-y-2">
             <Label htmlFor="startDate">Start Date</Label>
-            <Calendar
-              mode="single"
-              selected={startDate}
-              onSelect={(date) => date && setStartDate(date)}
-              className="rounded-md border"
-            />
+            <div className="flex gap-2">
+              <Input
+                type="date"
+                value={dateInputValue}
+                onChange={handleDateInputChange}
+                className="flex-1"
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[280px] justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={handleDateChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           <div className="space-y-2">
