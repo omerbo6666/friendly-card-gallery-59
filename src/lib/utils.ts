@@ -71,8 +71,11 @@ export const generateMonthlyData = ({ investmentPercentageOverride, investmentTr
     case 'SPY500':
       returns = SP500_RETURNS;
       break;
-    case 'VTI':
+    case 'Vanguard Total Stock Market ETF':
       returns = VTI_RETURNS;
+      break;
+    case 'NASDAQ':
+      returns = NASDAQ_RETURNS;
       break;
     default:
       returns = NASDAQ_RETURNS;
