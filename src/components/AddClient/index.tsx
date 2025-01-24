@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { PROFESSIONS } from '@/lib/constants';
 import { generateMonthlyData } from '@/lib/utils';
-import InvestmentAllocation from '@/components/InvestmentAllocation'; // Fixed import
-import type { Client, InvestmentAllocation as IInvestmentAllocation } from '@/types/investment';
+import InvestmentAllocation from '@/components/InvestmentAllocation';
+import type { InvestmentAllocation as IInvestmentAllocation } from '@/types/investment';
 import { supabase } from "@/integrations/supabase/client";
 import Preview from './Preview';
+import ClientBasicInfo from './ClientBasicInfo';
+import FinancialInfo from './FinancialInfo';
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -187,81 +185,24 @@ const AddClient = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 rounded-xl border border-border">
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Client Name</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Enter client name"
-                value={formData.name}
-                onChange={handleInputChange}
-              />
-            </div>
+          <ClientBasicInfo
+            name={formData.name}
+            profession={formData.profession}
+            customProfession={formData.customProfession}
+            onInputChange={handleInputChange}
+            onSelectChange={handleSelectChange}
+          />
 
-            <div className="grid gap-2">
-              <Label htmlFor="profession">Profession</Label>
-              <Select
-                value={formData.profession}
-                onValueChange={(value) => handleSelectChange('profession', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select profession" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PROFESSIONS.map((profession) => (
-                    <SelectItem key={profession} value={profession}>
-                      {profession}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <FinancialInfo
+            monthlyExpenses={formData.monthlyExpenses}
+            investmentPercentage={formData.investmentPercentage}
+            onInputChange={handleInputChange}
+          />
 
-            {formData.profession === 'Other' && (
-              <div className="grid gap-2">
-                <Label htmlFor="customProfession">Specify Profession</Label>
-                <Input
-                  id="customProfession"
-                  name="customProfession"
-                  placeholder="Enter profession"
-                  value={formData.customProfession}
-                  onChange={handleInputChange}
-                />
-              </div>
-            )}
-
-            <div className="grid gap-2">
-              <Label htmlFor="monthlyExpenses">Monthly Expenses (ILS)</Label>
-              <Input
-                id="monthlyExpenses"
-                name="monthlyExpenses"
-                type="number"
-                placeholder="Enter monthly expenses"
-                value={formData.monthlyExpenses}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="investmentPercentage">Investment Percentage (%)</Label>
-              <Input
-                id="investmentPercentage"
-                name="investmentPercentage"
-                type="number"
-                placeholder="Enter investment percentage"
-                value={formData.investmentPercentage}
-                onChange={handleInputChange}
-                min="1"
-                max="100"
-              />
-            </div>
-
-            <InvestmentAllocation
-              allocations={allocations}
-              onAllocationsChange={setAllocations}
-            />
-          </div>
+          <InvestmentAllocation
+            allocations={allocations}
+            onAllocationsChange={setAllocations}
+          />
 
           <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={() => navigate('/')}>
