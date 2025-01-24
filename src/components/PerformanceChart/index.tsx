@@ -1,14 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import {
-  SP500_RETURNS,
-  NASDAQ_RETURNS,
-  RUSSELL_2000_RETURNS,
-  VTI_RETURNS,
-  SCHWAB_RETURNS,
-  IWV_RETURNS,
-  WFIVX_RETURNS
-} from "@/lib/investmentReturns";
+import { format, parseISO, subMonths } from "date-fns";
 import {
   LineChart,
   Line,
@@ -19,30 +11,95 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import { Label } from "@/components/ui/label";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { INVESTMENT_TRACKS } from "@/lib/constants";
 
-const PerformanceChart = () => {
+interface PerformanceChartProps {
+  startDate?: Date;
+  endDate?: Date;
+}
+
+const PerformanceChart: React.FC<PerformanceChartProps> = ({
+  startDate = subMonths(new Date(), 12),
+  endDate = new Date()
+}) => {
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: startDate,
+    to: endDate
+  });
+
   const formatData = () => {
-    const combinedData = SP500_RETURNS.map((item) => ({
-      date: item.date,
-      SP500: item.change,
-      NASDAQ: NASDAQ_RETURNS.find(n => n.date === item.date)?.change || 0,
-      RUSSELL2000: RUSSELL_2000_RETURNS.find(r => r.date === item.date)?.change || 0,
-      VTI: VTI_RETURNS.find(v => v.date === item.date)?.change || 0,
-      SCHWAB: SCHWAB_RETURNS.find(s => s.date === item.date)?.change || 0,
-      IWV: IWV_RETURNS.find(i => i.date === item.date)?.change || 0,
-      WFIVX: WFIVX_RETURNS.find(w => w.date === item.date)?.change || 0
+    // Get all investment tracks
+    const tracks = INVESTMENT_TRACKS.map(track => ({
+      id: track.id,
+      name: track.name,
+      color: getTrackColor(track.id)
     }));
 
-    return combinedData.sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+    // Create data points for each month
+    const data = [];
+    let currentDate = dateRange.from;
+    
+    while (currentDate && dateRange.to && currentDate <= dateRange.to) {
+      const dataPoint: any = {
+        date: format(currentDate, 'yyyy-MM-dd')
+      };
+      
+      // Add performance data for each track
+      tracks.forEach(track => {
+        dataPoint[track.id] = calculatePerformance(track.id, currentDate);
+      });
+      
+      data.push(dataPoint);
+      currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+    }
+
+    return { data, tracks };
   };
 
-  const data = formatData();
+  const getTrackColor = (trackId: string): string => {
+    const colors: { [key: string]: string } = {
+      SPY: '#8884d8',
+      QQQ: '#82ca9d',
+      IWM: '#ffc658',
+      VTSAX: '#ff7300',
+      VTI: '#00C49F',
+      SWTSX: '#FFBB28',
+      IWV: '#FF8042',
+      WFIVX: '#e91e63'
+    };
+    return colors[trackId] || '#999999';
+  };
+
+  const calculatePerformance = (trackId: string, date: Date): number => {
+    // This would be replaced with actual historical performance data
+    // For now, returning mock data
+    return Math.random() * 20 - 10;
+  };
+
+  const calculateTotalPerformance = (trackId: string): number => {
+    // Calculate total performance for the selected date range
+    return Math.random() * 100 - 20; // Mock data
+  };
+
+  const { data, tracks } = formatData();
 
   return (
-    <Card className="p-4">
-      <h3 className="text-lg font-semibold mb-4">Investment Performance</h3>
-      <div className="h-[400px]">
+    <Card className="p-4 md:p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+        <DateRangePicker
+          from={dateRange.from}
+          to={dateRange.to}
+          onSelect={setDateRange}
+        />
+      </div>
+
+      <div className="h-[400px] md:h-[500px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -58,15 +115,39 @@ const PerformanceChart = () => {
               labelFormatter={(label) => format(parseISO(label as string), 'MMMM yyyy')}
             />
             <Legend />
-            <Line type="monotone" dataKey="SP500" stroke="#8884d8" name="S&P 500" />
-            <Line type="monotone" dataKey="NASDAQ" stroke="#82ca9d" name="NASDAQ" />
-            <Line type="monotone" dataKey="RUSSELL2000" stroke="#ffc658" name="Russell 2000" />
-            <Line type="monotone" dataKey="VTI" stroke="#ff7300" name="VTI" />
-            <Line type="monotone" dataKey="SCHWAB" stroke="#00C49F" name="Schwab" />
-            <Line type="monotone" dataKey="IWV" stroke="#FFBB28" name="IWV" />
-            <Line type="monotone" dataKey="WFIVX" stroke="#FF8042" name="WFIVX" />
+            {tracks.map((track) => (
+              <Line
+                key={track.id}
+                type="monotone"
+                dataKey={track.id}
+                name={track.name}
+                stroke={track.color}
+                dot={false}
+                strokeWidth={2}
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        {tracks.map((track) => (
+          <div
+            key={track.id}
+            className="p-4 rounded-lg border border-border bg-card"
+          >
+            <div className="flex items-center gap-2">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: track.color }}
+              />
+              <span className="text-sm font-medium">{track.name}</span>
+            </div>
+            <div className="mt-2 text-lg font-bold">
+              {calculateTotalPerformance(track.id).toFixed(2)}%
+            </div>
+          </div>
+        ))}
       </div>
     </Card>
   );

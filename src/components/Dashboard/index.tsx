@@ -28,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { getClients, saveClients, searchClients } from '@/lib/localStorage';
 import { INVESTMENT_TRACKS, PROFESSIONS } from '@/lib/constants';
 import PerformanceChart from '@/components/PerformanceChart';
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const RISK_PROFILES = ['Conservative', 'Moderate', 'Aggressive'];
@@ -102,7 +103,7 @@ export const Dashboard = () => {
     let totalInvestment = 0;
     
     // Select returns based on investment track
-    const returns = investmentTrack === 'SPY500' ? SP500_RETURNS : NASDAQ_RETURNS;
+    const returns = investmentTrack === 'SPY' ? SP500_RETURNS : NASDAQ_RETURNS;
     
     for (let month = 0; month < returns.length; month++) {
       const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
@@ -287,11 +288,7 @@ export const Dashboard = () => {
 
       {/* Add performance chart after the metrics cards */}
       <div className="mb-6 md:mb-8">
-        <PerformanceChart
-          spyReturns={SP500_RETURNS}
-          vtiReturns={[]}
-          nasdaqReturns={NASDAQ_RETURNS}
-        />
+        <PerformanceChart />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
