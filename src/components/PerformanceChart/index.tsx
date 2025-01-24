@@ -51,7 +51,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         totalReturn: spyData.totalReturn
       },
       {
-        id: "VTI",
+        id: "Vanguard Total Stock Market ETF",
         color: "#0EA5E9",
         data: vtiData.data,
         totalReturn: vtiData.totalReturn
@@ -157,7 +157,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
               translateY: 0,
               itemsSpacing: 0,
               itemDirection: 'left-to-right',
-              itemWidth: 140,
+              itemWidth: 200,
               itemHeight: 20,
               itemOpacity: 0.75,
               symbolSize: 12,
