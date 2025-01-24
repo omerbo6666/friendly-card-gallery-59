@@ -50,7 +50,7 @@ export const InvestmentAllocation = ({ allocations, onAllocationsChange, disable
 
     setLocalAllocations([
       ...localAllocations,
-      { track_id: availableTracks[0], percentage: 0 }
+      { track_id: availableTracks[0] as InvestmentTrack, percentage: 0 }
     ]);
   };
 
@@ -60,9 +60,9 @@ export const InvestmentAllocation = ({ allocations, onAllocationsChange, disable
     onAllocationsChange(newAllocations);
   };
 
-  const handleTrackChange = (index: number, track_id: InvestmentTrack) => {
+  const handleTrackChange = (index: number, track_id: string) => {
     const newAllocations = [...localAllocations];
-    newAllocations[index].track_id = track_id;
+    newAllocations[index].track_id = track_id as InvestmentTrack;
     setLocalAllocations(newAllocations);
     onAllocationsChange(newAllocations);
   };
