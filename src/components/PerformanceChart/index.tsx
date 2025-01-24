@@ -64,7 +64,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
   };
 
   const processPerformanceData = (data: any[]) => {
-    const indices = ['SPY500', 'NASDAQ', 'RUSSELL2000'];
+    const indices = ['SPY500', 'NASDAQ100', 'RUSSELL2000'];
     const colors = {
       'SPY500': '#22c55e',
       'NASDAQ': '#ec4899',
@@ -254,6 +254,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
                     <h4 className="font-medium">
                       {series.id === 'SPY500' ? 'S&P 500' : 
                        series.id === 'RUSSELL2000' ? 'Russell 2000' : 
+                       series.id === 'NASDAQ100' ? 'NASDAQ 100' :
                        series.id}
                     </h4>
                   </div>
