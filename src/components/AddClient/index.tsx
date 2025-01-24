@@ -52,7 +52,10 @@ const AddClient = () => {
       monthlyExpenses: Number(formData.monthlyExpenses),
       investmentPercentage: formData.investmentPercentage.toString(),
       investmentTrack: formData.investmentTrack,
-      monthlyData: generateMonthlyData(formData.investmentPercentage)
+      monthlyData: generateMonthlyData({ 
+        investmentPercentageOverride: formData.investmentPercentage,
+        investmentTrack: formData.investmentTrack 
+      })
     };
 
     // Save to localStorage
@@ -200,6 +203,7 @@ const AddClient = () => {
       </div>
     </div>
   );
+
 };
 
 export default AddClient;
