@@ -68,17 +68,17 @@ const GlobalManagedFundsChart = () => {
         const existingEntry = acc.find(item => item.date === date);
 
         if (existingEntry) {
-          existingEntry.cumulativeInvestment += curr.investment;
-          existingEntry.cumulativeProfit += curr.profit;
+          existingEntry.cumulativeInvestment += curr.investment || 0;
+          existingEntry.cumulativeProfit += curr.profit || 0;
           existingEntry.totalManagedFunds = existingEntry.cumulativeInvestment + existingEntry.cumulativeProfit;
           existingEntry.managementFees = existingEntry.cumulativeInvestment * 0.005;
         } else {
           acc.push({
             date,
-            cumulativeInvestment: curr.investment,
-            cumulativeProfit: curr.profit,
-            totalManagedFunds: curr.investment + curr.profit,
-            managementFees: curr.investment * 0.005
+            cumulativeInvestment: curr.investment || 0,
+            cumulativeProfit: curr.profit || 0,
+            totalManagedFunds: (curr.investment || 0) + (curr.profit || 0),
+            managementFees: (curr.investment || 0) * 0.005
           });
         }
 
@@ -95,44 +95,49 @@ const GlobalManagedFundsChart = () => {
     }
   };
 
-  const chartData = [
-    {
-      id: 'Total Managed Funds',
-      color: '#22d3ee',
-      data: data.map(d => ({
-        x: d.date,
-        y: d.totalManagedFunds,
-        ...d
-      }))
-    },
-    {
-      id: 'Cumulative Investment',
-      color: '#0ea5e9',
-      data: data.map(d => ({
-        x: d.date,
-        y: d.cumulativeInvestment,
-        ...d
-      }))
-    },
-    {
-      id: 'Cumulative Profit',
-      color: '#22c55e',
-      data: data.map(d => ({
-        x: d.date,
-        y: d.cumulativeProfit,
-        ...d
-      }))
-    },
-    {
-      id: 'Management Fees',
-      color: '#a855f7',
-      data: data.map(d => ({
-        x: d.date,
-        y: d.managementFees,
-        ...d
-      }))
-    }
-  ];
+  // Ensure we have valid data for the chart
+  const chartData = React.useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    return [
+      {
+        id: 'Total Managed Funds',
+        color: '#22d3ee',
+        data: data.map(d => ({
+          x: d.date,
+          y: d.totalManagedFunds,
+          ...d
+        }))
+      },
+      {
+        id: 'Cumulative Investment',
+        color: '#0ea5e9',
+        data: data.map(d => ({
+          x: d.date,
+          y: d.cumulativeInvestment,
+          ...d
+        }))
+      },
+      {
+        id: 'Cumulative Profit',
+        color: '#22c55e',
+        data: data.map(d => ({
+          x: d.date,
+          y: d.cumulativeProfit,
+          ...d
+        }))
+      },
+      {
+        id: 'Management Fees',
+        color: '#a855f7',
+        data: data.map(d => ({
+          x: d.date,
+          y: d.managementFees,
+          ...d
+        }))
+      }
+    ];
+  }, [data]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('he-IL', {
@@ -166,7 +171,7 @@ const GlobalManagedFundsChart = () => {
     );
   }
 
-  if (data.length === 0) {
+  if (!chartData || chartData.length === 0) {
     return (
       <Card className="bg-card text-card-foreground rounded-xl shadow-lg border border-border">
         <CardHeader className="space-y-1.5 p-6">
