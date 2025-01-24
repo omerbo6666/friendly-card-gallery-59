@@ -36,6 +36,7 @@ const GlobalManagedFundsChart = () => {
   const [data, setData] = useState<GlobalMetrics[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('1y');
+  const [startDate, setStartDate] = useState<Date>(new Date(new Date().setFullYear(new Date().getFullYear() - 1)));
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -48,10 +49,38 @@ const GlobalManagedFundsChart = () => {
       console.log('Fetching global metrics...');
       setIsLoading(true);
       
-      const { data: metricsData, error } = await supabase
+      let query = supabase
         .from('global_metrics')
         .select('*')
         .order('date', { ascending: true });
+
+      // Apply date filtering based on selected range
+      const today = new Date();
+      let filterDate = new Date();
+
+      switch (dateRange) {
+        case '1m':
+          filterDate.setMonth(today.getMonth() - 1);
+          break;
+        case '6m':
+          filterDate.setMonth(today.getMonth() - 6);
+          break;
+        case '1y':
+          filterDate.setFullYear(today.getFullYear() - 1);
+          break;
+        case '2y':
+          filterDate.setFullYear(today.getFullYear() - 2);
+          break;
+        case 'all':
+          filterDate = new Date(0); // Beginning of time
+          break;
+        default:
+          filterDate.setFullYear(today.getFullYear() - 1);
+      }
+
+      query = query.gte('date', filterDate.toISOString());
+
+      const { data: metricsData, error } = await query;
 
       if (error) {
         throw error;
@@ -64,10 +93,8 @@ const GlobalManagedFundsChart = () => {
         return;
       }
 
-      // Filter data based on selected date range
-      const filteredData = filterDataByDateRange(metricsData, dateRange);
-      console.log('Processed metrics data:', filteredData);
-      setData(filteredData);
+      console.log('Processed metrics data:', metricsData);
+      setData(metricsData);
     } catch (error) {
       console.error('Error fetching global metrics:', error);
       toast({
@@ -79,27 +106,6 @@ const GlobalManagedFundsChart = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const filterDataByDateRange = (data: GlobalMetrics[], range: string): GlobalMetrics[] => {
-    const now = new Date();
-    const cutoffDate = new Date();
-    
-    switch (range) {
-      case '1m':
-        cutoffDate.setMonth(now.getMonth() - 1);
-        break;
-      case '6m':
-        cutoffDate.setMonth(now.getMonth() - 6);
-        break;
-      case '1y':
-        cutoffDate.setFullYear(now.getFullYear() - 1);
-        break;
-      default:
-        return data;
-    }
-    
-    return data.filter(item => new Date(item.date) >= cutoffDate);
   };
 
   const chartData = React.useMemo(() => {
@@ -191,6 +197,7 @@ const GlobalManagedFundsChart = () => {
                 <SelectItem value="1m">Last Month</SelectItem>
                 <SelectItem value="6m">Last 6 Months</SelectItem>
                 <SelectItem value="1y">Last Year</SelectItem>
+                <SelectItem value="2y">Last 2 Years</SelectItem>
                 <SelectItem value="all">All Time</SelectItem>
               </SelectContent>
             </Select>
@@ -223,8 +230,7 @@ const GlobalManagedFundsChart = () => {
                   left: isMobile ? 60 : 80 
                 }}
                 xScale={{
-                  type: 'point',
-                  innerPadding: 0.5
+                  type: 'point'
                 }}
                 yScale={{
                   type: 'linear',
