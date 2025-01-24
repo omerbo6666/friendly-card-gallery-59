@@ -1,10 +1,11 @@
-import React from 'react';
-import dynamic from 'next/dynamic';
+import React, { lazy, Suspense } from 'react';
 import { ApexOptions } from 'apexcharts';
 import { formatCurrency } from '@/utils/chartDataUtils';
 import { GlobalMetrics } from '@/types/investment';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+// Lazy load ApexCharts
+const ReactApexChart = lazy(() => import('react-apexcharts'));
 
 interface ChartContainerProps {
   data: GlobalMetrics[];
@@ -76,12 +77,14 @@ const ChartContainer: React.FC<ChartContainerProps> = ({ data }) => {
 
   return (
     <div className="w-full h-[500px]">
-      <Chart
-        options={options}
-        series={series}
-        type="line"
-        height="100%"
-      />
+      <Suspense fallback={<Skeleton className="w-full h-full" />}>
+        <ReactApexChart
+          options={options}
+          series={series}
+          type="line"
+          height="100%"
+        />
+      </Suspense>
     </div>
   );
 };
