@@ -1,6 +1,7 @@
-import { MonthlyData } from '@/types/investment';
+import { MonthlyData, InvestmentAllocation } from '@/types/investment';
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { startOfMonth, addMonths, isBefore } from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,9 +25,68 @@ export const generateRandomName = () => {
   return `${firstName} ${lastName}`;
 };
 
-// Original NASDAQ returns for other investment tracks
+export const generateMonthlyData = ({ 
+  investmentPercentageOverride, 
+  allocations = [],
+  startDate = new Date()
+}: { 
+  investmentPercentageOverride?: number; 
+  allocations?: InvestmentAllocation[];
+  startDate?: Date;
+} = {}): MonthlyData[] => {
+  const data: MonthlyData[] = [];
+  let portfolioValue = 0;
+  let cumulativeProfit = 0;
+  let totalInvestment = 0;
+  
+  const startMonth = startOfMonth(startDate);
+  let currentMonth = startMonth;
+  const today = new Date();
+  
+  let monthCounter = 1;
+  
+  while (isBefore(currentMonth, today)) {
+    const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
+    const investmentPercentage = investmentPercentageOverride || (Math.random() * 17 + 3);
+    const totalMonthlyInvestment = monthlyExpense * (investmentPercentage / 100);
+    
+    // Calculate weighted returns based on allocations
+    let monthlyReturn = 0;
+    allocations.forEach(allocation => {
+      const trackReturn = getTrackReturn(allocation.trackId, monthCounter);
+      monthlyReturn += (trackReturn * (allocation.percentage / 100));
+    });
+    
+    totalInvestment += totalMonthlyInvestment;
+    portfolioValue = (portfolioValue + totalMonthlyInvestment) * (1 + monthlyReturn);
+    cumulativeProfit = portfolioValue - totalInvestment;
+    
+    data.push({
+      month: monthCounter,
+      expenses: monthlyExpense,
+      investment: totalMonthlyInvestment,
+      portfolioValue,
+      profit: cumulativeProfit
+    });
+    
+    currentMonth = addMonths(currentMonth, 1);
+    monthCounter++;
+  }
+  
+  return data;
+};
 
-// NASDAQ returns (most recent first)
+function getTrackReturn(trackId: string, month: number): number {
+  // Use the appropriate returns array based on the track
+  const returns = trackId === 'SPY500' ? SP500_RETURNS :
+                 trackId === 'RUSSELL2000' ? RUSSELL2000_RETURNS :
+                 NASDAQ_RETURNS;
+                 
+  // Ensure we don't go out of bounds
+  const index = month % returns.length;
+  return returns[index];
+}
+
 const NASDAQ_RETURNS = [
   0.0423, 0.0039, 0.0523, -0.0085, 0.0248, 0.0110, -0.0163, 0.0618, 0.0628, -0.0446,
   0.0117, 0.0529, 0.0185, 0.0551, 0.1067, -0.0208, -0.0507, -0.0162, 0.0381, 0.0649,
@@ -65,49 +125,3 @@ export const SWTSX_RETURNS = [
   -0.0306, -0.0168, -0.0108, 0.0059, 0.0230, -0.0031, -0.0017, 0.0116, 0.0143, -0.0019,
   0.0153, 0.0125, 0.0109, 0.0105, 0.0174, -0.0178, 0.0028, 0.0092, 0.0289, -0.0116
 ].reverse();
-
-export const generateMonthlyData = ({ investmentPercentageOverride, investmentTrack }: { investmentPercentageOverride?: number; investmentTrack?: string } = {}): MonthlyData[] => {
-  const data: MonthlyData[] = [];
-  let portfolioValue = 0;
-  let cumulativeProfit = 0;
-  let totalInvestment = 0;
-  
-  // Select returns based on investment track
-  let returns;
-  switch(investmentTrack) {
-    case 'SPY500':
-      returns = SP500_RETURNS;
-      break;
-    case 'RUSSELL2000':
-      returns = RUSSELL2000_RETURNS;
-      break;
-    case 'SWTSX':
-      returns = SWTSX_RETURNS;
-      break;
-    case 'VTI':
-      returns = SP500_RETURNS; // Using SP500 as proxy for VTI
-      break;
-    default:
-      returns = NASDAQ_RETURNS;
-  }
-  
-  for (let month = 0; month < returns.length; month++) {
-    const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
-    const investmentPercentage = investmentPercentageOverride || (Math.random() * 17 + 3);
-    const investment = monthlyExpense * (investmentPercentage / 100);
-    
-    totalInvestment += investment;
-    const monthlyReturn = returns[month];
-    portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
-    cumulativeProfit = portfolioValue - totalInvestment;
-    
-    data.push({
-      month: month + 1,
-      expenses: monthlyExpense,
-      investment,
-      portfolioValue,
-      profit: cumulativeProfit
-    });
-  }
-  return data;
-};

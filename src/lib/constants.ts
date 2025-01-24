@@ -46,26 +46,6 @@ export const INVESTMENT_TRACKS = [
     expenseRatio: 'Low',
     topHoldings: 'Diverse small-cap companies',
     sectors: 'Financial Services, Healthcare, Technology, Real Estate'
-  },
-  {
-    id: 'VTSAX',
-    name: 'Total US Market',
-    description: 'Comprehensive U.S. stock market exposure',
-    benchmark: 'CRSP US Total Market Index',
-    type: 'Mutual Fund',
-    expenseRatio: 'Very Low',
-    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
-    sectors: 'All U.S. market sectors'
-  },
-  {
-    id: 'SWTSX',
-    name: 'Schwab US Market',
-    description: 'Broad U.S. market exposure at a low cost',
-    benchmark: 'Dow Jones U.S. Total Stock Market Index',
-    type: 'Mutual Fund',
-    expenseRatio: 'Very Low',
-    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
-    sectors: 'All U.S. market sectors'
   }
 ] as const;
 

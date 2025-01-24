@@ -10,6 +10,8 @@ import { PROFESSIONS, INVESTMENT_TRACKS } from '@/lib/constants';
 import { Client, InvestmentTrack } from '@/types/investment';
 import { generateMonthlyData } from '@/lib/utils';
 import { addClient } from '@/lib/localStorage';
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import {
   HoverCard,
   HoverCardContent,
@@ -17,9 +19,15 @@ import {
 } from "@/components/ui/hover-card";
 import { InfoIcon } from 'lucide-react';
 
+interface InvestmentAllocation {
+  trackId: InvestmentTrack;
+  percentage: number;
+}
+
 const AddClient = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [startDate, setStartDate] = useState<Date>(new Date());
   
   const [formData, setFormData] = useState({
     name: '',
@@ -28,13 +36,50 @@ const AddClient = () => {
     monthlyIncome: '',
     monthlyExpenses: '',
     investmentPercentage: 10,
-    investmentTrack: 'VTSAX' as InvestmentTrack
   });
+
+  const [allocations, setAllocations] = useState<InvestmentAllocation[]>([
+    { trackId: 'SPY500', percentage: 100 }
+  ]);
+
+  const addTrack = () => {
+    if (allocations.length < 3) {
+      const availableTracks = INVESTMENT_TRACKS.filter(
+        track => !allocations.find(a => a.trackId === track.id)
+      );
+      if (availableTracks.length > 0) {
+        setAllocations([...allocations, { trackId: availableTracks[0].id, percentage: 0 }]);
+      }
+    }
+  };
+
+  const removeTrack = (index: number) => {
+    setAllocations(allocations.filter((_, i) => i !== index));
+  };
+
+  const updateAllocation = (index: number, value: number) => {
+    const newAllocations = [...allocations];
+    newAllocations[index].percentage = value;
+    
+    // Adjust other allocations to maintain 100% total
+    const total = newAllocations.reduce((sum, alloc, i) => i === index ? sum : sum + alloc.percentage, 0);
+    const remaining = 100 - value;
+    
+    if (remaining > 0) {
+      const othersCount = newAllocations.length - 1;
+      newAllocations.forEach((alloc, i) => {
+        if (i !== index) {
+          alloc.percentage = remaining / othersCount;
+        }
+      });
+    }
+    
+    setAllocations(newAllocations);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!formData.name || !formData.profession || !formData.monthlyIncome || !formData.monthlyExpenses) {
       toast({
         title: "Error",
@@ -44,6 +89,13 @@ const AddClient = () => {
       return;
     }
 
+    // Generate monthly data for each allocation
+    const combinedMonthlyData = generateMonthlyData({
+      investmentPercentageOverride: formData.investmentPercentage,
+      allocations,
+      startDate
+    });
+
     const newClient: Client = {
       id: Date.now(),
       name: formData.name,
@@ -51,14 +103,12 @@ const AddClient = () => {
       customProfession: formData.profession === 'Other' ? formData.customProfession : undefined,
       monthlyExpenses: Number(formData.monthlyExpenses),
       investmentPercentage: formData.investmentPercentage.toString(),
-      investmentTrack: formData.investmentTrack,
-      monthlyData: generateMonthlyData({ 
-        investmentPercentageOverride: formData.investmentPercentage,
-        investmentTrack: formData.investmentTrack 
-      })
+      investmentTrack: allocations[0].trackId, // Keep main track for compatibility
+      monthlyData: combinedMonthlyData,
+      startDate,
+      allocations
     };
 
-    // Save to localStorage
     addClient(newClient);
     
     toast({
@@ -66,11 +116,8 @@ const AddClient = () => {
       description: "Client added successfully"
     });
 
-    // Navigate to the dashboard
     navigate('/');
   };
-
-  const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === formData.investmentTrack);
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -83,6 +130,7 @@ const AddClient = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 rounded-xl border border-border">
+          {/* Basic Info */}
           <div className="space-y-2">
             <Label htmlFor="name">Client Name</Label>
             <Input
@@ -125,6 +173,16 @@ const AddClient = () => {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="startDate">Start Date</Label>
+            <Calendar
+              mode="single"
+              selected={startDate}
+              onSelect={(date) => date && setStartDate(date)}
+              className="rounded-md border"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="monthlyIncome">Monthly Income (ILS)</Label>
             <Input
               id="monthlyIncome"
@@ -157,43 +215,64 @@ const AddClient = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="investmentTrack">Investment Track</Label>
-              <HoverCard>
-                <HoverCardTrigger>
-                  <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                </HoverCardTrigger>
-                <HoverCardContent className="w-80">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">{selectedTrack?.name}</h4>
-                    <p className="text-sm">{selectedTrack?.description}</p>
-                    <div className="text-sm">
-                      <p><strong>Benchmark:</strong> {selectedTrack?.benchmark}</p>
-                      <p><strong>Type:</strong> {selectedTrack?.type}</p>
-                      <p><strong>Expense Ratio:</strong> {selectedTrack?.expenseRatio}</p>
-                      <p><strong>Top Holdings:</strong> {selectedTrack?.topHoldings}</p>
-                      <p><strong>Sectors:</strong> {selectedTrack?.sectors}</p>
-                    </div>
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
+          {/* Investment Allocations */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label>Investment Allocations</Label>
+              {allocations.length < 3 && (
+                <Button type="button" variant="outline" onClick={addTrack}>
+                  Add Track
+                </Button>
+              )}
             </div>
-            <Select
-              value={formData.investmentTrack}
-              onValueChange={(value: InvestmentTrack) => setFormData(prev => ({ ...prev, investmentTrack: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select investment track" />
-              </SelectTrigger>
-              <SelectContent>
-                {INVESTMENT_TRACKS.map((track) => (
-                  <SelectItem key={track.id} value={track.id}>
-                    {track.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            
+            {allocations.map((allocation, index) => (
+              <div key={index} className="space-y-2 p-4 border rounded-lg">
+                <div className="flex justify-between items-center">
+                  <Select
+                    value={allocation.trackId}
+                    onValueChange={(value: InvestmentTrack) => {
+                      const newAllocations = [...allocations];
+                      newAllocations[index].trackId = value;
+                      setAllocations(newAllocations);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INVESTMENT_TRACKS
+                        .filter(track => !allocations.find((a, i) => i !== index && a.trackId === track.id))
+                        .map((track) => (
+                          <SelectItem key={track.id} value={track.id}>
+                            {track.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  {allocations.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeTrack(index)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Allocation ({allocation.percentage.toFixed(1)}%)</Label>
+                  <Slider
+                    value={[allocation.percentage]}
+                    onValueChange={(value) => updateAllocation(index, value[0])}
+                    min={0}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
 
           <Button type="submit" className="w-full">
@@ -203,7 +282,6 @@ const AddClient = () => {
       </div>
     </div>
   );
-
 };
 
 export default AddClient;

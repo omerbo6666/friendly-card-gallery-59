@@ -6,7 +6,12 @@ export interface MonthlyData {
   profit: number;
 }
 
-export type InvestmentTrack = 'SPY500' | 'NASDAQ100' | 'RUSSELL2000' | 'VTSAX' | 'VTI' | 'SWTSX' | 'IWV' | 'WFIVX';
+export type InvestmentTrack = 'SPY500' | 'NASDAQ100' | 'RUSSELL2000';
+
+export interface InvestmentAllocation {
+  trackId: InvestmentTrack;
+  percentage: number;
+}
 
 export interface Client {
   id: number;
@@ -17,6 +22,8 @@ export interface Client {
   monthlyData: MonthlyData[];
   monthlyExpenses: number;
   investmentPercentage: string;
+  startDate: Date;
+  allocations?: InvestmentAllocation[];
 }
 
 export interface Metrics {
