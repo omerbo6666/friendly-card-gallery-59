@@ -1,11 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { ResponsiveLine } from '@nivo/line';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card } from "@/components/ui/card";
-import { RUSSELL2000_RETURNS, SWTSX_RETURNS } from '@/lib/utils';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RUSSELL2000_RETURNS } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
 
 interface PerformanceChartProps {
   spyReturns: number[];
@@ -16,13 +20,23 @@ interface PerformanceChartProps {
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiReturns, nasdaqReturns }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date(2019, 0, 1));
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
-  const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000', 'SWTSX']);
+  const [startDateInput, setStartDateInput] = useState(format(new Date(2019, 0, 1), 'yyyy-MM-dd'));
+  const [endDateInput, setEndDateInput] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
+
+  const handleDateInputChange = (value: string, setDate: (date: Date | undefined) => void, setInput: (value: string) => void) => {
+    setInput(value);
+    const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+    if (!isNaN(parsedDate.getTime())) {
+      setDate(parsedDate);
+    }
+  };
 
   const calculateCumulativeReturns = (returns: number[], start: Date, end: Date) => {
     const startIndex = Math.max(0, returns.length - Math.ceil((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000)));
     const relevantReturns = returns.slice(startIndex);
     
-    let cumulativeValue = 100; // Start with base value of 100
+    let cumulativeValue = 100;
     return {
       data: relevantReturns.map((monthlyReturn, index) => {
         cumulativeValue *= (1 + monthlyReturn);
@@ -44,7 +58,6 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         ? prev.filter(id => id !== trackId)
         : [...prev, trackId]
     );
-    console.log('Toggled track', trackId, 'now selected:', selectedTracks.join(','));
   };
 
   const chartData = useMemo(() => {
@@ -53,7 +66,6 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
     const spyData = calculateCumulativeReturns(spyReturns, startDate, endDate);
     const nasdaqData = calculateCumulativeReturns(nasdaqReturns, startDate, endDate);
     const russell2000Data = calculateCumulativeReturns(RUSSELL2000_RETURNS, startDate, endDate);
-    const swtsxData = calculateCumulativeReturns(SWTSX_RETURNS, startDate, endDate);
     
     const allData = [
       {
@@ -76,13 +88,6 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         color: "#10B981",
         data: russell2000Data.data,
         totalReturn: russell2000Data.totalReturn
-      },
-      {
-        id: "Schwab Total Stock Market",
-        trackId: "SWTSX",
-        color: "#EC4899",
-        data: swtsxData.data,
-        totalReturn: swtsxData.totalReturn
       }
     ];
 
@@ -95,7 +100,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
         <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
         <div className="flex flex-wrap gap-4">
           <div className="flex gap-2">
-            {['SPY500', 'NASDAQ', 'RUSSELL2000', 'SWTSX'].map(trackId => (
+            {['SPY500', 'NASDAQ', 'RUSSELL2000'].map(trackId => (
               <Button
                 key={trackId}
                 variant={selectedTracks.includes(trackId) ? "default" : "outline"}
@@ -103,42 +108,90 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
                 className="text-xs sm:text-sm"
               >
                 {trackId === 'SPY500' ? 'S&P 500' : 
-                 trackId === 'RUSSELL2000' ? 'Russell 2000' :
-                 trackId === 'SWTSX' ? 'Schwab Total Market' : trackId}
+                 trackId === 'RUSSELL2000' ? 'Russell 2000' : trackId}
               </Button>
             ))}
           </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                {startDate ? format(startDate, 'PP') : 'Pick start date'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={setStartDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div className="grid gap-2">
+                <Label htmlFor="startDate">Start Date</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={startDateInput}
+                    onChange={(e) => handleDateInputChange(e.target.value, setStartDate, setStartDateInput)}
+                    className="w-[160px]"
+                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-[40px] p-0",
+                          !startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="single"
+                        selected={startDate}
+                        onSelect={(date) => {
+                          setStartDate(date);
+                          if (date) setStartDateInput(format(date, 'yyyy-MM-dd'));
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </div>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                {endDate ? format(endDate, 'PP') : 'Pick end date'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={setEndDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+            <div className="flex items-center gap-2">
+              <div className="grid gap-2">
+                <Label htmlFor="endDate">End Date</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={endDateInput}
+                    onChange={(e) => handleDateInputChange(e.target.value, setEndDate, setEndDateInput)}
+                    className="w-[160px]"
+                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-[40px] p-0",
+                          !endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="single"
+                        selected={endDate}
+                        onSelect={(date) => {
+                          setEndDate(date);
+                          if (date) setEndDateInput(format(date, 'yyyy-MM-dd'));
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
