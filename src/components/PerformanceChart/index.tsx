@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { ChartLine, TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { ChartLine, TrendingUp, TrendingDown, Calendar, DollarSign, PiggyBank, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -16,29 +16,107 @@ interface DataPoint {
   x: string;
   y: number;
   fullDate: string;
+  expenses?: number;
+  investment?: number;
+  totalValue?: number;
 }
 
 interface PerformanceChartProps {
   selectedTrack?: string;
   onTrackChange?: (track: InvestmentTrack) => void;
   showTrackSelector?: boolean;
+  clientId?: string;
 }
 
-const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = true }: PerformanceChartProps) => {
+const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = true, clientId }: PerformanceChartProps) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [performanceData, setPerformanceData] = useState<any[]>([]);
+  const [clientData, setClientData] = useState<any[]>([]);
   const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
 
   useEffect(() => {
     fetchPerformanceData();
-  }, []);
+    if (clientId) {
+      fetchClientData();
+    }
+  }, [clientId]);
 
   useEffect(() => {
     if (selectedTrack) {
       setSelectedTracks([selectedTrack]);
     }
   }, [selectedTrack]);
+
+  const fetchClientData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('monthly_performance')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('month', { ascending: true });
+
+      if (error) throw error;
+
+      if (data) {
+        const processedData = processClientData(data);
+        setClientData(processedData);
+      }
+    } catch (error) {
+      console.error('Error fetching client data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch client performance data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const processClientData = (data: any[]) => {
+    let cumulativeExpenses = 0;
+    let cumulativeInvestment = 0;
+
+    const expensesLine = {
+      id: 'Cumulative Expenses',
+      color: '#ef4444', // red-500
+      data: data.map(d => {
+        cumulativeExpenses += d.expenses;
+        return {
+          x: `Month ${d.month}`,
+          y: cumulativeExpenses,
+          expenses: d.expenses,
+          fullDate: `Month ${d.month}`
+        };
+      })
+    };
+
+    const investmentLine = {
+      id: 'Cumulative Investment',
+      color: '#0ea5e9', // sky-500
+      data: data.map(d => {
+        cumulativeInvestment += d.investment;
+        return {
+          x: `Month ${d.month}`,
+          y: cumulativeInvestment,
+          investment: d.investment,
+          fullDate: `Month ${d.month}`
+        };
+      })
+    };
+
+    const totalValueLine = {
+      id: 'Investment + Profit',
+      color: '#22c55e', // green-500
+      data: data.map(d => ({
+        x: `Month ${d.month}`,
+        y: d.portfolio_value,
+        totalValue: d.portfolio_value,
+        fullDate: `Month ${d.month}`
+      }))
+    };
+
+    return [expensesLine, investmentLine, totalValueLine];
+  };
 
   const fetchPerformanceData = async () => {
     try {
@@ -99,8 +177,20 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
   };
 
   const chartData = useMemo(() => {
+    if (clientId && clientData.length > 0) {
+      return clientData;
+    }
     return performanceData.filter(track => selectedTracks.includes(track.trackId));
-  }, [performanceData, selectedTracks]);
+  }, [performanceData, selectedTracks, clientData, clientId]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('he-IL', {
+      style: 'currency',
+      currency: 'ILS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
 
   return (
     <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-lg border border-border space-y-6">
@@ -108,9 +198,11 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ChartLine className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+            <h3 className="text-lg font-semibold">
+              {clientId ? 'Client Performance Overview' : 'Index Performance Comparison'}
+            </h3>
           </div>
-          {showTrackSelector && onTrackChange && selectedTrack && (
+          {showTrackSelector && onTrackChange && selectedTrack && !clientId && (
             <div className="w-[200px]">
               <TrackSelector
                 selectedTrack={selectedTrack as InvestmentTrack}
@@ -120,8 +212,9 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
           )}
         </div>
         <p className="text-muted-foreground text-sm">
-          Historical performance shows the potential of long-term investment growth.
-          Don't miss out on market opportunities - start investing today.
+          {clientId 
+            ? 'Track your investment progress, expenses, and portfolio value over time.'
+            : 'Historical performance shows the potential of long-term investment growth.'}
         </p>
       </div>
 
@@ -158,10 +251,10 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: 'Total Return (%)',
+            legend: clientId ? 'Amount (₪)' : 'Total Return (%)',
             legendOffset: -40,
             legendPosition: 'middle',
-            format: value => `${value.toFixed(0)}%`
+            format: value => clientId ? `₪${value.toLocaleString()}` : `${value.toFixed(0)}%`
           }}
           enablePoints={false}
           lineWidth={1.5}
@@ -170,6 +263,32 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
           useMesh={true}
           enableSlices="x"
           crosshairType="cross"
+          legends={[
+            {
+              anchor: 'bottom-right',
+              direction: 'column',
+              justify: false,
+              translateX: 100,
+              translateY: 0,
+              itemsSpacing: 0,
+              itemDirection: 'left-to-right',
+              itemWidth: 80,
+              itemHeight: 20,
+              itemOpacity: 0.75,
+              symbolSize: 12,
+              symbolShape: 'circle',
+              symbolBorderColor: 'rgba(0, 0, 0, .5)',
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemBackground: 'rgba(0, 0, 0, .03)',
+                    itemOpacity: 1
+                  }
+                }
+              ]
+            }
+          ]}
           theme={{
             axis: {
               ticks: {
@@ -217,77 +336,45 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
             return (
               <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-3 space-y-2">
                 <div className="font-semibold border-b border-border pb-2">{data.fullDate}</div>
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: point.serieColor }}
-                  />
-                  <span className="font-medium">{point.serieId}</span>
-                  <span className={cn(
-                    "font-semibold ml-2",
-                    data.y >= 0 ? "text-green-500" : "text-red-500"
-                  )}>
-                    {data.y >= 0 ? "+" : ""}{data.y}%
-                  </span>
+                <div className="space-y-1">
+                  {data.expenses !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-red-500" />
+                      <span>Expenses: {formatCurrency(data.expenses)}</span>
+                    </div>
+                  )}
+                  {data.investment !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <PiggyBank className="w-4 h-4 text-sky-500" />
+                      <span>Investment: {formatCurrency(data.investment)}</span>
+                    </div>
+                  )}
+                  {data.totalValue !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-green-500" />
+                      <span>Total Value: {formatCurrency(data.totalValue)}</span>
+                    </div>
+                  )}
+                  {!clientId && (
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: point.serieColor }}
+                      />
+                      <span className="font-medium">{point.serieId}</span>
+                      <span className={cn(
+                        "font-semibold ml-2",
+                        data.y >= 0 ? "text-green-500" : "text-red-500"
+                      )}>
+                        {data.y >= 0 ? "+" : ""}{data.y}%
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
           }}
         />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {chartData.map((series) => {
-          const years = differenceInYears(new Date(), new Date(2000, 0, 1));
-          return (
-            <div 
-              key={series.id} 
-              className="bg-background/50 text-card-foreground rounded-lg p-4 border border-border hover:border-primary/50 transition-colors"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: series.color }}
-                    />
-                    <h4 className="font-medium">
-                      {series.id === 'SPY500' ? 'S&P 500' : 
-                       series.id === 'RUSSELL2000' ? 'Russell 2000' : 
-                       series.id === 'NASDAQ100' ? 'NASDAQ 100' :
-                       series.id}
-                    </h4>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Return ({years} years)</span>
-                    <span className={cn(
-                      "font-semibold flex items-center gap-1",
-                      series.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'
-                    )}>
-                      {series.totalReturn >= 0 ? (
-                        <TrendingUp className="w-4 h-4" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4" />
-                      )}
-                      {series.totalReturn >= 0 ? '+' : ''}{series.totalReturn}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Annual Return</span>
-                    <span className={cn(
-                      "font-semibold",
-                      series.annualizedReturn >= 0 ? 'text-green-500' : 'text-red-500'
-                    )}>
-                      {series.annualizedReturn >= 0 ? '+' : ''}{series.annualizedReturn}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
