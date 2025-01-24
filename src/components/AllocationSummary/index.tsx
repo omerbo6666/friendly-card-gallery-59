@@ -14,7 +14,7 @@ const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316'];
 
 const AllocationSummary = ({ allocations }: AllocationSummaryProps) => {
   const data = allocations.map(allocation => ({
-    name: INVESTMENT_TRACKS.find(track => track.id === allocation.trackId)?.name || allocation.trackId,
+    name: INVESTMENT_TRACKS.find(track => track.id === allocation.track_id)?.name || allocation.track_id,
     value: allocation.percentage
   }));
 

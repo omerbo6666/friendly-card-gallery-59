@@ -53,7 +53,7 @@ export const generateMonthlyData = ({
     // Calculate weighted returns based on allocations
     let monthlyReturn = 0;
     allocations.forEach(allocation => {
-      const trackReturn = getTrackReturn(allocation.trackId, monthCounter);
+      const trackReturn = getTrackReturn(allocation.track_id, monthCounter);
       monthlyReturn += (trackReturn * (allocation.percentage / 100));
     });
     

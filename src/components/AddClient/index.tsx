@@ -23,7 +23,7 @@ const AddClient = () => {
     investmentPercentage: '',
   });
   const [allocations, setAllocations] = useState<IInvestmentAllocation[]>([
-    { trackId: 'SPY500', percentage: 100 }
+    { track_id: 'SPY500', percentage: 100 }
   ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,7 +128,7 @@ const AddClient = () => {
         .insert(
           allocations.map(allocation => ({
             client_id: clientData.id,
-            track_id: allocation.trackId,
+            track_id: allocation.track_id,
             percentage: allocation.percentage
           }))
         );
