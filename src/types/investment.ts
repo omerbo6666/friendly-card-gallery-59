@@ -9,7 +9,7 @@ export interface MonthlyData {
 export type InvestmentTrack = 'SPY500' | 'NASDAQ100' | 'RUSSELL2000';
 
 export interface InvestmentAllocation {
-  trackId: InvestmentTrack;
+  track_id: string;
   percentage: number;
 }
 
@@ -23,10 +23,7 @@ export interface Client {
   start_date: string;
   created_at?: string;
   updated_at?: string;
-  client_allocations?: {
-    track_id: string;
-    percentage: number;
-  }[];
+  client_allocations?: InvestmentAllocation[];
   monthly_performance?: {
     month: number;
     expenses: number;

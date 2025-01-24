@@ -10,7 +10,7 @@ interface ClientCardProps {
 }
 
 export const ClientCard = ({ client, metrics, onSelect }: ClientCardProps) => {
-  const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === client.investmentTrack);
+  const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === client.investment_track);
   
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onSelect(client)}>

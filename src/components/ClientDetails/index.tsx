@@ -17,10 +17,10 @@ interface ClientDetailsProps {
 }
 
 const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
-  const [selectedTrack, setSelectedTrack] = useState<InvestmentTrack>(client.investmentTrack);
+  const [selectedTrack, setSelectedTrack] = useState<InvestmentTrack>(client.investment_track as InvestmentTrack);
 
   useEffect(() => {
-    setSelectedTrack(client.investmentTrack);
+    setSelectedTrack(client.investment_track as InvestmentTrack);
   }, [client]);
 
   const formatCurrency = (value: number) => {
