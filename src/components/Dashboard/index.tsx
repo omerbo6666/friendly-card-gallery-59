@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { getClients, saveClients, searchClients } from '@/lib/localStorage';
 import { INVESTMENT_TRACKS, PROFESSIONS } from '@/lib/constants';
+import PerformanceChart from '@/components/PerformanceChart';
 
 const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316', '#D946EF', '#10B981'];
 const RISK_PROFILES = ['Conservative', 'Moderate', 'Aggressive'];
@@ -235,6 +236,13 @@ export const Dashboard = () => {
     saveClients(updatedClients);
   };
 
+  // Modify the client card click handler
+  const handleClientClick = (client: Client) => {
+    setSelectedClient(client);
+    // Instead of opening modal, scroll to top and update main dashboard
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-2 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start mb-6 md:mb-8">
@@ -274,6 +282,15 @@ export const Dashboard = () => {
           </div>
         </div>
         <ThemeToggle />
+      </div>
+
+      {/* Add performance chart after the metrics cards */}
+      <div className="mb-6 md:mb-8">
+        <PerformanceChart
+          spyReturns={SP500_RETURNS}
+          vtiReturns={[]}
+          nasdaqReturns={NASDAQ_RETURNS}
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
@@ -371,7 +388,20 @@ export const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
-          <h2 className="text-xs md:text-base font-semibold mb-2 md:mb-4">Portfolio Performance</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xs md:text-base font-semibold">
+              {selectedClient ? `${selectedClient.name}'s Portfolio Performance` : 'Portfolio Performance'}
+            </h2>
+            {selectedClient && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedClient(null)}
+              >
+                View All Portfolios
+              </Button>
+            )}
+          </div>
           <div className="h-[400px] md:h-[500px] w-full">
             {clients.length > 0 && (
               <ResponsiveLine
@@ -574,7 +604,6 @@ export const Dashboard = () => {
           {filteredClients.slice(0, showAllClients ? undefined : 6).map(client => {
             const metrics = calculateMetrics(client);
             const isSelected = selectedClient?.id === client.id;
-            const isComparison = comparisonClient?.id === client.id;
             const selectedTrack = INVESTMENT_TRACKS.find(track => track.id === client.investmentTrack);
 
             return (
@@ -582,18 +611,8 @@ export const Dashboard = () => {
                 key={client.id}
                 className={`bg-card text-card-foreground p-4 md:p-6 rounded-xl shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow ${
                   isSelected ? 'ring-2 ring-blue-500' : ''
-                } ${isComparison ? 'ring-2 ring-green-500' : ''}`}
-                onClick={() => {
-                  if (isSelected) {
-                    setSelectedClient(null);
-                  } else if (isComparison) {
-                    setComparisonClient(null);
-                  } else if (!selectedClient) {
-                    setSelectedClient(client);
-                  } else {
-                    setComparisonClient(client);
-                  }
-                }}
+                }`}
+                onClick={() => handleClientClick(client)}
               >
                 <div className="flex justify-between items-start mb-4 md:mb-6">
                   <div>
@@ -650,176 +669,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {selectedClient && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-card text-card-foreground rounded-xl p-4 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-border">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold">{selectedClient.name}</h2>
-                <p className="text-muted-foreground">{selectedClient.profession}</p>
-              </div>
-              <button 
-                onClick={() => setSelectedClient(null)}
-                className="text-muted-foreground text-xl p-2"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div>
-                <h3 className="font-semibold mb-4">Investment Profile</h3>
-                <div className="space-y-2">
-                  {(() => {
-                    const selectedTrack = INVESTMENT_TRACKS.find(t => t.id === selectedClient.investmentTrack);
-                    return <p>Investment Track: {selectedTrack?.name}</p>;
-                  })()}
-                  <p>Latest Monthly Investment: {formatCurrency(calculateMetrics(selectedClient).latestMonthlyInvestment)}</p>
-                  <p>Total Investment: {formatCurrency(calculateMetrics(selectedClient).totalInvestment)}</p>
-                  <p>Portfolio Value: {formatCurrency(calculateMetrics(selectedClient).portfolioValue)}</p>
-                  <p>Total Profit: {formatCurrency(calculateMetrics(selectedClient).totalProfit)}</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Performance Chart</h3>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ResponsiveLine
-                      data={formatChartData(selectedClient.monthlyData)}
-                      margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
-                      xScale={{
-                        type: 'point'
-                      }}
-                      yScale={{
-                        type: 'linear',
-                        min: 'auto',
-                        max: 'auto',
-                        stacked: false,
-                        reverse: false
-                      }}
-                      curve="monotoneX"
-                      axisTop={null}
-                      axisRight={null}
-                      axisBottom={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: -45,
-                        legend: 'Month',
-                        legendOffset: 40,
-                        legendPosition: 'middle'
-                      }}
-                      axisLeft={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: 0,
-                        legend: 'Value (ILS)',
-                        legendOffset: -50,
-                        legendPosition: 'middle',
-                        format: (value: number) => 
-                          new Intl.NumberFormat('he-IL', {
-                            style: 'currency',
-                            currency: 'ILS',
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0
-                          }).format(value)
-                      }}
-                      enablePoints={false}
-                      pointSize={10}
-                      pointColor={{ theme: 'background' }}
-                      pointBorderWidth={2}
-                      pointBorderColor={{ from: 'serieColor' }}
-                      pointLabelYOffset={-12}
-                      useMesh={true}
-                      legends={[
-                        {
-                          anchor: 'bottom',
-                          direction: 'row',
-                          justify: false,
-                          translateX: 0,
-                          translateY: 50,
-                          itemsSpacing: 0,
-                          itemDirection: 'left-to-right',
-                          itemWidth: 140,
-                          itemHeight: 20,
-                          itemOpacity: 0.75,
-                          symbolSize: 12,
-                          symbolShape: 'circle',
-                          symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                          effects: [
-                            {
-                              on: 'hover',
-                              style: {
-                                itemBackground: 'rgba(0, 0, 0, .03)',
-                                itemOpacity: 1
-                              }
-                            }
-                          ]
-                        }
-                      ]}
-                      theme={{
-                        axis: {
-                          ticks: {
-                            text: {
-                              fontSize: isMobile ? 10 : 12
-                            }
-                          }
-                        },
-                        legends: {
-                          text: {
-                            fontSize: isMobile ? 10 : 12
-                          }
-                        }
-                      }}
-                      tooltip={({ point }) => (
-                        <div className="bg-card p-2 shadow rounded border border-border">
-                          <strong>{point.serieId}</strong>: {
-                            new Intl.NumberFormat('he-IL', {
-                              style: 'currency',
-                              currency: 'ILS',
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0
-                            }).format(Number(point.data.y))
-                          }
-                        </div>
-                      )}
-                    />
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <h3 className="font-semibold mb-4">Monthly Details</h3>
-              <div className="rounded-md border border-border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Month</TableHead>
-                      <TableHead>Monthly Expenses</TableHead>
-                      <TableHead>Investment Amount</TableHead>
-                      <TableHead>Portfolio Value</TableHead>
-                      <TableHead>Profit/Loss</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedClient.monthlyData.map((data, index) => (
-                      <TableRow key={index}>
-                        <TableCell>Month {data.month}</TableCell>
-                        <TableCell>{formatCurrency(data.expenses)}</TableCell>
-                        <TableCell>{formatCurrency(data.investment)}</TableCell>
-                        <TableCell>{formatCurrency(data.portfolioValue)}</TableCell>
-                        <TableCell className={data.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(data.profit)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Remove the modal since we're now showing client details in the main dashboard */}
     </div>
   );
 };
