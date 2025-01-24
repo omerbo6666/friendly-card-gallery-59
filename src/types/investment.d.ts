@@ -6,28 +6,9 @@ export interface MonthlyData {
   profit: number;
 }
 
-export interface Client {
-  id: number;
-  name: string;
-  profession: string;
-  age: number;
-  monthlyExpenses: number;
-  investmentPercentage: string;
-  monthlyData: MonthlyData[];
-  riskProfile: 'Conservative' | 'Moderate' | 'Aggressive';
+export interface GenerateMonthlyDataParams {
+  investmentPercentageOverride?: number;
+  investmentTrack?: string;
 }
 
-export interface Metrics {
-  totalExpenses: number;
-  totalInvestment: number;
-  currentValue: number;
-  totalProfit: number;
-  managementFee: number;
-}
-
-export interface AggregateMetrics {
-  totalValue: number;
-  totalInvestment: number;
-  totalProfit: number;
-  totalFees: number;
-}
+export type GenerateMonthlyDataFunction = (params?: GenerateMonthlyDataParams) => MonthlyData[];

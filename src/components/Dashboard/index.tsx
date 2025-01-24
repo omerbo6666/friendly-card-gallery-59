@@ -82,19 +82,22 @@ export const Dashboard = () => {
     }
   }, []);
 
-  const generateMonthlyData = (investmentPercentageOverride?: number): MonthlyData[] => {
+  const generateMonthlyData = ({ investmentPercentageOverride, investmentTrack }: { investmentPercentageOverride?: number; investmentTrack?: string } = {}): MonthlyData[] => {
     const data: MonthlyData[] = [];
     let portfolioValue = 0;
     let cumulativeProfit = 0;
     let totalInvestment = 0;
     
-    for (let month = 0; month < NASDAQ_RETURNS.length; month++) {
+    // Select returns based on investment track
+    const returns = investmentTrack === 'SPY500' ? SP500_RETURNS : NASDAQ_RETURNS;
+    
+    for (let month = 0; month < returns.length; month++) {
       const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
       const investmentPercentage = investmentPercentageOverride || (Math.random() * 17 + 3);
       const investment = monthlyExpense * (investmentPercentage / 100);
       
       totalInvestment += investment;
-      const monthlyReturn = NASDAQ_RETURNS[month];
+      const monthlyReturn = returns[month];
       portfolioValue = (portfolioValue + investment) * (1 + monthlyReturn);
       cumulativeProfit = portfolioValue - totalInvestment;
       
@@ -121,7 +124,10 @@ export const Dashboard = () => {
         name: generateRandomName(),
         profession: PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)],
         investmentTrack: randomTrack,
-        monthlyData: generateMonthlyData(Number(investmentPercentage), randomTrack),
+        monthlyData: generateMonthlyData({ 
+          investmentPercentageOverride: Number(investmentPercentage), 
+          investmentTrack: randomTrack 
+        }),
         monthlyExpenses,
         investmentPercentage
       };
@@ -212,7 +218,7 @@ export const Dashboard = () => {
     const updatedClients = clients.map(client => ({
       ...client,
       investmentPercentage: value[0].toString(),
-      monthlyData: generateMonthlyData(value[0])
+      monthlyData: generateMonthlyData({ investmentPercentageOverride: value[0], investmentTrack: client.investmentTrack })
     }));
     setClients(updatedClients);
     saveClients(updatedClients);
