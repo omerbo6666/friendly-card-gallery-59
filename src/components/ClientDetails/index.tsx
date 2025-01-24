@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Client, ClientMetrics, InvestmentTrack } from '@/types/investment';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,11 @@ interface ClientDetailsProps {
 
 const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
   const [selectedTrack, setSelectedTrack] = useState<InvestmentTrack>(client.investmentTrack);
+
+  useEffect(() => {
+    // Update selected track when client changes
+    setSelectedTrack(client.investmentTrack);
+  }, [client]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('he-IL', {

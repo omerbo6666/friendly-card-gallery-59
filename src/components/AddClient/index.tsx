@@ -141,11 +141,26 @@ const AddClient = () => {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Add New Client</h1>
-          <Button variant="outline" onClick={() => navigate('/')}>
-            Back to Dashboard
-          </Button>
+        <div className="flex flex-col gap-6 mb-8">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Add New Client</h1>
+            <Button variant="outline" onClick={() => navigate('/')}>
+              Back to Dashboard
+            </Button>
+          </div>
+          
+          <div className="bg-card/50 p-6 rounded-lg border border-border/50 space-y-4">
+            <h2 className="font-semibold text-lg">Investment Portfolio Management</h2>
+            <p className="text-muted-foreground">
+              Create a new client profile and set up their investment strategy. You'll be able to:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li>Configure monthly investment amounts based on income</li>
+              <li>Choose from multiple investment tracks (S&P 500, NASDAQ, Russell 2000)</li>
+              <li>Set custom investment allocations across different indices</li>
+              <li>Track performance and portfolio growth over time</li>
+            </ul>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 rounded-xl border border-border">
