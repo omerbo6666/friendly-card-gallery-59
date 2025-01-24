@@ -41,5 +41,15 @@ export const INVESTMENT_TRACKS = [
     expenseRatio: 'Low',
     topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Meta',
     sectors: 'Technology, Consumer Services, Healthcare'
+  },
+  {
+    id: 'Schwab Total Stock Market Index',
+    name: 'Schwab Total Stock Market Index',
+    description: 'Comprehensive coverage of the entire U.S. equity market',
+    benchmark: 'Dow Jones U.S. Total Stock Market Index',
+    type: 'Mutual Fund',
+    expenseRatio: 'Very Low',
+    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
+    sectors: 'All U.S. market sectors'
   }
 ];
