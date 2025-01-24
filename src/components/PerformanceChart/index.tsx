@@ -8,14 +8,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-interface PerformanceChartProps {
-  spyReturns: number[];
-  vtiReturns: number[];
-  nasdaqReturns: number[];
-}
+import { useToast } from "@/components/ui/use-toast";
 
 interface DataPoint {
   x: string;
@@ -23,20 +18,23 @@ interface DataPoint {
   fullDate: string;
 }
 
-const PerformanceChart: React.FC<PerformanceChartProps> = () => {
+const PerformanceChart = () => {
+  const { toast } = useToast();
   const [startDate, setStartDate] = useState<Date | undefined>(new Date(2000, 0, 1));
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [startDateInput, setStartDateInput] = useState(format(new Date(2000, 0, 1), 'yyyy-MM-dd'));
   const [endDateInput, setEndDateInput] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
   const [performanceData, setPerformanceData] = useState<any[]>([]);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
 
   React.useEffect(() => {
     fetchPerformanceData();
-  }, [startDate, endDate]);
+  }, []);
 
   const fetchPerformanceData = async () => {
     try {
+      console.log('Fetching performance data...');
       const { data, error } = await supabase
         .from('index_performance')
         .select('*')
@@ -45,20 +43,27 @@ const PerformanceChart: React.FC<PerformanceChartProps> = () => {
       if (error) throw error;
 
       if (data) {
+        console.log('Received data:', data.length, 'records');
         const formattedData = processPerformanceData(data);
         setPerformanceData(formattedData);
+        setFilteredData(formattedData);
       }
     } catch (error) {
       console.error('Error fetching performance data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch performance data",
+        variant: "destructive",
+      });
     }
   };
 
   const processPerformanceData = (data: any[]) => {
     const indices = ['SPY500', 'NASDAQ', 'RUSSELL2000'];
     const colors = {
-      'SPY500': '#8B5CF6',
-      'NASDAQ': '#F97316',
-      'RUSSELL2000': '#10B981'
+      'SPY500': 'hsl(var(--primary))',
+      'NASDAQ': 'hsl(var(--destructive))',
+      'RUSSELL2000': 'hsl(var(--success))'
     };
 
     return indices.map(index => {
@@ -100,9 +105,31 @@ const PerformanceChart: React.FC<PerformanceChartProps> = () => {
     );
   };
 
+  const applyDateFilter = () => {
+    if (!startDate || !endDate) {
+      toast({
+        title: "Warning",
+        description: "Please select both start and end dates",
+        variant: "warning",
+      });
+      return;
+    }
+
+    const filtered = performanceData.map(series => ({
+      ...series,
+      data: series.data.filter((point: DataPoint) => {
+        const pointDate = parse(point.x, 'MMM yyyy', new Date());
+        return pointDate >= startDate && pointDate <= endDate;
+      })
+    }));
+
+    setFilteredData(filtered);
+    console.log('Applied date filter:', { startDate, endDate });
+  };
+
   const chartData = useMemo(() => {
-    return performanceData.filter(track => selectedTracks.includes(track.trackId));
-  }, [performanceData, selectedTracks]);
+    return filteredData.filter(track => selectedTracks.includes(track.trackId));
+  }, [filteredData, selectedTracks]);
 
   return (
     <div className="bg-card text-card-foreground rounded-xl p-4 shadow-sm border border-border">
@@ -206,6 +233,15 @@ const PerformanceChart: React.FC<PerformanceChartProps> = () => {
                 </div>
               </div>
             </div>
+
+            <Button 
+              onClick={applyDateFilter}
+              className="mt-2"
+              variant="default"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Run
+            </Button>
           </div>
         </div>
       </div>
