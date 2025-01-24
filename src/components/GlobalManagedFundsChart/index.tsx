@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveLine } from '@nivo/line';
-import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ChartLine, TrendingUp, DollarSign, PiggyBank, Wallet } from 'lucide-react';
+import { ChartLine } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Card,
@@ -19,20 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface GlobalFundsData {
-  date: string;
-  totalManagedFunds: number;
-  cumulativeInvestment: number;
-  cumulativeProfit: number;
-  managementFees: number;
-}
+import { aggregateMonthlyData, type AggregatedChartData } from '@/utils/chartDataUtils';
+import ChartTooltip from '@/components/ChartTooltip';
+import { useToast } from '@/components/ui/use-toast';
 
 const GlobalManagedFundsChart = () => {
-  const [data, setData] = useState<GlobalFundsData[]>([]);
+  const [data, setData] = useState<AggregatedChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('1y');
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchGlobalFundsData();
@@ -53,7 +48,9 @@ const GlobalManagedFundsChart = () => {
         `)
         .order('month', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (!monthlyData || monthlyData.length === 0) {
         console.log('No data found');
@@ -62,40 +59,22 @@ const GlobalManagedFundsChart = () => {
         return;
       }
 
-      // Process and aggregate the data
-      const aggregatedData = monthlyData.reduce((acc: GlobalFundsData[], curr) => {
-        const date = `Month ${curr.month}`;
-        const existingEntry = acc.find(item => item.date === date);
-
-        if (existingEntry) {
-          existingEntry.cumulativeInvestment += curr.investment || 0;
-          existingEntry.cumulativeProfit += curr.profit || 0;
-          existingEntry.totalManagedFunds = existingEntry.cumulativeInvestment + existingEntry.cumulativeProfit;
-          existingEntry.managementFees = existingEntry.cumulativeInvestment * 0.005;
-        } else {
-          acc.push({
-            date,
-            cumulativeInvestment: curr.investment || 0,
-            cumulativeProfit: curr.profit || 0,
-            totalManagedFunds: (curr.investment || 0) + (curr.profit || 0),
-            managementFees: (curr.investment || 0) * 0.005
-          });
-        }
-
-        return acc;
-      }, []);
-
+      const aggregatedData = aggregateMonthlyData(monthlyData);
       console.log('Processed global funds data:', aggregatedData);
       setData(aggregatedData);
     } catch (error) {
       console.error('Error fetching global funds data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load chart data. Please try again later.",
+        variant: "destructive",
+      });
       setData([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Ensure we have valid data for the chart
   const chartData = React.useMemo(() => {
     if (!data || data.length === 0) return [];
 
@@ -138,15 +117,6 @@ const GlobalManagedFundsChart = () => {
       }
     ];
   }, [data]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('he-IL', {
-      style: 'currency',
-      currency: 'ILS',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
 
   if (isLoading) {
     return (
@@ -300,29 +270,7 @@ const GlobalManagedFundsChart = () => {
             ]}
             tooltip={({ point }) => {
               const data = point.data as any;
-              return (
-                <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-3 space-y-2">
-                  <div className="font-semibold border-b border-border pb-2">{data.x}</div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Wallet className="w-4 h-4 text-cyan-500" />
-                      <span>Total Managed Funds: {formatCurrency(data.totalManagedFunds)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <PiggyBank className="w-4 h-4 text-sky-500" />
-                      <span>Cumulative Investment: {formatCurrency(data.cumulativeInvestment)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-green-500" />
-                      <span>Cumulative Profit: {formatCurrency(data.cumulativeProfit)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-purple-500" />
-                      <span>Management Fees: {formatCurrency(data.managementFees)}</span>
-                    </div>
-                  </div>
-                </div>
-              );
+              return <ChartTooltip data={data} />;
             }}
             theme={{
               axis: {
