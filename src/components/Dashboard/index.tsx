@@ -5,6 +5,7 @@ import { Search, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react';
 import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/investment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import ClientDetails from '@/components/ClientDetails';
 import {
   Table,
   TableBody,
@@ -398,193 +399,202 @@ export const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
-        <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xs md:text-base font-semibold">
-              {selectedClient ? `${selectedClient.name}'s Portfolio Performance` : 'Portfolio Performance'}
-            </h2>
-            {selectedClient && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedClient(null)}
-              >
-                View All Portfolios
-              </Button>
-            )}
-          </div>
-          <div className="h-[400px] md:h-[500px] w-full">
-            {clients.length > 0 && (
-              <ResponsiveLine
-                data={[
-                  ...formatChartData(selectedClient ? selectedClient.monthlyData : clients[0]?.monthlyData),
-                  ...(comparisonClient ? formatChartData(comparisonClient.monthlyData) : [])
-                ]}
-                margin={{ top: 30, right: 40, bottom: 70, left: 60 }}
-                xScale={{
-                  type: 'point'
-                }}
-                yScale={{
-                  type: 'linear',
-                  min: 'auto',
-                  max: 'auto',
-                  stacked: false,
-                  reverse: false
-                }}
-                curve="monotoneX"
-                axisTop={null}
-                axisRight={null}
-                axisBottom={{
-                  tickSize: 5,
-                  tickPadding: 5,
-                  tickRotation: -45,
-                  legend: 'Timeline',
-                  legendOffset: 50,
-                  legendPosition: 'middle',
-                  format: (value) => value?.toString() || ''
-                }}
-                axisLeft={{
-                  tickSize: 5,
-                  tickPadding: 5,
-                  tickRotation: 0,
-                  legend: 'Amount (ILS)',
-                  legendOffset: -45,
-                  legendPosition: 'middle',
-                  format: (value) => {
-                    if (value === null || value === undefined) return '';
-                    if (typeof value === 'number') {
-                      return new Intl.NumberFormat('he-IL', {
-                        style: 'currency',
-                        currency: 'ILS',
-                        notation: 'compact',
-                        maximumFractionDigits: 1
-                      }).format(value);
-                    }
-                    return value.toString();
-                  }
-                }}
-                enableGridX={false}
-                enableGridY={true}
-                lineWidth={3}
-                pointSize={isMobile ? 4 : 6}
-                pointColor={{ theme: 'background' }}
-                pointBorderWidth={2}
-                pointBorderColor={{ from: 'serieColor' }}
-                pointLabelYOffset={-12}
-                enableArea={true}
-                areaOpacity={0.15}
-                useMesh={true}
-                enableSlices="x"
-                crosshairType="cross"
-                motionConfig="gentle"
-                legends={[
-                  {
-                    anchor: 'bottom',
-                    direction: 'row',
-                    justify: false,
-                    translateX: 0,
-                    translateY: 60,
-                    itemsSpacing: 10,
-                    itemDirection: 'left-to-right',
-                    itemWidth: isMobile ? 80 : 120,
-                    itemHeight: 20,
-                    itemOpacity: 0.75,
-                    symbolSize: 12,
-                    symbolShape: 'circle',
-                    symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                    effects: [
+        {selectedClient ? (
+          <>
+            <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
+              <div className="flex justify-between items-center mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedClient(null)}
+                  className="mb-4"
+                >
+                  ← Back to All Portfolios
+                </Button>
+              </div>
+              <ClientDetails 
+                client={selectedClient} 
+                metrics={calculateMetrics(selectedClient)}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xs md:text-base font-semibold">Portfolio Performance</h2>
+              </div>
+              <div className="h-[400px] md:h-[500px] w-full">
+                {clients.length > 0 && (
+                  <ResponsiveLine
+                    data={formatChartData(clients[0]?.monthlyData)}
+                    margin={{ top: 30, right: 40, bottom: 70, left: 60 }}
+                    xScale={{
+                      type: 'point'
+                    }}
+                    yScale={{
+                      type: 'linear',
+                      min: 'auto',
+                      max: 'auto',
+                      stacked: false,
+                      reverse: false
+                    }}
+                    curve="monotoneX"
+                    axisTop={null}
+                    axisRight={null}
+                    axisBottom={{
+                      tickSize: 5,
+                      tickPadding: 5,
+                      tickRotation: -45,
+                      legend: 'Timeline',
+                      legendOffset: 50,
+                      legendPosition: 'middle',
+                      format: (value) => value?.toString() || ''
+                    }}
+                    axisLeft={{
+                      tickSize: 5,
+                      tickPadding: 5,
+                      tickRotation: 0,
+                      legend: 'Amount (ILS)',
+                      legendOffset: -45,
+                      legendPosition: 'middle',
+                      format: (value) => {
+                        if (value === null || value === undefined) return '';
+                        if (typeof value === 'number') {
+                          return new Intl.NumberFormat('he-IL', {
+                            style: 'currency',
+                            currency: 'ILS',
+                            notation: 'compact',
+                            maximumFractionDigits: 1
+                          }).format(value);
+                        }
+                        return value.toString();
+                      }
+                    }}
+                    enableGridX={false}
+                    enableGridY={true}
+                    lineWidth={3}
+                    pointSize={isMobile ? 4 : 6}
+                    pointColor={{ theme: 'background' }}
+                    pointBorderWidth={2}
+                    pointBorderColor={{ from: 'serieColor' }}
+                    pointLabelYOffset={-12}
+                    enableArea={true}
+                    areaOpacity={0.15}
+                    useMesh={true}
+                    enableSlices="x"
+                    crosshairType="cross"
+                    motionConfig="gentle"
+                    legends={[
                       {
-                        on: 'hover',
-                        style: {
-                          itemBackground: 'rgba(0, 0, 0, .03)',
-                          itemOpacity: 1
+                        anchor: 'bottom',
+                        direction: 'row',
+                        justify: false,
+                        translateX: 0,
+                        translateY: 60,
+                        itemsSpacing: 10,
+                        itemDirection: 'left-to-right',
+                        itemWidth: isMobile ? 80 : 120,
+                        itemHeight: 20,
+                        itemOpacity: 0.75,
+                        symbolSize: 12,
+                        symbolShape: 'circle',
+                        symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                        effects: [
+                          {
+                            on: 'hover',
+                            style: {
+                              itemBackground: 'rgba(0, 0, 0, .03)',
+                              itemOpacity: 1
+                            }
+                          }
+                        ]
+                      }
+                    ]}
+                    theme={{
+                      axis: {
+                        ticks: {
+                          text: {
+                            fontSize: isMobile ? 8 : 11,
+                            fill: 'hsl(var(--muted-foreground))'
+                          }
+                        },
+                        legend: {
+                          text: {
+                            fontSize: isMobile ? 9 : 12,
+                            fill: 'hsl(var(--muted-foreground))',
+                            fontWeight: 500
+                          }
+                        }
+                      },
+                      grid: {
+                        line: {
+                          stroke: 'hsl(var(--border))',
+                          strokeWidth: 1,
+                          strokeDasharray: '4 4'
+                        }
+                      },
+                      crosshair: {
+                        line: {
+                          stroke: 'hsl(var(--muted-foreground))',
+                          strokeWidth: 1,
+                          strokeOpacity: 0.35
+                        }
+                      },
+                      tooltip: {
+                        container: {
+                          background: 'hsl(var(--background))',
+                          color: 'hsl(var(--foreground))',
+                          fontSize: isMobile ? 10 : 12,
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          padding: '6px 10px',
+                          border: '1px solid hsl(var(--border))'
                         }
                       }
-                    ]
-                  }
-                ]}
-                theme={{
-                  axis: {
-                    ticks: {
-                      text: {
-                        fontSize: isMobile ? 8 : 11,
-                        fill: 'hsl(var(--muted-foreground))'
-                      }
-                    },
-                    legend: {
-                      text: {
-                        fontSize: isMobile ? 9 : 12,
-                        fill: 'hsl(var(--muted-foreground))',
-                        fontWeight: 500
-                      }
-                    }
-                  },
-                  grid: {
-                    line: {
-                      stroke: 'hsl(var(--border))',
-                      strokeWidth: 1,
-                      strokeDasharray: '4 4'
-                    }
-                  },
-                  crosshair: {
-                    line: {
-                      stroke: 'hsl(var(--muted-foreground))',
-                      strokeWidth: 1,
-                      strokeOpacity: 0.35
-                    }
-                  },
-                  tooltip: {
-                    container: {
-                      background: 'hsl(var(--background))',
-                      color: 'hsl(var(--foreground))',
-                      fontSize: isMobile ? 10 : 12,
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      padding: '6px 10px',
-                      border: '1px solid hsl(var(--border))'
-                    }
-                  }
-                }}
-              />
-            )}
-          </div>
-        </div>
+                    }}
+                  />
+                )}
+              </div>
+            </div>
 
-        <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
-          <h2 className="text-sm md:text-base font-semibold mb-3 md:mb-4">Client Distribution</h2>
-          <div className="h-[300px] md:h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={PROFESSIONS.map(profession => ({
-                    name: profession,
-                    value: clients.filter(client => client.profession === profession).length
-                  }))}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={isMobile ? 60 : 80}
-                  outerRadius={isMobile ? 90 : 120}
-                  fill="#8884d8"
-                  paddingAngle={2}
-                  dataKey="value"
-                  label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                  labelLine={{ stroke: '#374151', strokeWidth: 1 }}
-                  style={{ fontSize: isMobile ? '10px' : '12px' }}
-                >
-                  {PROFESSIONS.map((_, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[index % COLORS.length]}
-                      stroke="#fff"
-                      strokeWidth={2}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+            <div className="bg-card text-card-foreground rounded-xl p-3 md:p-6 shadow-sm border border-border col-span-1 lg:col-span-2">
+              <h2 className="text-sm md:text-base font-semibold mb-3 md:mb-4">Client Distribution</h2>
+              <div className="h-[300px] md:h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={PROFESSIONS.map(profession => ({
+                        name: profession,
+                        value: clients.filter(client => client.profession === profession).length
+                      }))}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={isMobile ? 60 : 80}
+                      outerRadius={isMobile ? 90 : 120}
+                      fill="#8884d8"
+                      paddingAngle={2}
+                      dataKey="value"
+                      label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      labelLine={{ stroke: '#374151', strokeWidth: 1 }}
+                      style={{ fontSize: isMobile ? '10px' : '12px' }}
+                    >
+                      {PROFESSIONS.map((_, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[index % COLORS.length]}
+                          stroke="#fff"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="mt-6 md:mt-8">
