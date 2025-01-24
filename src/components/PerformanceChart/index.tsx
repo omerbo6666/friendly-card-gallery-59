@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Play, ChartLine, TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { ChartLine, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from '@/hooks/use-mobile';
+import TrackSelector from '../ClientDetails/TrackSelector';
+import { InvestmentTrack } from '@/types/investment';
 
 interface DataPoint {
   x: string;
@@ -18,18 +20,15 @@ interface DataPoint {
 
 interface PerformanceChartProps {
   selectedTrack?: string;
+  onTrackChange?: (track: InvestmentTrack) => void;
+  showTrackSelector?: boolean;
 }
 
-const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
+const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = true }: PerformanceChartProps) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date(2000, 0, 1));
-  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
-  const [startDateInput, setStartDateInput] = useState(format(new Date(2000, 0, 1), 'yyyy-MM-dd'));
-  const [endDateInput, setEndDateInput] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
   const [performanceData, setPerformanceData] = useState<any[]>([]);
-  const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
 
   useEffect(() => {
     fetchPerformanceData();
@@ -53,7 +52,6 @@ const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
       if (data) {
         const formattedData = processPerformanceData(data);
         setPerformanceData(formattedData);
-        setFilteredData(formattedData);
       }
     } catch (error) {
       console.error('Error fetching performance data:', error);
@@ -101,15 +99,25 @@ const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
   };
 
   const chartData = useMemo(() => {
-    return filteredData.filter(track => selectedTracks.includes(track.trackId));
-  }, [filteredData, selectedTracks]);
+    return performanceData.filter(track => selectedTracks.includes(track.trackId));
+  }, [performanceData, selectedTracks]);
 
   return (
     <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-lg border border-border space-y-6">
       <div className="flex flex-col space-y-4">
-        <div className="flex items-center gap-2">
-          <ChartLine className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ChartLine className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+          </div>
+          {showTrackSelector && onTrackChange && selectedTrack && (
+            <div className="w-[200px]">
+              <TrackSelector
+                selectedTrack={selectedTrack as InvestmentTrack}
+                onTrackChange={onTrackChange}
+              />
+            </div>
+          )}
         </div>
         <p className="text-muted-foreground text-sm">
           Historical performance shows the potential of long-term investment growth.
@@ -117,7 +125,7 @@ const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
         </p>
       </div>
 
-      <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50 overflow-hidden">
+      <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
         <ResponsiveLine
           data={chartData}
           margin={{ 
@@ -228,7 +236,7 @@ const PerformanceChart = ({ selectedTrack }: PerformanceChartProps) => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {chartData.map((series) => {
           const years = differenceInYears(new Date(), new Date(2000, 0, 1));
           return (

@@ -79,12 +79,13 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
       </div>
 
       <div className="grid gap-4">
-        <Card className="col-span-4 overflow-hidden">
+        <Card className="col-span-4">
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
-            <div className="h-[500px]">
-              <PerformanceChart selectedTrack={selectedTrack} />
-            </div>
+            <PerformanceChart 
+              selectedTrack={selectedTrack} 
+              onTrackChange={handleTrackChange}
+              showTrackSelector={true}
+            />
           </div>
         </Card>
       </div>

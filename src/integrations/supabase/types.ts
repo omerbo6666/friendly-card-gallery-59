@@ -9,6 +9,38 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_allocations: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          percentage: number
+          track_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          percentage: number
+          track_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          percentage?: number
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_allocations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           created_at: string | null
@@ -142,6 +174,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_random_clients: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       insert_extended_performance_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
