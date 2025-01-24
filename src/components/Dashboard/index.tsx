@@ -100,7 +100,6 @@ export const Dashboard = () => {
     let cumulativeProfit = 0;
     let totalInvestment = 0;
     
-    // Select returns based on investment track
     const returns = investmentTrack === 'SPY500' ? SP500_RETURNS : NASDAQ_RETURNS;
     
     for (let month = 0; month < returns.length; month++) {
@@ -131,6 +130,13 @@ export const Dashboard = () => {
       const tracks = INVESTMENT_TRACKS.map(track => track.id);
       const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
       
+      const today = new Date();
+      const twoYearsAgo = new Date();
+      twoYearsAgo.setFullYear(today.getFullYear() - 2);
+      const randomStartDate = new Date(
+        twoYearsAgo.getTime() + Math.random() * (today.getTime() - twoYearsAgo.getTime())
+      );
+      
       return {
         id: i + 1,
         name: generateRandomName(),
@@ -138,10 +144,12 @@ export const Dashboard = () => {
         investmentTrack: randomTrack,
         monthlyData: generateMonthlyData({ 
           investmentPercentageOverride: Number(investmentPercentage), 
-          investmentTrack: randomTrack 
+          investmentTrack: randomTrack,
+          startDate: randomStartDate
         }),
         monthlyExpenses,
-        investmentPercentage
+        investmentPercentage,
+        startDate: randomStartDate
       };
     });
 
@@ -236,10 +244,8 @@ export const Dashboard = () => {
     saveClients(updatedClients);
   };
 
-  // Modify the client card click handler
   const handleClientClick = (client: Client) => {
     setSelectedClient(client);
-    // Instead of opening modal, scroll to top and update main dashboard
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -284,7 +290,6 @@ export const Dashboard = () => {
         <ThemeToggle />
       </div>
 
-      {/* Add performance chart after the metrics cards */}
       <div className="mb-6 md:mb-8">
         <PerformanceChart
           spyReturns={SP500_RETURNS}
@@ -620,8 +625,8 @@ export const Dashboard = () => {
                     <p className="text-xs md:text-sm text-muted-foreground">{client.profession}</p>
                   </div>
                   <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm ${
-                    selectedTrack?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    selectedTrack?.type === 'ETF' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                    selectedTrack?.id === 'SPY500' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                    selectedTrack?.id === 'NASDAQ100' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                     'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                   }`}>
                     {selectedTrack?.name}
@@ -668,8 +673,6 @@ export const Dashboard = () => {
           })}
         </div>
       </div>
-
-      {/* Remove the modal since we're now showing client details in the main dashboard */}
     </div>
   );
 };

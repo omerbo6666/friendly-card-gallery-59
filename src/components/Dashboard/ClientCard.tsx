@@ -21,8 +21,8 @@ export const ClientCard = ({ client, metrics, onSelect }: ClientCardProps) => {
             <p className="text-sm text-muted-foreground">{client.profession}</p>
           </div>
           <span className={`px-3 py-1 rounded-full text-sm ${
-            selectedTrack?.type === 'Mutual Fund' ? 'bg-blue-100 text-blue-800' :
-            selectedTrack?.type === 'ETF' ? 'bg-green-100 text-green-800' :
+            selectedTrack?.id === 'SPY500' ? 'bg-blue-100 text-blue-800' :
+            selectedTrack?.id === 'NASDAQ100' ? 'bg-green-100 text-green-800' :
             'bg-purple-100 text-purple-800'
           }`}>
             {selectedTrack?.name}
