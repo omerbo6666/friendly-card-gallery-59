@@ -1,8 +1,10 @@
-import React from 'react';
-import { Client, ClientMetrics } from '@/types/investment';
+import React, { useState } from 'react';
+import { Client, ClientMetrics, InvestmentTrack } from '@/types/investment';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   TrendingUp,
   TrendingDown,
@@ -12,6 +14,8 @@ import {
   Activity,
   Percent,
   AlertCircle,
+  ArrowUpRight,
+  ArrowDownRight,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -20,6 +24,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { INVESTMENT_TRACKS } from '@/lib/constants';
+import { ResponsiveLine } from '@nivo/line';
+import { format } from 'date-fns';
 
 interface ClientDetailsProps {
   client: Client;
@@ -27,6 +33,8 @@ interface ClientDetailsProps {
 }
 
 const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
+  const [comparisonTrack, setComparisonTrack] = useState<InvestmentTrack | null>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('he-IL', {
       style: 'currency',
@@ -60,6 +68,24 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
     return ((lastMonth.portfolioValue - previousMonth.portfolioValue) / previousMonth.portfolioValue) * 100;
   };
 
+  const formatChartData = () => {
+    return [
+      {
+        id: "Portfolio Value",
+        color: "hsl(var(--primary))",
+        data: client.monthlyData.map((d, index) => ({
+          x: `Month ${d.month}`,
+          y: d.portfolioValue,
+          tooltip: {
+            investment: d.investment,
+            profit: d.profit,
+            expenses: d.expenses
+          }
+        }))
+      }
+    ];
+  };
+
   const trackDetails = getTrackDetails();
   const latestPerformance = getLatestPerformance();
 
@@ -85,14 +111,14 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="w-4 h-4" />
-                <span>Investment Start Date</span>
+                <span>Investment Start</span>
               </div>
               <p className="text-lg font-medium">
-                {new Date(client.startDate).toLocaleDateString()}
+                {format(new Date(client.startDate), 'MMM dd, yyyy')}
               </p>
             </div>
             <div className="space-y-2">
@@ -100,12 +126,29 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
                 <PieChart className="w-4 h-4" />
                 <span>Investment Track</span>
               </div>
-              <p className="text-lg font-medium">{trackDetails?.name}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-medium">{trackDetails?.name}</p>
+                <Select
+                  value={comparisonTrack || undefined}
+                  onValueChange={(value: InvestmentTrack) => setComparisonTrack(value)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Compare with..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INVESTMENT_TRACKS.filter(track => track.id !== client.investmentTrack).map(track => (
+                      <SelectItem key={track.id} value={track.id}>
+                        {track.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Percent className="w-4 h-4" />
-                <span>Investment Percentage</span>
+                <span>Investment %</span>
               </div>
               <p className="text-lg font-medium">
                 {formatPercentage(Number(client.investmentPercentage))}
@@ -115,7 +158,7 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -182,6 +225,125 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-medium">Portfolio Performance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px]">
+            <ResponsiveLine
+              data={formatChartData()}
+              margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+              xScale={{ type: 'point' }}
+              yScale={{
+                type: 'linear',
+                min: 'auto',
+                max: 'auto',
+                stacked: false,
+                reverse: false
+              }}
+              yFormat=" >-.2f"
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: 'Timeline',
+                legendOffset: 36,
+                legendPosition: 'middle'
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: 'Portfolio Value (ILS)',
+                legendOffset: -40,
+                legendPosition: 'middle',
+                format: value => formatCurrency(Number(value))
+              }}
+              enablePoints={true}
+              pointSize={8}
+              pointColor={{ theme: 'background' }}
+              pointBorderWidth={2}
+              pointBorderColor={{ from: 'serieColor' }}
+              pointLabelYOffset={-12}
+              enableArea={true}
+              areaOpacity={0.15}
+              useMesh={true}
+              enableSlices="x"
+              crosshairType="cross"
+              theme={{
+                axis: {
+                  ticks: {
+                    text: {
+                      fontSize: 11,
+                      fill: 'hsl(var(--muted-foreground))'
+                    }
+                  },
+                  legend: {
+                    text: {
+                      fontSize: 12,
+                      fill: 'hsl(var(--muted-foreground))',
+                      fontWeight: 500
+                    }
+                  }
+                },
+                grid: {
+                  line: {
+                    stroke: 'hsl(var(--border))',
+                    strokeWidth: 1,
+                    strokeDasharray: '4 4'
+                  }
+                },
+                crosshair: {
+                  line: {
+                    stroke: 'hsl(var(--muted-foreground))',
+                    strokeWidth: 1,
+                    strokeOpacity: 0.35
+                  }
+                },
+                tooltip: {
+                  container: {
+                    background: 'hsl(var(--background))',
+                    color: 'hsl(var(--foreground))',
+                    fontSize: 12,
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    padding: '6px 10px',
+                    border: '1px solid hsl(var(--border))'
+                  }
+                }
+              }}
+              tooltip={({ point }) => {
+                const data = point.data as any;
+                return (
+                  <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-2 text-sm">
+                    <div className="font-semibold">{point.data.x}</div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Portfolio Value:</span>
+                        <span className="font-medium">{formatCurrency(point.data.y)}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Investment:</span>
+                        <span className="font-medium">{formatCurrency(data.tooltip.investment)}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Profit:</span>
+                        <span className={`font-medium ${data.tooltip.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatCurrency(data.tooltip.profit)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {client.allocations && client.allocations.length > 0 && (
         <Card>

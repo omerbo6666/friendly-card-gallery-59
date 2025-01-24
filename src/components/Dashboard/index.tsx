@@ -246,9 +246,17 @@ export const Dashboard = () => {
   };
 
   const handleClientClick = (client: Client) => {
+    console.log('Selecting client:', client.name);
     setSelectedClient(client);
-    const clientCardId = `client-${client.id}`;
     
+    // Smooth scroll to top
+    window.scrollTo({ 
+      top: 0, 
+      behavior: 'smooth' 
+    });
+    
+    // Find and scroll the client card into view
+    const clientCardId = `client-${client.id}`;
     const clientCard = document.getElementById(clientCardId);
     if (clientCard) {
       clientCard.scrollIntoView({ 
@@ -256,8 +264,6 @@ export const Dashboard = () => {
         block: 'center'
       });
     }
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
