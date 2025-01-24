@@ -47,7 +47,7 @@ const SP500_RETURNS = [
   0.0179, 0.0297, 0.0787
 ].reverse();
 
-export const generateMonthlyData = (investmentPercentageOverride?: number, investmentTrack?: string): MonthlyData[] => {
+export const generateMonthlyData = ({ investmentPercentageOverride, investmentTrack }: { investmentPercentageOverride?: number; investmentTrack?: string } = {}): MonthlyData[] => {
   const data: MonthlyData[] = [];
   let portfolioValue = 0;
   let cumulativeProfit = 0;
