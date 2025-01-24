@@ -112,8 +112,8 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
               </SelectTrigger>
               <SelectContent>
                 {INVESTMENT_TRACKS.map((track) => (
-                  <SelectItem key={track} value={track}>
-                    {track}
+                  <SelectItem key={track.id} value={track.id}>
+                    {track.name}
                   </SelectItem>
                 ))}
               </SelectContent>
