@@ -9,28 +9,21 @@ export interface MonthlyData {
 export type InvestmentTrack = 'SPY500' | 'NASDAQ100' | 'RUSSELL2000';
 
 export interface InvestmentAllocation {
-  track_id: string;
+  trackId: InvestmentTrack;
   percentage: number;
 }
 
 export interface Client {
-  id: string;
+  id: number;
   name: string;
   profession: string;
-  investment_track?: string;
-  monthly_expenses: number;
-  investment_percentage: number;
-  start_date: string;
-  created_at?: string;
-  updated_at?: string;
-  client_allocations?: InvestmentAllocation[];
-  monthly_performance?: {
-    month: number;
-    expenses: number;
-    investment: number;
-    portfolio_value: number;
-    profit: number;
-  }[];
+  customProfession?: string;
+  investmentTrack?: InvestmentTrack;
+  monthlyData: MonthlyData[];
+  monthlyExpenses: number;
+  investmentPercentage: string;
+  startDate: Date;
+  allocations?: InvestmentAllocation[];
 }
 
 export interface ClientMetrics {

@@ -3,8 +3,6 @@ import { Card } from "@/components/ui/card";
 import { InvestmentAllocation } from '@/types/investment';
 import { INVESTMENT_TRACKS } from '@/lib/constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Button } from "@/components/ui/button";
-import { Edit } from 'lucide-react';
 
 interface AllocationSummaryProps {
   allocations: InvestmentAllocation[];
@@ -14,19 +12,13 @@ const COLORS = ['#8B5CF6', '#0EA5E9', '#F97316'];
 
 const AllocationSummary = ({ allocations }: AllocationSummaryProps) => {
   const data = allocations.map(allocation => ({
-    name: INVESTMENT_TRACKS.find(track => track.id === allocation.track_id)?.name || allocation.track_id,
+    name: INVESTMENT_TRACKS.find(track => track.id === allocation.trackId)?.name || allocation.trackId,
     value: allocation.percentage
   }));
 
   return (
-    <Card className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Portfolio Allocation</h3>
-        <Button variant="outline" size="sm">
-          <Edit className="w-4 h-4 mr-2" />
-          Edit Allocation
-        </Button>
-      </div>
+    <Card className="p-4">
+      <h3 className="text-lg font-semibold mb-4">Allocation Summary</h3>
       <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

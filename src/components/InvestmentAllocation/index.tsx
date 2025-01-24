@@ -15,7 +15,7 @@ interface AllocationProps {
   disabled?: boolean;
 }
 
-export const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = false }: AllocationProps) => {
+const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = false }: AllocationProps) => {
   const { toast } = useToast();
   const [localAllocations, setLocalAllocations] = useState<IInvestmentAllocation[]>(allocations);
   const [totalPercentage, setTotalPercentage] = useState(0);
@@ -37,7 +37,7 @@ export const InvestmentAllocation = ({ allocations, onAllocationsChange, disable
 
     const availableTracks = INVESTMENT_TRACKS
       .map(track => track.id)
-      .filter(trackId => !localAllocations.some(allocation => allocation.track_id === trackId));
+      .filter(trackId => !localAllocations.some(allocation => allocation.trackId === trackId)) as InvestmentTrack[];
 
     if (availableTracks.length === 0) {
       toast({
@@ -50,7 +50,7 @@ export const InvestmentAllocation = ({ allocations, onAllocationsChange, disable
 
     setLocalAllocations([
       ...localAllocations,
-      { track_id: availableTracks[0] as InvestmentTrack, percentage: 0 }
+      { trackId: availableTracks[0], percentage: 0 }
     ]);
   };
 
@@ -60,9 +60,9 @@ export const InvestmentAllocation = ({ allocations, onAllocationsChange, disable
     onAllocationsChange(newAllocations);
   };
 
-  const handleTrackChange = (index: number, track_id: string) => {
+  const handleTrackChange = (index: number, trackId: InvestmentTrack) => {
     const newAllocations = [...localAllocations];
-    newAllocations[index].track_id = track_id as InvestmentTrack;
+    newAllocations[index].trackId = trackId;
     setLocalAllocations(newAllocations);
     onAllocationsChange(newAllocations);
   };
@@ -98,8 +98,8 @@ export const InvestmentAllocation = ({ allocations, onAllocationsChange, disable
             <div className="flex-1">
               <Label>Investment Track</Label>
               <Select
-                value={allocation.track_id}
-                onValueChange={(value) => handleTrackChange(index, value)}
+                value={allocation.trackId}
+                onValueChange={(value) => handleTrackChange(index, value as InvestmentTrack)}
                 disabled={disabled}
               >
                 <SelectTrigger>
@@ -108,8 +108,8 @@ export const InvestmentAllocation = ({ allocations, onAllocationsChange, disable
                 <SelectContent>
                   {INVESTMENT_TRACKS
                     .filter(track => 
-                      track.id === allocation.track_id || 
-                      !localAllocations.some(a => a.track_id === track.id)
+                      track.id === allocation.trackId || 
+                      !localAllocations.some(a => a.trackId === track.id)
                     )
                     .map((track) => (
                       <SelectItem key={track.id} value={track.id}>

@@ -10,6 +10,7 @@ import {
 import MetricCard from './MetricCard';
 import TrackSelector from './TrackSelector';
 import PerformanceChart from '@/components/PerformanceChart';
+import AllocationSummary from '@/components/AllocationSummary';
 
 interface ClientDetailsProps {
   client: Client;
@@ -17,10 +18,10 @@ interface ClientDetailsProps {
 }
 
 const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
-  const [selectedTrack, setSelectedTrack] = useState<InvestmentTrack>(client.investment_track as InvestmentTrack);
+  const [selectedTrack, setSelectedTrack] = useState<InvestmentTrack>(client.investmentTrack);
 
   useEffect(() => {
-    setSelectedTrack(client.investment_track as InvestmentTrack);
+    setSelectedTrack(client.investmentTrack);
   }, [client]);
 
   const formatCurrency = (value: number) => {
@@ -78,16 +79,19 @@ const ClientDetails = ({ client, metrics }: ClientDetailsProps) => {
         </Card>
       </div>
 
-      <div className="grid gap-4">
-        <Card className="col-span-4">
-          <div className="p-6">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <Card className="p-6">
             <PerformanceChart 
               selectedTrack={selectedTrack} 
               onTrackChange={handleTrackChange}
               showTrackSelector={true}
             />
-          </div>
-        </Card>
+          </Card>
+        </div>
+        <div className="md:col-span-1">
+          <AllocationSummary allocations={client.allocations || []} />
+        </div>
       </div>
     </div>
   );
