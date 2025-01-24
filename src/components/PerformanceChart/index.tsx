@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Play } from "lucide-react";
+import { Play, ChartLine, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -131,9 +131,12 @@ const PerformanceChart = () => {
   }, [filteredData, selectedTracks]);
 
   return (
-    <div className="bg-card text-card-foreground rounded-xl p-4 shadow-sm border border-border">
+    <div className="bg-card text-card-foreground rounded-xl p-6 shadow-sm border border-border space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+        <div className="flex items-center gap-2">
+          <ChartLine className="w-5 h-5 text-primary" />
+          <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+        </div>
         <div className="flex flex-wrap gap-4">
           <div className="flex gap-2">
             {['SPY500', 'NASDAQ', 'RUSSELL2000'].map(trackId => (
@@ -142,21 +145,22 @@ const PerformanceChart = () => {
                 variant={selectedTracks.includes(trackId) ? "default" : "outline"}
                 onClick={() => toggleTrack(trackId)}
                 className={cn(
-                  "text-xs sm:text-sm transition-all",
+                  "text-xs sm:text-sm transition-all flex items-center gap-2",
                   selectedTracks.includes(trackId) 
                     ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                     : "hover:bg-accent"
                 )}
               >
+                <TrendingUp className="w-4 h-4" />
                 {trackId === 'SPY500' ? 'S&P 500' : 
                  trackId === 'RUSSELL2000' ? 'Russell 2000' : 'NASDAQ'}
               </Button>
             ))}
           </div>
           
-          <div className="flex flex-col gap-2">
+          <div className="grid gap-4 p-4 bg-background/50 rounded-lg border border-border">
             <div className="grid gap-2">
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate" className="text-sm font-medium">Start Date</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -167,7 +171,7 @@ const PerformanceChart = () => {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate" className="text-sm font-medium">End Date</Label>
               <Input
                 id="endDate"
                 type="date"
@@ -179,17 +183,17 @@ const PerformanceChart = () => {
 
             <Button 
               onClick={applyDateFilter}
-              className="mt-2"
+              className="w-full"
               variant="default"
             >
               <Play className="w-4 h-4 mr-2" />
-              Run
+              Apply Filter
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="h-[400px]">
+      <div className="h-[400px] bg-background/50 rounded-lg p-4">
         <ResponsiveLine
           data={chartData}
           margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
@@ -259,9 +263,9 @@ const PerformanceChart = () => {
             },
             crosshair: {
               line: {
-                stroke: 'hsl(var(--muted-foreground))',
+                stroke: 'hsl(var(--primary))',
                 strokeWidth: 1,
-                strokeOpacity: 0.35
+                strokeOpacity: 0.5
               }
             },
             tooltip: {
@@ -271,7 +275,7 @@ const PerformanceChart = () => {
                 fontSize: 12,
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                padding: '6px 10px',
+                padding: '8px 12px',
                 border: '1px solid hsl(var(--border))'
               }
             }
@@ -296,7 +300,10 @@ const PerformanceChart = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
         {chartData.map((series) => (
-          <div key={series.id} className="bg-card text-card-foreground rounded-lg p-4 border border-border">
+          <div 
+            key={series.id} 
+            className="bg-background/50 text-card-foreground rounded-lg p-4 border border-border hover:border-primary/50 transition-colors"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div 
@@ -309,9 +316,15 @@ const PerformanceChart = () => {
                    series.id}
                 </h4>
               </div>
-              <span className={`font-semibold ${
+              <span className={cn(
+                "font-semibold flex items-center gap-1",
                 series.totalReturn >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-              }`}>
+              )}>
+                {series.totalReturn >= 0 ? (
+                  <TrendingUp className="w-4 h-4" />
+                ) : (
+                  <TrendingDown className="w-4 h-4" />
+                )}
                 {series.totalReturn >= 0 ? '+' : ''}{series.totalReturn}%
               </span>
             </div>
