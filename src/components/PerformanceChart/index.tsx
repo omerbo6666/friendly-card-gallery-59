@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card } from "@/components/ui/card";
+import { 
+  SP500_RETURNS, 
+  NASDAQ_RETURNS,
+  RUSSELL_2000_RETURNS,
+  VTI_RETURNS,
+  SCHWAB_RETURNS,
+  IWV_RETURNS,
+  WFIVX_RETURNS
+} from '@/config/returnData';
 
 interface PerformanceChartProps {
   spyReturns: number[];
@@ -12,7 +21,17 @@ interface PerformanceChartProps {
   nasdaqReturns: number[];
 }
 
-const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiReturns, nasdaqReturns }) => {
+const FUND_COLORS = {
+  'S&P 500': '#8B5CF6',
+  'NASDAQ': '#0EA5E9',
+  'Russell 2000': '#F97316',
+  'VTI': '#10B981',
+  'SWTSX': '#EC4899',
+  'IWV': '#EAB308',
+  'WFIVX': '#6366F1'
+};
+
+const PerformanceChart: React.FC<PerformanceChartProps> = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date(2019, 0, 1));
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
 
@@ -39,31 +58,59 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
   const chartData = useMemo(() => {
     if (!startDate || !endDate) return [];
     
-    const spyData = calculateCumulativeReturns(spyReturns, startDate, endDate);
-    const vtiData = calculateCumulativeReturns(vtiReturns, startDate, endDate);
-    const nasdaqData = calculateCumulativeReturns(nasdaqReturns, startDate, endDate);
+    const spyData = calculateCumulativeReturns(SP500_RETURNS, startDate, endDate);
+    const nasdaqData = calculateCumulativeReturns(NASDAQ_RETURNS, startDate, endDate);
+    const russellData = calculateCumulativeReturns(RUSSELL_2000_RETURNS, startDate, endDate);
+    const vtiData = calculateCumulativeReturns(VTI_RETURNS, startDate, endDate);
+    const schwabData = calculateCumulativeReturns(SCHWAB_RETURNS, startDate, endDate);
+    const iwvData = calculateCumulativeReturns(IWV_RETURNS, startDate, endDate);
+    const wfivxData = calculateCumulativeReturns(WFIVX_RETURNS, startDate, endDate);
     
     return [
       {
         id: "S&P 500",
-        color: "#8B5CF6",
+        color: FUND_COLORS['S&P 500'],
         data: spyData.data,
         totalReturn: spyData.totalReturn
       },
       {
-        id: "Vanguard Total Stock Market ETF",
-        color: "#0EA5E9",
+        id: "NASDAQ",
+        color: FUND_COLORS['NASDAQ'],
+        data: nasdaqData.data,
+        totalReturn: nasdaqData.totalReturn
+      },
+      {
+        id: "Russell 2000",
+        color: FUND_COLORS['Russell 2000'],
+        data: russellData.data,
+        totalReturn: russellData.totalReturn
+      },
+      {
+        id: "VTI",
+        color: FUND_COLORS['VTI'],
         data: vtiData.data,
         totalReturn: vtiData.totalReturn
       },
       {
-        id: "NASDAQ",
-        color: "#F97316",
-        data: nasdaqData.data,
-        totalReturn: nasdaqData.totalReturn
+        id: "SWTSX",
+        color: FUND_COLORS['SWTSX'],
+        data: schwabData.data,
+        totalReturn: schwabData.totalReturn
+      },
+      {
+        id: "IWV",
+        color: FUND_COLORS['IWV'],
+        data: iwvData.data,
+        totalReturn: iwvData.totalReturn
+      },
+      {
+        id: "WFIVX",
+        color: FUND_COLORS['WFIVX'],
+        data: wfivxData.data,
+        totalReturn: wfivxData.totalReturn
       }
     ];
-  }, [spyReturns, vtiReturns, nasdaqReturns, startDate, endDate]);
+  }, [startDate, endDate]);
 
   return (
     <div className="bg-card text-card-foreground rounded-xl p-4 shadow-sm border border-border">
