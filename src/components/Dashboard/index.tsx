@@ -6,6 +6,7 @@ import { Client, MonthlyData, ClientMetrics, AggregateMetrics } from '@/types/in
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import ClientDetails from '@/components/ClientDetails';
+import GlobalManagedFundsChart from '@/components/GlobalManagedFundsChart';
 import {
   Table,
   TableBody,
@@ -232,8 +233,11 @@ export const Dashboard = () => {
         <ThemeToggle />
       </div>
 
-      <div className="mb-6 md:mb-8">
-        <PerformanceChart showTrackSelector={false} />
+      <div className="space-y-6 md:space-y-8">
+        <GlobalManagedFundsChart />
+        <div className="mb-6 md:mb-8">
+          <PerformanceChart showTrackSelector={false} />
+        </div>
       </div>
 
       {selectedClient ? (
