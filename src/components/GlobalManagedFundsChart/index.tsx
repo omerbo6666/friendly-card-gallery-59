@@ -64,10 +64,7 @@ const GlobalManagedFundsChart = () => {
         return;
       }
 
-      // Filter data based on selected date range
-      const filteredData = filterDataByDateRange(metricsData, dateRange);
-      console.log('Processed metrics data:', filteredData);
-      setData(filteredData);
+      setData(metricsData);
     } catch (error) {
       console.error('Error fetching global metrics:', error);
       toast({
@@ -224,7 +221,6 @@ const GlobalManagedFundsChart = () => {
                 }}
                 xScale={{
                   type: 'point',
-                  padding: 0.5,
                 }}
                 yScale={{
                   type: 'linear',

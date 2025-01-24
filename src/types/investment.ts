@@ -39,6 +39,15 @@ export interface Metrics {
   latestMonthlyInvestment: number;
 }
 
+export interface GlobalMetrics {
+  date: string;
+  total_managed_funds: number;
+  cumulative_investment: number;
+  cumulative_profit: number;
+  management_fees: number;
+  total_clients: number;
+}
+
 export interface AggregateMetrics {
   totalValue: number;
   totalInvestment: number;

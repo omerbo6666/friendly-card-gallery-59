@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Client, MonthlyData } from '@/types/investment';
+import { Client, MonthlyData, InvestmentTrack } from '@/types/investment';
 import { ClientCard } from './ClientCard';
 import { MetricCard } from './MetricCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -44,10 +44,10 @@ export const Dashboard = () => {
         }));
 
         return {
-          id: client.id,
+          id: parseInt(client.id),
           name: client.name,
           profession: client.profession,
-          investmentTrack: client.investment_track,
+          investmentTrack: client.investment_track as InvestmentTrack,
           monthlyData,
           monthlyExpenses: client.monthly_expenses,
           investmentPercentage: client.investment_percentage.toString(),
