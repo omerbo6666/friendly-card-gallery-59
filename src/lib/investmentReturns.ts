@@ -77,7 +77,7 @@ export const SCHWAB_RETURNS: ReturnData[] = [
   { date: "2023-09-24", change: -0.52 },
   { date: "2023-09-17", change: -3.02 },
   { date: "2023-09-10", change: -0.18 },
-  { date: "2023-09-03", change: -1.44 },
+  { date: "2023-09-03", change: -1.44 }
 ];
 
 export const RUSSELL_RETURNS: ReturnData[] = [
