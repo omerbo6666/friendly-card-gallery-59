@@ -46,7 +46,7 @@ export type Database = {
           created_at: string | null
           id: string
           investment_percentage: number
-          investment_track: string
+          investment_track: string | null
           monthly_expenses: number
           name: string
           profession: string
@@ -57,7 +57,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           investment_percentage: number
-          investment_track: string
+          investment_track?: string | null
           monthly_expenses: number
           name: string
           profession: string
@@ -68,7 +68,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           investment_percentage?: number
-          investment_track?: string
+          investment_track?: string | null
           monthly_expenses?: number
           name?: string
           profession?: string

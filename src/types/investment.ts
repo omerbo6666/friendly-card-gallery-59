@@ -18,21 +18,12 @@ export interface Client {
   name: string;
   profession: string;
   customProfession?: string;
-  investmentTrack: InvestmentTrack;
+  investmentTrack?: InvestmentTrack;
   monthlyData: MonthlyData[];
   monthlyExpenses: number;
   investmentPercentage: string;
   startDate: Date;
   allocations?: InvestmentAllocation[];
-}
-
-export interface Metrics {
-  totalInvestment: number;
-  portfolioValue: number;
-  totalProfit: number;
-  latestMonthlyInvestment: number;
-  managementFee: number;
-  currentValue: number;
 }
 
 export interface ClientMetrics {
