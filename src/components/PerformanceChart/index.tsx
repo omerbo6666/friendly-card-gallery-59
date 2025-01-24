@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ResponsiveLine } from '@nivo/line';
+import { ResponsiveLine, Point } from '@nivo/line';
 import { format, parse } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,6 +15,12 @@ interface PerformanceChartProps {
   spyReturns: number[];
   vtiReturns: number[];
   nasdaqReturns: number[];
+}
+
+interface DataPoint {
+  x: string;
+  y: number;
+  fullDate: string;
 }
 
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, nasdaqReturns }) => {
@@ -94,6 +100,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, nasdaqR
 
     return allData.filter(track => selectedTracks.includes(track.trackId));
   }, [spyReturns, nasdaqReturns, startDate, endDate, selectedTracks]);
+
+  // ... keep existing code (JSX for date picker controls)
 
   return (
     <div className="bg-card text-card-foreground rounded-xl p-4 shadow-sm border border-border">
@@ -224,7 +232,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, nasdaqR
             legend: 'Timeline',
             legendOffset: 36,
             legendPosition: 'middle',
-            format: (value) => value
+            format: (value) => value?.toString() || ''
           }}
           axisLeft={{
             tickSize: 5,
@@ -246,18 +254,21 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, nasdaqR
           useMesh={true}
           enableSlices="x"
           crosshairType="cross"
-          tooltip={({ point }) => (
-            <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-2 text-sm">
-              <div className="font-semibold">{point.data.fullDate}</div>
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: point.serieColor }}
-                />
-                <span>{point.serieId}: {point.data.y}%</span>
+          tooltip={({ point }) => {
+            const data = point.data as unknown as DataPoint;
+            return (
+              <div className="bg-popover text-popover-foreground rounded-lg shadow-lg p-2 text-sm">
+                <div className="font-semibold">{data.fullDate}</div>
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: point.serieColor }}
+                  />
+                  <span>{point.serieId}: {data.y}%</span>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          }}
           legends={[
             {
               anchor: 'bottom-right',
