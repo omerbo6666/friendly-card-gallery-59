@@ -5,12 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { ChartLine, TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { 
+  ChartLine, 
+  TrendingUp, 
+  TrendingDown, 
+  Calendar,
+  DollarSign,
+  PieChart,
+  Activity,
+  HelpCircle
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from '@/hooks/use-mobile';
 import TrackSelector from '../ClientDetails/TrackSelector';
 import { InvestmentTrack } from '@/types/investment';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DataPoint {
   x: string;
@@ -102,30 +117,122 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
     return performanceData.filter(track => selectedTracks.includes(track.trackId));
   }, [performanceData, selectedTracks]);
 
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('he-IL', {
+      style: 'currency',
+      currency: 'ILS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  const calculateROI = (totalValue: number, totalInvestment: number): string => {
+    return ((totalValue - totalInvestment) / totalInvestment * 100).toFixed(2);
+  };
+
   return (
-    <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-lg border border-border space-y-6">
-      <div className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ChartLine className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+    <div className="space-y-8">
+      {/* Key Metrics Section */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Total Investment</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Total amount invested across all tracks</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="text-2xl font-bold">{formatCurrency(1000000)}</div>
+              <div className="text-sm text-muted-foreground">Monthly: {formatCurrency(50000)}</div>
+            </div>
+            <DollarSign className="w-5 h-5 text-primary/70" />
           </div>
-          {showTrackSelector && onTrackChange && selectedTrack && (
-            <div className="w-[200px]">
+        </div>
+
+        <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Portfolio Value</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Current total value of your investments</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="text-2xl font-bold">{formatCurrency(1250000)}</div>
+              <div className="text-sm text-muted-foreground">Fees: {formatCurrency(25000)}</div>
+            </div>
+            <PieChart className="w-5 h-5 text-primary/70" />
+          </div>
+        </div>
+
+        <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Total Profit</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Net profit from your investments</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="text-2xl font-bold text-green-500">{formatCurrency(250000)}</div>
+              <div className="text-sm text-muted-foreground">ROI: {calculateROI(1250000, 1000000)}%</div>
+            </div>
+            <Activity className="w-5 h-5 text-primary/70" />
+          </div>
+        </div>
+
+        <div className="bg-card/50 p-6 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Investment Track</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Your selected investment strategy</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <TrendingUp className="w-5 h-5 text-primary/70" />
+            </div>
+            {showTrackSelector && onTrackChange && selectedTrack && (
               <TrackSelector
                 selectedTrack={selectedTrack as InvestmentTrack}
                 onTrackChange={onTrackChange}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Historical performance shows the potential of long-term investment growth.
-          Don't miss out on market opportunities - start investing today.
-        </p>
       </div>
 
-      <div className="h-[500px] bg-background/50 rounded-lg p-4 border border-border/50">
+      {/* Performance Chart Section */}
+      <div className="bg-card text-card-foreground rounded-xl p-4 md:p-6 shadow-lg border border-border space-y-6">
         <ResponsiveLine
           data={chartData}
           margin={{ 
@@ -234,60 +341,6 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
             );
           }}
         />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {chartData.map((series) => {
-          const years = differenceInYears(new Date(), new Date(2000, 0, 1));
-          return (
-            <div 
-              key={series.id} 
-              className="bg-background/50 text-card-foreground rounded-lg p-4 border border-border hover:border-primary/50 transition-colors"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: series.color }}
-                    />
-                    <h4 className="font-medium">
-                      {series.id === 'SPY500' ? 'S&P 500' : 
-                       series.id === 'RUSSELL2000' ? 'Russell 2000' : 
-                       series.id === 'NASDAQ100' ? 'NASDAQ 100' :
-                       series.id}
-                    </h4>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Return ({years} years)</span>
-                    <span className={cn(
-                      "font-semibold flex items-center gap-1",
-                      series.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'
-                    )}>
-                      {series.totalReturn >= 0 ? (
-                        <TrendingUp className="w-4 h-4" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4" />
-                      )}
-                      {series.totalReturn >= 0 ? '+' : ''}{series.totalReturn}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Annual Return</span>
-                    <span className={cn(
-                      "font-semibold",
-                      series.annualizedReturn >= 0 ? 'text-green-500' : 'text-red-500'
-                    )}>
-                      {series.annualizedReturn >= 0 ? '+' : ''}{series.annualizedReturn}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
