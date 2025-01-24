@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import ClientCard from './ClientCard';
+import { ClientCard } from './ClientCard';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -62,7 +62,15 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {clients?.map((client) => (
-            <ClientCard key={client.id} client={client} />
+            <ClientCard 
+              key={client.id} 
+              client={client}
+              metrics={{
+                latestMonthlyInvestment: client.monthly_performance?.[0]?.investment || 0,
+                currentValue: client.monthly_performance?.[0]?.portfolio_value || 0
+              }}
+              onSelect={() => navigate(`/client/${client.id}`)}
+            />
           ))}
         </div>
       </div>
