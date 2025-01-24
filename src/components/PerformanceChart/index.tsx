@@ -9,11 +9,14 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Brush
 } from "recharts";
 import { Label } from "@/components/ui/label";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { INVESTMENT_TRACKS } from "@/lib/constants";
+import { Toggle } from "@/components/ui/toggle";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface PerformanceChartProps {
   startDate?: Date;
@@ -31,6 +34,21 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
     from: startDate,
     to: endDate
   });
+
+  const [selectedTracks, setSelectedTracks] = useState<Set<string>>(
+    new Set(INVESTMENT_TRACKS.map(track => track.id))
+  );
+
+  const toggleTrack = (trackId: string) => {
+    const newSelectedTracks = new Set(selectedTracks);
+    if (newSelectedTracks.has(trackId)) {
+      newSelectedTracks.delete(trackId);
+    } else {
+      newSelectedTracks.add(trackId);
+    }
+    setSelectedTracks(newSelectedTracks);
+    console.log(`Toggled track ${trackId}, now selected: ${Array.from(newSelectedTracks)}`);
+  };
 
   const formatData = () => {
     // Get all investment tracks
@@ -90,64 +108,107 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 
   return (
     <Card className="p-4 md:p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
-        <DateRangePicker
-          from={dateRange.from}
-          to={dateRange.to}
-          onSelect={setDateRange}
-        />
-      </div>
+      <div className="flex flex-col space-y-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+          <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+          <DateRangePicker
+            from={dateRange.from}
+            to={dateRange.to}
+            onSelect={setDateRange}
+          />
+        </div>
 
-      <div className="h-[400px] md:h-[500px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(date) => format(parseISO(date), 'MMM yyyy')}
-            />
-            <YAxis
-              tickFormatter={(value) => `${value}%`}
-            />
-            <Tooltip
-              formatter={(value: number) => [`${value.toFixed(2)}%`]}
-              labelFormatter={(label) => format(parseISO(label as string), 'MMMM yyyy')}
-            />
-            <Legend />
+        <ScrollArea className="w-full">
+          <div className="flex flex-wrap gap-2 p-2 min-w-[600px]">
             {tracks.map((track) => (
-              <Line
+              <Toggle
                 key={track.id}
-                type="monotone"
-                dataKey={track.id}
-                name={track.name}
-                stroke={track.color}
-                dot={false}
-                strokeWidth={2}
-              />
+                pressed={selectedTracks.has(track.id)}
+                onPressedChange={() => toggleTrack(track.id)}
+                className="data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: track.color }}
+                  />
+                  <span>{track.name}</span>
+                </div>
+              </Toggle>
             ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {tracks.map((track) => (
-          <div
-            key={track.id}
-            className="p-4 rounded-lg border border-border bg-card"
-          >
-            <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: track.color }}
-              />
-              <span className="text-sm font-medium">{track.name}</span>
-            </div>
-            <div className="mt-2 text-lg font-bold">
-              {calculateTotalPerformance(track.id).toFixed(2)}%
-            </div>
           </div>
-        ))}
+        </ScrollArea>
+
+        <div className="h-[500px] md:h-[600px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={data}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(date) => format(parseISO(date), 'MMM yyyy')}
+                stroke="var(--muted-foreground)"
+              />
+              <YAxis
+                tickFormatter={(value) => `${value}%`}
+                stroke="var(--muted-foreground)"
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "var(--background)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "6px"
+                }}
+                formatter={(value: number) => [`${value.toFixed(2)}%`]}
+                labelFormatter={(label) => format(parseISO(label as string), 'MMMM yyyy')}
+              />
+              <Legend />
+              {tracks
+                .filter(track => selectedTracks.has(track.id))
+                .map((track) => (
+                  <Line
+                    key={track.id}
+                    type="monotone"
+                    dataKey={track.id}
+                    name={track.name}
+                    stroke={track.color}
+                    dot={false}
+                    strokeWidth={2}
+                  />
+              ))}
+              <Brush
+                dataKey="date"
+                height={30}
+                stroke="var(--primary)"
+                tickFormatter={(date) => format(parseISO(date), 'MMM yyyy')}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {tracks
+            .filter(track => selectedTracks.has(track.id))
+            .map((track) => (
+              <div
+                key={track.id}
+                className="p-4 rounded-lg border border-border bg-card"
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: track.color }}
+                  />
+                  <span className="text-sm font-medium">{track.name}</span>
+                </div>
+                <div className="mt-2 text-lg font-bold">
+                  {calculateTotalPerformance(track.id).toFixed(2)}%
+                </div>
+              </div>
+          ))}
+        </div>
       </div>
     </Card>
   );
