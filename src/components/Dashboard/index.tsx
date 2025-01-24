@@ -128,7 +128,7 @@ export const Dashboard = () => {
     const newClients: Client[] = Array.from({ length: 100 }, (_, i) => {
       const monthlyExpenses = Math.floor(Math.random() * 16000) + 4000;
       const investmentPercentage = (Math.random() * 17 + 3).toFixed(1);
-      const tracks = INVESTMENT_TRACKS.map(track => track.id);
+      const tracks: InvestmentTrack[] = INVESTMENT_TRACKS.map(track => track.id as InvestmentTrack);
       const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
       
       return {
