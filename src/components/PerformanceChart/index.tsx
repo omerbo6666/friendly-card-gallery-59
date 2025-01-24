@@ -51,14 +51,12 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
   };
 
   const formatData = () => {
-    // Get all investment tracks
     const tracks = INVESTMENT_TRACKS.map(track => ({
       id: track.id,
       name: track.name,
       color: getTrackColor(track.id)
     }));
 
-    // Create data points for each month
     const data = [];
     let currentDate = dateRange.from;
     
@@ -67,7 +65,6 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
         date: format(currentDate, 'yyyy-MM-dd')
       };
       
-      // Add performance data for each track
       tracks.forEach(track => {
         dataPoint[track.id] = calculatePerformance(track.id, currentDate);
       });
@@ -81,36 +78,33 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 
   const getTrackColor = (trackId: string): string => {
     const colors: { [key: string]: string } = {
-      SPY: '#8884d8',
-      QQQ: '#82ca9d',
-      IWM: '#ffc658',
-      VTSAX: '#ff7300',
-      VTI: '#00C49F',
-      SWTSX: '#FFBB28',
-      IWV: '#FF8042',
-      WFIVX: '#e91e63'
+      SPY: '#FEF7CD',    // Soft Yellow
+      QQQ: '#FEC6A1',    // Soft Orange
+      IWM: '#E5DEFF',    // Soft Purple
+      VTSAX: '#FDE1D3',  // Soft Peach
+      VTI: '#F2FCE2',    // Soft Green
+      SWTSX: '#F1F0FB',  // Soft Gray
+      IWV: '#E5DEFF',    // Soft Purple
+      WFIVX: '#FDE1D3'   // Soft Peach
     };
-    return colors[trackId] || '#999999';
+    return colors[trackId] || '#F1F0FB';
   };
 
   const calculatePerformance = (trackId: string, date: Date): number => {
-    // This would be replaced with actual historical performance data
-    // For now, returning mock data
     return Math.random() * 20 - 10;
   };
 
   const calculateTotalPerformance = (trackId: string): number => {
-    // Calculate total performance for the selected date range
-    return Math.random() * 100 - 20; // Mock data
+    return Math.random() * 100 - 20;
   };
 
   const { data, tracks } = formatData();
 
   return (
-    <Card className="p-4 md:p-6">
+    <Card className="p-4 md:p-6 bg-[#1A1F2C] border-none">
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
+          <h3 className="text-lg font-semibold text-gray-200">Index Performance Comparison</h3>
           <DateRangePicker
             from={dateRange.from}
             to={dateRange.to}
@@ -125,7 +119,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
                 key={track.id}
                 pressed={selectedTracks.has(track.id)}
                 onPressedChange={() => toggleTrack(track.id)}
-                className="data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+                className="data-[state=on]:bg-gray-700/50 data-[state=on]:text-gray-200 bg-gray-800/50 text-gray-400"
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -139,32 +133,41 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
           </div>
         </ScrollArea>
 
-        <div className="h-[500px] md:h-[600px]">
+        <div className="h-[600px] md:h-[700px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="rgba(255,255,255,0.1)" 
+                horizontal={true}
+                vertical={false}
+              />
               <XAxis
                 dataKey="date"
                 tickFormatter={(date) => format(parseISO(date), 'MMM yyyy')}
-                stroke="var(--muted-foreground)"
+                stroke="#6B7280"
+                tick={{ fill: '#6B7280' }}
+                tickLine={{ stroke: '#6B7280' }}
               />
               <YAxis
                 tickFormatter={(value) => `${value}%`}
-                stroke="var(--muted-foreground)"
+                stroke="#6B7280"
+                tick={{ fill: '#6B7280' }}
+                tickLine={{ stroke: '#6B7280' }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "var(--background)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "6px"
+                  backgroundColor: "rgba(17, 24, 39, 0.8)",
+                  border: "1px solid rgba(75, 85, 99, 0.4)",
+                  borderRadius: "6px",
+                  color: "#E5E7EB"
                 }}
                 formatter={(value: number) => [`${value.toFixed(2)}%`]}
                 labelFormatter={(label) => format(parseISO(label as string), 'MMMM yyyy')}
               />
-              <Legend />
               {tracks
                 .filter(track => selectedTracks.has(track.id))
                 .map((track) => (
@@ -174,14 +177,16 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
                     dataKey={track.id}
                     name={track.name}
                     stroke={track.color}
-                    dot={false}
                     strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, fill: track.color }}
                   />
               ))}
               <Brush
                 dataKey="date"
                 height={30}
-                stroke="var(--primary)"
+                stroke="#4B5563"
+                fill="#1F2937"
                 tickFormatter={(date) => format(parseISO(date), 'MMM yyyy')}
               />
             </LineChart>
@@ -194,16 +199,16 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
             .map((track) => (
               <div
                 key={track.id}
-                className="p-4 rounded-lg border border-border bg-card"
+                className="p-4 rounded-lg border border-gray-700 bg-gray-800/50"
               >
                 <div className="flex items-center gap-2">
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: track.color }}
                   />
-                  <span className="text-sm font-medium">{track.name}</span>
+                  <span className="text-sm font-medium text-gray-200">{track.name}</span>
                 </div>
-                <div className="mt-2 text-lg font-bold">
+                <div className="mt-2 text-lg font-bold text-gray-200">
                   {calculateTotalPerformance(track.id).toFixed(2)}%
                 </div>
               </div>
