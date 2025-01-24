@@ -62,6 +62,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
   const [timeRange, setTimeRange] = useState<TimePeriod>('1Y');
 
   useEffect(() => {
+    console.log('Fetching performance data...');
     fetchPerformanceData();
   }, []);
 
@@ -73,14 +74,19 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
 
   const fetchPerformanceData = async () => {
     try {
+      console.log('Making Supabase query...');
       const { data, error } = await supabase
         .from('index_performance')
         .select('*')
         .order('date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       if (data) {
+        console.log('Received data:', data);
         const formattedData = processPerformanceData(data);
         setPerformanceData(formattedData);
       }
@@ -287,6 +293,7 @@ const PerformanceChart = ({ selectedTrack, onTrackChange, showTrackSelector = tr
                 variant={timeRange === range ? "default" : "outline"}
                 size="sm"
                 onClick={() => {
+                  console.log('Changing time range to:', range);
                   setTimeRange(range);
                   const newData = processPerformanceData(performanceData);
                   setPerformanceData(newData);
