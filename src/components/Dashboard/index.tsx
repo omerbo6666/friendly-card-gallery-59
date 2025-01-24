@@ -246,13 +246,10 @@ export const Dashboard = () => {
 
   const handleClientClick = (client: Client) => {
     setSelectedClient(client);
-    // Create a unique ID for the client card
     const clientCardId = `client-${client.id}`;
     
-    // Find the client card element
     const clientCard = document.getElementById(clientCardId);
     if (clientCard) {
-      // Scroll the card into view with smooth behavior
       clientCard.scrollIntoView({ 
         behavior: 'smooth',
         block: 'center'
@@ -304,11 +301,7 @@ export const Dashboard = () => {
       </div>
 
       <div className="mb-6 md:mb-8">
-        <PerformanceChart
-          spyReturns={SP500_RETURNS}
-          vtiReturns={[]}
-          nasdaqReturns={NASDAQ_RETURNS}
-        />
+        <PerformanceChart />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">

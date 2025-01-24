@@ -108,9 +108,9 @@ const PerformanceChart = () => {
   const applyDateFilter = () => {
     if (!startDate || !endDate) {
       toast({
-        title: "Warning",
+        title: "Error",
         description: "Please select both start and end dates",
-        variant: "warning",
+        variant: "destructive",
       });
       return;
     }
