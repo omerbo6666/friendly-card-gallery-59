@@ -8,25 +8,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const FIRST_NAMES = [
-  'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Mason',
-  'Isabella', 'William', 'Mia', 'James', 'Charlotte', 'Benjamin', 'Amelia',
-  'Lucas', 'Harper', 'Henry', 'Evelyn', 'Alexander'
-];
-
-const LAST_NAMES = [
-  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller',
-  'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez',
-  'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'
-];
-
-export const generateRandomName = () => {
-  const firstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-  const lastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
-  return `${firstName} ${lastName}`;
-};
-
-// Original NASDAQ returns for other investment tracks
+// Original NASDAQ returns
 const NASDAQ_RETURNS = [
   0.0362, 0.0048, 0.0621, -0.0052, 0.0268, 0.0065, -0.0075, 0.0596, 0.0688, -0.0441,
   0.0179, 0.0612, 0.0102, 0.0552, 0.1070, -0.0278, -0.0581, -0.0217, 0.0405, 0.0659,
@@ -61,7 +43,7 @@ const VTI_RETURNS = [
   0.0087, 0.0356, 0.0854
 ].reverse();
 
-// Add Schwab Total Stock Market Index returns
+// Schwab Total Stock Market Index returns
 const SCHWAB_RETURNS = [
   0.0201, 0.0313, -0.0200, -0.0027, 0.0059, -0.0224, -0.0205, 0.0093, 0.0104, 0.0221,
   -0.0211, 0.0508, -0.0115, -0.0114, 0.0098, 0.0119, 0.0023, 0.0060, 0.0152, 0.0408,
@@ -69,16 +51,7 @@ const SCHWAB_RETURNS = [
   0.0007, 0.0066, 0.0137, 0.0099, -0.0056, -0.0013, 0.0161, 0.0182, 0.0064, 0.0271,
   -0.0306, -0.0168, -0.0108, 0.0059, 0.0230, -0.0031, -0.0017, 0.0116, 0.0143, -0.0019,
   0.0153, 0.0125, 0.0109, 0.0105, 0.0174, -0.0178, 0.0028, 0.0092, 0.0289, -0.0116,
-  0.0121, 0.0104, 0.0261, 0.0096, 0.0609, -0.0259, -0.0240, 0.0026, 0.0023, -0.0052,
-  -0.0302, -0.0018, -0.0144, 0.0278, 0.0074, -0.0218, -0.0048, -0.0217, 0.0099, 0.0075,
-  0.0264, -0.0108, 0.0257, -0.0160, 0.0254, 0.0052, 0.0209, 0.0034, 0.0173, -0.0027,
-  -0.0075, 0.0060, -0.0003, 0.0091, -0.0047, 0.0371, 0.0128, 0.0100, -0.0510, 0.0201,
-  -0.0270, 0.0007, -0.0138, 0.0193, 0.0258, -0.0060, 0.0310, 0.0149, -0.0006, -0.0023,
-  -0.0201, -0.0507, 0.0125, 0.0152, -0.0088, 0.0601, -0.0329, 0.0417, 0.0458, -0.0172,
-  0.0170, -0.0260, -0.0502, -0.0475, 0.0385, -0.0342, -0.0384, -0.0148, 0.0349, 0.0068,
-  0.0422, 0.0277, -0.0105, 0.0206, -0.0228, 0.0650, -0.0597, -0.0504, -0.0108, 0.0657,
-  -0.0281, -0.0237, -0.0056, -0.0332, -0.0294, -0.0173, -0.0177, 0.0024, 0.0152, 0.0634,
-  -0.0276, -0.0156, 0.0096, -0.0162, -0.0136, 0.0178, 0.0050, -0.0598, -0.0044, -0.0224
+  0.0121, 0.0104, 0.0261, 0.0096, 0.0609, -0.0259, -0.0240, 0.0026, 0.0023, -0.0052
 ].reverse();
 
 export const generateMonthlyData = ({ investmentPercentageOverride, investmentTrack }: { investmentPercentageOverride?: number; investmentTrack?: string } = {}): MonthlyData[] => {
@@ -87,12 +60,21 @@ export const generateMonthlyData = ({ investmentPercentageOverride, investmentTr
   let cumulativeProfit = 0;
   let totalInvestment = 0;
   
-  // Validate investment track and get returns
-  if (!investmentTrack || !validateInvestmentTrack(investmentTrack)) {
-    console.warn(`Invalid investment track: ${investmentTrack}, using default returns`);
+  // Select returns based on investment track
+  let returns;
+  switch (investmentTrack) {
+    case 'SPY':
+      returns = SP500_RETURNS;
+      break;
+    case 'VTI':
+      returns = VTI_RETURNS;
+      break;
+    case 'SWTSX':
+      returns = SCHWAB_RETURNS;
+      break;
+    default:
+      returns = NASDAQ_RETURNS;
   }
-  
-  const returns = getReturnsForTrack(investmentTrack || 'NASDAQ');
   
   for (let month = 0; month < returns.length; month++) {
     const monthlyExpense = Math.floor(Math.random() * 16000) + 4000;
