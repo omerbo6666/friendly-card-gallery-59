@@ -19,7 +19,7 @@ export const PROFESSIONS = [
 export const INVESTMENT_TRACKS = [
   {
     id: 'SPY500',
-    name: 'S&P 500 Index Fund',
+    name: 'S&P 500 Index',
     description: 'Tracks the performance of 500 large companies listed on U.S. stock exchanges',
     benchmark: 'S&P 500 Index',
     type: 'ETF',
@@ -29,7 +29,7 @@ export const INVESTMENT_TRACKS = [
   },
   {
     id: 'NASDAQ100',
-    name: 'NASDAQ 100 Index Fund',
+    name: 'NASDAQ 100',
     description: 'Tracks 100 of the largest non-financial companies listed on the NASDAQ',
     benchmark: 'NASDAQ 100 Index',
     type: 'ETF',
@@ -39,7 +39,7 @@ export const INVESTMENT_TRACKS = [
   },
   {
     id: 'RUSSELL2000',
-    name: 'Russell 2000 Small Cap Index',
+    name: 'Russell 2000',
     description: 'Tracks 2000 small-cap company stocks',
     benchmark: 'Russell 2000 Index',
     type: 'ETF',
@@ -49,7 +49,7 @@ export const INVESTMENT_TRACKS = [
   },
   {
     id: 'VTSAX',
-    name: 'Vanguard Total Stock Market Index',
+    name: 'Total US Market',
     description: 'Comprehensive U.S. stock market exposure',
     benchmark: 'CRSP US Total Market Index',
     type: 'Mutual Fund',
@@ -58,43 +58,13 @@ export const INVESTMENT_TRACKS = [
     sectors: 'All U.S. market sectors'
   },
   {
-    id: 'VTI',
-    name: 'Vanguard Total Stock Market ETF',
-    description: 'ETF version of VTSAX',
-    benchmark: 'CRSP US Total Market Index',
-    type: 'ETF',
-    expenseRatio: 'Very Low',
-    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
-    sectors: 'All U.S. market sectors'
-  },
-  {
     id: 'SWTSX',
-    name: 'Schwab Total Stock Market Index',
+    name: 'Schwab US Market',
     description: 'Broad U.S. market exposure at a low cost',
     benchmark: 'Dow Jones U.S. Total Stock Market Index',
     type: 'Mutual Fund',
     expenseRatio: 'Very Low',
     topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
-    sectors: 'All U.S. market sectors'
-  },
-  {
-    id: 'IWV',
-    name: 'iShares Russell 3000 ETF',
-    description: 'Tracks 3000 largest U.S. stocks',
-    benchmark: 'Russell 3000 Index',
-    type: 'ETF',
-    expenseRatio: 'Low',
-    topHoldings: 'Apple, Microsoft, Amazon, NVIDIA, Alphabet',
-    sectors: 'All U.S. market sectors'
-  },
-  {
-    id: 'WFIVX',
-    name: 'Wilshire 5000 Index Fund',
-    description: 'Tracks the entire U.S. stock market',
-    benchmark: 'Wilshire 5000 Total Market Index',
-    type: 'Mutual Fund',
-    expenseRatio: 'Low',
-    topHoldings: 'Comprehensive U.S. market holdings',
     sectors: 'All U.S. market sectors'
   }
 ] as const;
