@@ -1,13 +1,13 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { ChartLineUp, Wallet, Target, TrendingUp } from 'lucide-react';
+import { ChartLine, Wallet, Target, TrendingUp } from 'lucide-react';
 
 const Preview = () => {
   return (
     <Card className="bg-card/50 p-6 rounded-lg border border-border/50 space-y-6">
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <ChartLineUp className="w-5 h-5 text-primary" />
+          <ChartLine className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-lg">Investment Portfolio Management</h2>
         </div>
         <p className="text-muted-foreground">

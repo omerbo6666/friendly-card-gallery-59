@@ -113,7 +113,6 @@ const AddClient = () => {
       investmentTrack: formData.investmentTrack,
       monthlyData: generateMonthlyData({
         investmentPercentageOverride: Number(formData.investmentPercentage),
-        investmentTrack: formData.investmentTrack,
         startDate: new Date()
       }),
       startDate: new Date()
