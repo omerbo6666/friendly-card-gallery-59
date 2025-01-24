@@ -60,7 +60,7 @@ export const Dashboard = () => {
 
       if (data) {
         console.log('Fetched clients:', data);
-        setClients(data);
+        setClients(data as Client[]);
       }
     } catch (error) {
       console.error('Error fetching clients:', error);
@@ -73,13 +73,23 @@ export const Dashboard = () => {
   };
 
   const calculateMetrics = (client: Client): ClientMetrics => {
-    const lastMonth = client.monthlyData[client.monthlyData.length - 1];
+    if (!client.monthly_performance || client.monthly_performance.length === 0) {
+      return {
+        totalInvestment: 0,
+        portfolioValue: 0,
+        totalProfit: 0,
+        latestMonthlyInvestment: 0,
+        managementFee: 0
+      };
+    }
+
+    const lastMonth = client.monthly_performance[client.monthly_performance.length - 1];
     return {
-      totalInvestment: client.monthlyData.reduce((sum, data) => sum + data.investment, 0),
-      portfolioValue: lastMonth.portfolioValue,
+      totalInvestment: client.monthly_performance.reduce((sum, data) => sum + data.investment, 0),
+      portfolioValue: lastMonth.portfolio_value,
       totalProfit: lastMonth.profit,
       latestMonthlyInvestment: lastMonth.investment,
-      managementFee: client.monthlyData.reduce((sum, data) => sum + data.investment, 0) * 0.005
+      managementFee: client.monthly_performance.reduce((sum, data) => sum + data.investment, 0) * 0.005
     };
   };
 
@@ -245,8 +255,8 @@ export const Dashboard = () => {
         </Card>
 
         {/* Allocation Summary */}
-        {selectedClient && selectedClient.allocations && (
-          <AllocationSummary allocations={selectedClient.allocations} />
+        {selectedClient && selectedClient.client_allocations && (
+          <AllocationSummary allocations={selectedClient.client_allocations} />
         )}
       </div>
 

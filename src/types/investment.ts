@@ -14,16 +14,26 @@ export interface InvestmentAllocation {
 }
 
 export interface Client {
-  id: number;
+  id: string;
   name: string;
   profession: string;
-  customProfession?: string;
-  investmentTrack?: InvestmentTrack;
-  monthlyData: MonthlyData[];
-  monthlyExpenses: number;
-  investmentPercentage: string;
-  startDate: Date;
-  allocations?: InvestmentAllocation[];
+  investment_track?: string;
+  monthly_expenses: number;
+  investment_percentage: number;
+  start_date: string;
+  created_at?: string;
+  updated_at?: string;
+  client_allocations?: {
+    track_id: string;
+    percentage: number;
+  }[];
+  monthly_performance?: {
+    month: number;
+    expenses: number;
+    investment: number;
+    portfolio_value: number;
+    profit: number;
+  }[];
 }
 
 export interface ClientMetrics {
