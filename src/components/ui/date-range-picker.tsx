@@ -31,7 +31,11 @@ export function DateRangePicker({
 
   const handleSelect = (range: DateRange | undefined) => {
     setDate(range);
-    onSelect(range || { from: undefined, to: undefined });
+    // Pass the range directly since the types now match
+    onSelect({
+      from: range?.from,
+      to: range?.to
+    });
   };
 
   return (
