@@ -5,19 +5,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { INVESTMENT_TRACKS } from '@/lib/constants';
-import { InvestmentAllocation } from '@/types/investment';
+import type { InvestmentAllocation as IInvestmentAllocation, InvestmentTrack } from '@/types/investment';
 import { PlusCircle, MinusCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AllocationProps {
-  allocations: InvestmentAllocation[];
-  onAllocationsChange: (allocations: InvestmentAllocation[]) => void;
+  allocations: IInvestmentAllocation[];
+  onAllocationsChange: (allocations: IInvestmentAllocation[]) => void;
   disabled?: boolean;
 }
 
 const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = false }: AllocationProps) => {
   const { toast } = useToast();
-  const [localAllocations, setLocalAllocations] = useState<InvestmentAllocation[]>(allocations);
+  const [localAllocations, setLocalAllocations] = useState<IInvestmentAllocation[]>(allocations);
   const [totalPercentage, setTotalPercentage] = useState(0);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = fal
 
     const availableTracks = INVESTMENT_TRACKS
       .map(track => track.id)
-      .filter(trackId => !localAllocations.some(allocation => allocation.trackId === trackId));
+      .filter(trackId => !localAllocations.some(allocation => allocation.trackId === trackId)) as InvestmentTrack[];
 
     if (availableTracks.length === 0) {
       toast({
@@ -60,7 +60,7 @@ const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = fal
     onAllocationsChange(newAllocations);
   };
 
-  const handleTrackChange = (index: number, trackId: string) => {
+  const handleTrackChange = (index: number, trackId: InvestmentTrack) => {
     const newAllocations = [...localAllocations];
     newAllocations[index].trackId = trackId;
     setLocalAllocations(newAllocations);
@@ -99,7 +99,7 @@ const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = fal
               <Label>Investment Track</Label>
               <Select
                 value={allocation.trackId}
-                onValueChange={(value) => handleTrackChange(index, value)}
+                onValueChange={(value) => handleTrackChange(index, value as InvestmentTrack)}
                 disabled={disabled}
               >
                 <SelectTrigger>
