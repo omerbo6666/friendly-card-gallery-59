@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card } from "@/components/ui/card";
+import { RUSSELL2000_RETURNS } from '@/lib/utils';
 
 interface PerformanceChartProps {
   spyReturns: number[];
@@ -15,6 +16,7 @@ interface PerformanceChartProps {
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiReturns, nasdaqReturns }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date(2019, 0, 1));
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
+  const [selectedTracks, setSelectedTracks] = useState<string[]>(['SPY500', 'NASDAQ', 'RUSSELL2000']);
 
   const calculateCumulativeReturns = (returns: number[], start: Date, end: Date) => {
     const startIndex = Math.max(0, returns.length - Math.ceil((end.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000)));
@@ -36,40 +38,67 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ spyReturns, vtiRetu
     };
   };
 
+  const toggleTrack = (trackId: string) => {
+    setSelectedTracks(prev => 
+      prev.includes(trackId)
+        ? prev.filter(id => id !== trackId)
+        : [...prev, trackId]
+    );
+    console.log('Toggled track', trackId, 'now selected:', selectedTracks.join(','));
+  };
+
   const chartData = useMemo(() => {
     if (!startDate || !endDate) return [];
     
     const spyData = calculateCumulativeReturns(spyReturns, startDate, endDate);
-    const vtiData = calculateCumulativeReturns(vtiReturns, startDate, endDate);
     const nasdaqData = calculateCumulativeReturns(nasdaqReturns, startDate, endDate);
+    const russell2000Data = calculateCumulativeReturns(RUSSELL2000_RETURNS, startDate, endDate);
     
-    return [
+    const allData = [
       {
         id: "S&P 500",
+        trackId: "SPY500",
         color: "#8B5CF6",
         data: spyData.data,
         totalReturn: spyData.totalReturn
       },
       {
-        id: "VTI",
-        color: "#0EA5E9",
-        data: vtiData.data,
-        totalReturn: vtiData.totalReturn
-      },
-      {
         id: "NASDAQ",
+        trackId: "NASDAQ",
         color: "#F97316",
         data: nasdaqData.data,
         totalReturn: nasdaqData.totalReturn
+      },
+      {
+        id: "Russell 2000",
+        trackId: "RUSSELL2000",
+        color: "#10B981",
+        data: russell2000Data.data,
+        totalReturn: russell2000Data.totalReturn
       }
     ];
-  }, [spyReturns, vtiReturns, nasdaqReturns, startDate, endDate]);
+
+    return allData.filter(track => selectedTracks.includes(track.trackId));
+  }, [spyReturns, nasdaqReturns, startDate, endDate, selectedTracks]);
 
   return (
     <div className="bg-card text-card-foreground rounded-xl p-4 shadow-sm border border-border">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h3 className="text-lg font-semibold">Index Performance Comparison</h3>
         <div className="flex flex-wrap gap-4">
+          <div className="flex gap-2">
+            {['SPY500', 'NASDAQ', 'RUSSELL2000'].map(trackId => (
+              <Button
+                key={trackId}
+                variant={selectedTracks.includes(trackId) ? "default" : "outline"}
+                onClick={() => toggleTrack(trackId)}
+                className="text-xs sm:text-sm"
+              >
+                {trackId === 'SPY500' ? 'S&P 500' : 
+                 trackId === 'RUSSELL2000' ? 'Russell 2000' : trackId}
+              </Button>
+            ))}
+          </div>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline">
