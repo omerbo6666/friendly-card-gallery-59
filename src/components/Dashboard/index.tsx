@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Client, MonthlyData } from '@/types/investment';
+import { Client, MonthlyData, InvestmentTrack } from '@/types/investment';
 import { ClientCard } from './ClientCard';
 import { MetricCard } from './MetricCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -36,20 +36,20 @@ export const Dashboard = () => {
       // Transform the data to match our Client interface
       return data.map((client): Client => {
         const monthlyData: MonthlyData[] = client.monthly_performance.map((perf: any) => ({
-          month: perf.month,
-          expenses: perf.expenses,
-          investment: perf.investment,
-          portfolioValue: perf.portfolio_value,
-          profit: perf.profit
+          month: parseInt(perf.month),
+          expenses: parseFloat(perf.expenses),
+          investment: parseFloat(perf.investment),
+          portfolioValue: parseFloat(perf.portfolio_value),
+          profit: parseFloat(perf.profit)
         }));
 
         return {
           id: client.id,
           name: client.name,
           profession: client.profession,
-          investmentTrack: client.investment_track,
+          investmentTrack: client.investment_track as InvestmentTrack,
           monthlyData,
-          monthlyExpenses: client.monthly_expenses,
+          monthlyExpenses: parseFloat(client.monthly_expenses),
           investmentPercentage: client.investment_percentage.toString(),
           startDate: new Date(client.start_date)
         };
