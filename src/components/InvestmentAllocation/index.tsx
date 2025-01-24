@@ -15,7 +15,7 @@ interface AllocationProps {
   disabled?: boolean;
 }
 
-const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = false }: AllocationProps) => {
+export const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = false }: AllocationProps) => {
   const { toast } = useToast();
   const [localAllocations, setLocalAllocations] = useState<IInvestmentAllocation[]>(allocations);
   const [totalPercentage, setTotalPercentage] = useState(0);
@@ -164,4 +164,5 @@ const InvestmentAllocation = ({ allocations, onAllocationsChange, disabled = fal
   );
 };
 
+// Add named export as well as default export
 export default InvestmentAllocation;
