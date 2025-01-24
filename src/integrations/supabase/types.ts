@@ -9,6 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          created_at: string | null
+          id: string
+          investment_percentage: number
+          investment_track: string
+          monthly_expenses: number
+          name: string
+          profession: string
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          investment_percentage: number
+          investment_track: string
+          monthly_expenses: number
+          name: string
+          profession: string
+          start_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          investment_percentage?: number
+          investment_track?: string
+          monthly_expenses?: number
+          name?: string
+          profession?: string
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      monthly_performance: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          expenses: number
+          id: string
+          investment: number
+          month: number
+          portfolio_value: number
+          profit: number
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          expenses: number
+          id?: string
+          investment: number
+          month: number
+          portfolio_value: number
+          profit: number
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          expenses?: number
+          id?: string
+          investment?: number
+          month?: number
+          portfolio_value?: number
+          profit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_performance_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bio: string | null

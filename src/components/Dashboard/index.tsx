@@ -246,6 +246,19 @@ export const Dashboard = () => {
 
   const handleClientClick = (client: Client) => {
     setSelectedClient(client);
+    // Create a unique ID for the client card
+    const clientCardId = `client-${client.id}`;
+    
+    // Find the client card element
+    const clientCard = document.getElementById(clientCardId);
+    if (clientCard) {
+      // Scroll the card into view with smooth behavior
+      clientCard.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -614,8 +627,9 @@ export const Dashboard = () => {
             return (
               <div
                 key={client.id}
+                id={`client-${client.id}`}
                 className={`bg-card text-card-foreground p-4 md:p-6 rounded-xl shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow ${
-                  isSelected ? 'ring-2 ring-blue-500' : ''
+                  isSelected ? 'ring-2 ring-primary' : ''
                 }`}
                 onClick={() => handleClientClick(client)}
               >
