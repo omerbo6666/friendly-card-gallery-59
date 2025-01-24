@@ -71,5 +71,5 @@ export const getReturnsForTrack = (trackId: string): number[] => {
 };
 
 export const validateReturnData = (returns: number[]): boolean => {
-  return returns.every(return => typeof return === 'number' && !isNaN(return));
+  return returns.every(returnValue => typeof returnValue === 'number' && !isNaN(returnValue));
 };
