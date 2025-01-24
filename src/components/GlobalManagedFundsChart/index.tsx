@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ChartLine, Users, PiggyBank, TrendingUp, Coins } from 'lucide-react';
+import { ChartLine } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Card,
@@ -224,7 +224,7 @@ const GlobalManagedFundsChart = () => {
                 }}
                 xScale={{
                   type: 'point',
-                  padding: 0.5
+                  pointPadding: 0.5
                 }}
                 yScale={{
                   type: 'linear',
